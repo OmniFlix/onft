@@ -55,3 +55,13 @@ lint:
 	@echo "--> Running linter"
 	@golangci-lint run
 	@go mod verify
+
+start-test-chain:
+	rm -rf /tmp/onft
+	onftd init onft-node  --chain-id "onft-test-1" --home /tmp/onft
+	onftd keys add validator --home /tmp/onft
+	onftd add-genesis-account `onftd keys show validator -a` 100000000stake --home /tmp/onft
+	onftd gentx validator 1000000stake --moniker "validator-1" --chain-id "onft-test-1" --home /tmp/onft
+	onftd collect-gentxs --home /tmp/onft
+	onftd validate-genesis --home /tmp/onft
+	onftd start --home /tmp/onft
