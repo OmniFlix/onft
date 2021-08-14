@@ -1,0 +1,70 @@
+package types
+
+import (
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	gogotypes "github.com/gogo/protobuf/types"
+
+	"github.com/OmniFlix/onft/exported"
+)
+
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgCreateDenom{}, "OmniFlix/onft/MsgCreateDenom", nil)
+	cdc.RegisterConcrete(&MsgTransferONFT{}, "OmniFlix/onft/MsgTransferONFT", nil)
+	cdc.RegisterConcrete(&MsgEditONFT{}, "OmniFlix/onft/MsgEditONFT", nil)
+	cdc.RegisterConcrete(&MsgMintONFT{}, "OmniFlix/onft/MsgMintONFT", nil)
+	cdc.RegisterConcrete(&MsgBurnONFT{}, "OmniFlix/onft/MsgBurnONFT", nil)
+
+	cdc.RegisterInterface((*exported.ONFT)(nil), nil)
+	cdc.RegisterConcrete(&ONFT{}, "OmniFlix/onft/ONFT", nil)
+}
+
+func RegisterInterfaces(registry types.InterfaceRegistry) {
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgCreateDenom{},
+		&MsgTransferONFT{},
+		&MsgEditONFT{},
+		&MsgMintONFT{},
+		&MsgBurnONFT{},
+	)
+
+	registry.RegisterImplementations((*exported.ONFT)(nil),
+		&ONFT{},
+	)
+}
+
+var (
+	amino = codec.NewLegacyAmino()
+
+	ModuleCdc = codec.NewAminoCodec(amino)
+)
+
+func init() {
+	RegisterLegacyAminoCodec(amino)
+	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
+}
+
+func MustMarshalSupply(cdc codec.BinaryCodec, supply uint64) []byte {
+	supplyWrap := gogotypes.UInt64Value{Value: supply}
+	return cdc.MustMarshal(&supplyWrap)
+}
+
+func MustUnMarshalSupply(cdc codec.BinaryCodec, value []byte) uint64 {
+	var supplyWrap gogotypes.UInt64Value
+	cdc.MustUnmarshal(value, &supplyWrap)
+	return supplyWrap.Value
+}
+
+func MustMarshalONFTID(cdc codec.BinaryCodec, onftID string) []byte {
+	onftIDWrap := gogotypes.StringValue{Value: onftID}
+	return cdc.MustMarshal(&onftIDWrap)
+}
+
+func MustUnMarshalONFTID(cdc codec.BinaryCodec, value []byte) string {
+	var onftIDWrap gogotypes.StringValue
+	cdc.MustUnmarshal(value, &onftIDWrap)
+	return onftIDWrap.Value
+}
