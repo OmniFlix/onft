@@ -8,7 +8,7 @@ validator:
   staked: "10000000stake"
 client:
   openapi:
-    path: "docs/static/openapi.yml"/
+    path: "docs/static/openapi.yml"
 faucet:
   name: bob
   coins: ["100000stake"]
