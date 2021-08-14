@@ -4,7 +4,19 @@ name: onft
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - main
+      - development
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - master
+      - main
+      - development
 
 # This workflow makes x86_64 binaries for mac, windows, and linux.
 
@@ -14,7 +26,7 @@ jobs:
     strategy:
       matrix:
         arch: [amd64, arm64]
-        targetos: [windows, darwin, linux]
+        targetos: [linux]
     name: onft ${{ matrix.arch }} for ${{ matrix.targetos }}
     steps:
       - uses: actions/checkout@v2
