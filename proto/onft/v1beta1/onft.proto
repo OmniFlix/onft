@@ -1,0 +1,59 @@
+syntax = "proto3";
+package OmniFlix.onft.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/OmniFlix/onft/types";
+option (gogoproto.goproto_getters_all) = false;
+
+//ASSETS or collections
+message Collection {
+    Denom denom = 1;
+    repeated ONFT onfts = 2 [(gogoproto.customname) = "ONFTs", (gogoproto.nullable) = false];
+}
+
+message IDCollection {
+    string denom = 1;
+    repeated string ids = 2;
+}
+
+message Denom {
+    option (gogoproto.equal) = true;
+
+    string id = 1;
+    string name = 2;
+    string schema = 3;
+    bytes creator = 4 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+}
+
+//ASSET or ONFT
+message ONFT {
+    option (gogoproto.equal) = true;
+
+    string id                           = 1;
+    Metadata metadata                   = 2;
+    bytes owner                         = 3 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+    AssetType type                      = 4;
+    bool transfer_enabled               = 5;
+    google.protobuf.Timestamp created   = 6 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true, (gogoproto.moretags) = "yaml:\"created\""];
+}
+
+
+enum AssetType {
+    option (gogoproto.goproto_enum_prefix)  = false;
+
+    ARTWORK      = 0;
+    AUDIO        = 1;
+    VIDEO        = 2;
+}
+
+message Metadata {
+    option (gogoproto.equal) = true;
+
+    string name                         = 1;
+    string description                  = 2;
+    string preview                      = 3;
+    string media                        = 4;
+}
+
