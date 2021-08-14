@@ -1,6 +1,5 @@
 # oNFT
 
-**oNFT** - OmniFlix NFT module  
+**oNFT** - OmniFlix NFT Module
 
-
-This module code initially taken from [irismod/nft](https://github.com/irismod/nft) repository and modified according our oNFT structure
+The code for this module is initially taken from the [irismod/nft](https://github.com/irismod/nft) repository and modified according the structure of oNFT.
