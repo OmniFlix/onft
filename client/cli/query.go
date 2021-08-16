@@ -180,7 +180,7 @@ $ %s query onft denom <denom>`, version.AppName)),
 
 func GetCmdQueryONFT() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "onft [denomID] [onftID]",
+		Use: "asset [denomID] [onftID]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query a single oNFT from a collection
 Example:
