@@ -184,7 +184,7 @@ func GetCmdQueryONFT() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query a single oNFT from a collection
 Example:
-$ %s query onft onft <denom> <onftID>`, version.AppName)),
+$ %s query onft asset <denom> <onftID>`, version.AppName)),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
