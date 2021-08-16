@@ -37,7 +37,7 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router, queryRoute string
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/onfts/{%s}", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/asset/{%s}/{%s}", RestParamDenom, RestParamONFTID),
 		queryONFT(cliCtx, queryRoute),
 	).Methods("GET")
 }

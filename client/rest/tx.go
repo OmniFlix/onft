@@ -22,22 +22,22 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 	).Methods("POST")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/mint"),
+		fmt.Sprintf("/onft/onfts/mint"),
 		mintONFTHandlerFn(cliCtx),
 	).Methods("POST")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/edit", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/onfts/{%s}/{%s}", RestParamDenom, RestParamONFTID),
 		editONFTHandlerFn(cliCtx),
 	).Methods("PUT")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/transfer", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/onfts/{%s}/{%s}/transfer", RestParamDenom, RestParamONFTID),
 		transferONFTHandlerFn(cliCtx),
 	).Methods("POST")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/burn", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/onfts/{%s}/{%s}/burn", RestParamDenom, RestParamONFTID),
 		burnONFTHandlerFn(cliCtx),
 	).Methods("POST")
 }
@@ -92,7 +92,7 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata.Preview = req.PreviewURI
 		}
 		var onftType types.AssetType
-		switch  strings.ToLower(req.Type) {
+		switch strings.ToLower(req.Type) {
 		case "artwork":
 			onftType = types.ARTWORK
 		case "audio":
@@ -153,7 +153,7 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if len(req.PreviewURI) > 0 {
 			metadata.Preview = req.PreviewURI
 		}
-		onftType  := strings.ToLower(req.Type)
+		onftType := strings.ToLower(req.Type)
 		if !(len(onftType) > 0 && (onftType == "artwork" || onftType == "audio" || onftType == "video" ||
 			onftType == types.DoNotModify)) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid onft type, valid types are artwork,audio,video")

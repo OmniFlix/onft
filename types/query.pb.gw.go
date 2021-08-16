@@ -692,17 +692,17 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Collection_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"onft", "collections", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Collection_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"omniflix", "onft", "v1beta1", "collections", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Denom_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"onft", "denoms", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Denom_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"omniflix", "onft", "v1beta1", "denoms", "denom"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Denoms_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"onft", "denoms"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Denoms_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"omniflix", "onft", "v1beta1", "denoms"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_ONFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"onft", "denoms", "denom", "onfts", "id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ONFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6}, []string{"omniflix", "onft", "v1beta1", "denoms", "denom", "onfts", "id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_OwnerONFTs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"onft", "onfts", "denoms", "denom", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_OwnerONFTs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"omniflix", "onft", "v1beta1", "onfts", "denoms", "denom", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Supply_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"onft", "denoms", "denom", "supply"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Supply_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"omniflix", "onft", "v1beta1", "denoms", "denom", "supply"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

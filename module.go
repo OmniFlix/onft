@@ -11,19 +11,20 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/OmniFlix/onft/client/cli"
+	"github.com/OmniFlix/onft/client/rest"
+	"github.com/OmniFlix/onft/keeper"
+	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/OmniFlix/onft/client/cli"
-	"github.com/OmniFlix/onft/keeper"
-	"github.com/OmniFlix/onft/types"
 )
 
 var (
-	_ module.AppModule           = AppModule{}
-	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModule      = AppModule{}
+	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
 type AppModuleBasic struct {
@@ -100,7 +101,9 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 	return keeper.NewQuerier(am.keeper, legacyQuerierCdc)
 }
+
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
+	rest.RegisterHandlers(clientCtx, rtr, types.RouterKey)
 }
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
