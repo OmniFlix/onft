@@ -37,6 +37,9 @@ func (k Keeper) CreateDenom(ctx sdk.Context,
 
 func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata *types.Metadata, assetType types.AssetType,
 	transferable bool, owner sdk.AccAddress) error {
+	if !k.HasPermissionToMint(ctx, denomID, owner) {
+		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
+	}
 	if !k.HasDenomID(ctx, denomID) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
@@ -48,8 +51,8 @@ func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata *type
 	k.setONFT(ctx, denomID, types.NewONFT(
 		onftID,
 		metadata,
-        assetType,
-        transferable,
+		assetType,
+		transferable,
 		owner,
 	))
 	k.increaseSupply(ctx, denomID)
@@ -105,7 +108,6 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata *type
 	k.setONFT(ctx, denomID, onft)
 	return nil
 }
-
 
 func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOwner, dstOwner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
