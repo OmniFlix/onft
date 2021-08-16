@@ -17,27 +17,27 @@ import (
 
 func registerTxRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 	r.HandleFunc(
-		"/onft/denoms/create",
+		"/onft/denoms",
 		createDenomHandlerFn(cliCtx),
 	).Methods("POST")
 
 	r.HandleFunc(
-		"/onft/onfts/mint",
+		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/mint"),
 		mintONFTHandlerFn(cliCtx),
 	).Methods("POST")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/onfts/{%s}/{%s}", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/edit", RestParamDenom, RestParamONFTID),
 		editONFTHandlerFn(cliCtx),
 	).Methods("PUT")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/onfts/{%s}/{%s}/transfer", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/transfer", RestParamDenom, RestParamONFTID),
 		transferONFTHandlerFn(cliCtx),
 	).Methods("POST")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/onfts/{%s}/{%s}/burn", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/onft/denoms/{%s}/assets/{%s}/burn", RestParamDenom, RestParamONFTID),
 		burnONFTHandlerFn(cliCtx),
 	).Methods("POST")
 }
