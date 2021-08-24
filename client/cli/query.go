@@ -198,15 +198,15 @@ $ %s query onft asset <denom> <onftID>`, version.AppName)),
 				return err
 			}
 
-			tokenID := strings.TrimSpace(args[1])
-			if err := types.ValidateONFTID(tokenID); err != nil {
+			onftID := strings.TrimSpace(args[1])
+			if err := types.ValidateONFTID(onftID); err != nil {
 				return err
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.ONFT(context.Background(), &types.QueryONFTRequest{
 				Denom: denom,
-				Id:    tokenID,
+				Id:    onftID,
 			})
 			if err != nil {
 				return err

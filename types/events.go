@@ -14,6 +14,6 @@ var (
 	AttributeKeyOwner      = "owner"
 	AttributeKeyONFTID     = "onft-id"
 	AttributeKeyMediaURI   = "media-uri"
-	AttributeKeyPreviewURI = "media-uri"
+	AttributeKeyPreviewURI = "preview-uri"
 	AttributeKeyDenom      = "denom"
 )

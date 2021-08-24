@@ -38,11 +38,11 @@ func NewTxCmd() *cobra.Command {
 
 func GetCmdCreateDenom() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "create [denom]",
+		Use: "create [symbol]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Create a new denom.
 Example:
-$ %s tx onft create [denomID] --name=<name> --schema=<schema> --chain-id=<chain-id> --from=<key-name> --fees=<fee>`,
+$ %s tx onft create [denomSymbol] --name=<name> --schema=<schema> --chain-id=<chain-id> --from=<key-name> --fees=<fee>`,
 				version.AppName,
 			),
 		),
@@ -72,16 +72,16 @@ $ %s tx onft create [denomID] --name=<name> --schema=<schema> --chain-id=<chain-
 
 func GetCmdMintONFT() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "mint [denomID] [onftID]",
+		Use: "mint [denomID]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Mint an oNFT.
 Example:
-$ %s tx onft mint [denomID] [onftID] --type <onft-type> --name <onft-name> --description <onft-descritpion> --media-uri=<uri> --preview-uri=<uri> 
+$ %s tx onft mint [denomID] --type <onft-type> --name <onft-name> --description <onft-descritpion> --media-uri=<uri> --preview-uri=<uri> 
 --transferable <yes/no> --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
 				version.AppName,
 			),
 		),
-		Args: cobra.ExactArgs(2),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -116,7 +116,7 @@ $ %s tx onft mint [denomID] [onftID] --type <onft-type> --name <onft-name> --des
 				onftMetadata.Preview = onftPreviewURI
 			}
 			var onftType types.AssetType
-			switch  strings.ToLower(viper.GetString(FlagONFTType)) {
+			switch strings.ToLower(viper.GetString(FlagONFTType)) {
 			case "artwork":
 				onftType = types.ARTWORK
 			case "audio":
@@ -132,7 +132,6 @@ $ %s tx onft mint [denomID] [onftID] --type <onft-type> --name <onft-name> --des
 				transferable = false
 			}
 			msg := types.NewMsgMintONFT(
-				args[1],
 				args[0],
 				onftMetadata,
 				onftType,
@@ -187,11 +186,11 @@ $ %s tx onft edit [denomID] [onftID] --name=<onft-name> --description=<onft-desc
 			if len(onftPreviewURI) > 0 {
 				onftMetadata.Preview = onftPreviewURI
 			}
-			onftType  := strings.ToLower(viper.GetString(FlagONFTType))
+			onftType := strings.ToLower(viper.GetString(FlagONFTType))
 			if !(len(onftType) > 0 && (onftType == "artwork" || onftType == "audio" || onftType == "video" ||
 				onftType == types.DoNotModify)) {
 				return fmt.Errorf("invalid option for type flag , valid options are artwork|audio|video")
-				}
+			}
 			transferable := strings.ToLower(viper.GetString(FlagTransferable))
 			if !(len(transferable) > 0 && (transferable == "no" || transferable == "yes" ||
 				transferable == types.DoNotModify)) {

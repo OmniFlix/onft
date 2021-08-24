@@ -35,9 +35,10 @@ func HandleMsgCreateDenom(ctx sdk.Context, msg *types.MsgCreateDenom, k keeper.K
 ) (*sdk.Result, error) {
 	id := strings.ToLower(strings.TrimSpace(msg.Id))
 	name := strings.ToLower(strings.TrimSpace(msg.Name))
-
+	symbol := strings.ToLower(strings.TrimSpace(msg.Symbol))
 	if err := k.CreateDenom(ctx,
 		id,
+		symbol,
 		name,
 		msg.Schema,
 		msg.Sender); err != nil {
@@ -87,7 +88,7 @@ func HandleMsgTransferONFT(ctx sdk.Context, msg *types.MsgTransferONFT, k keeper
 	return &sdk.Result{Events: ctx.EventManager().ABCIEvents()}, nil
 }
 
-func HandleMsgEditONFT(ctx sdk.Context, msg *types.MsgEditONFT, k keeper.Keeper, ) (*sdk.Result, error) {
+func HandleMsgEditONFT(ctx sdk.Context, msg *types.MsgEditONFT, k keeper.Keeper) (*sdk.Result, error) {
 	id := strings.ToLower(strings.TrimSpace(msg.Id))
 	denom := strings.ToLower(strings.TrimSpace(msg.Denom))
 
@@ -128,6 +129,7 @@ func HandleMsgMintONFT(ctx sdk.Context, msg *types.MsgMintONFT, k keeper.Keeper,
 		msg.Metadata,
 		msg.AssetType,
 		msg.Transferable,
+		msg.Sender,
 		msg.Recipient); err != nil {
 		return nil, err
 	}

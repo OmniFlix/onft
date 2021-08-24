@@ -7,9 +7,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func NewDenom(id, name, schema string, creator sdk.AccAddress) *Denom {
+func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress) *Denom {
 	return &Denom{
 		Id:      id,
+		Symbol:  symbol,
 		Name:    name,
 		Schema:  schema,
 		Creator: creator,
@@ -23,6 +24,16 @@ func ValidateDenomID(denomID string) error {
 	}
 	if !IsBeginWithAlpha(denomID) || !IsAlphaNumeric(denomID) {
 		return sdkerrors.Wrapf(ErrInvalidDenom, "invalid denom %s, only accepts alphanumeric characters,and begin with an english letter", denomID)
+	}
+	return nil
+}
+func ValidateDenomSymbol(denomSymbol string) error {
+	denomSymbol = strings.TrimSpace(denomSymbol)
+	if len(denomSymbol) < MinDenomLen || len(denomSymbol) > MaxDenomLen {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "invalid denom symbol %s, only accepts value [%d, %d]", denomSymbol, MinDenomLen, MaxDenomLen)
+	}
+	if !IsBeginWithAlpha(denomSymbol) || !IsAlpha(denomSymbol) {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "invalid denom symbol %s, only accepts alphabetic characters", denomSymbol)
 	}
 	return nil
 }

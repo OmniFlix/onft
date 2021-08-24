@@ -62,14 +62,14 @@ func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []types.Denom) {
 	}
 	return denoms
 }
-func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, owner sdk.AccAddress) bool {
+func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, sender sdk.AccAddress) bool {
 	denom, err := k.GetDenom(ctx, denomID)
 	if err != nil {
 		return false
 	}
 
-	if !owner.Equals(denom.Creator) {
-		return false
+	if sender.String() == denom.Creator.String() {
+		return true
 	}
-	return true
+	return false
 }

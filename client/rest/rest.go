@@ -14,15 +14,16 @@ func RegisterHandlers(cliCtx client.Context, r *mux.Router, queryRoute string) {
 }
 
 const (
-	RestParamDenom   = "denom"
+	RestParamDenom  = "denom"
 	RestParamONFTID = "id"
-	RestParamOwner   = "owner"
+	RestParamOwner  = "owner"
 )
 
 type createDenomReq struct {
 	BaseReq rest.BaseReq   `json:"base_req"`
-	Sender sdk.AccAddress `json:"sender"`
+	Sender  sdk.AccAddress `json:"sender"`
 	ID      string         `json:"id"`
+	Symbol  string         `json:"symbol"`
 	Name    string         `json:"name"`
 	Schema  string         `json:"schema"`
 }
@@ -32,7 +33,6 @@ type mintONFTReq struct {
 	Sender       sdk.AccAddress `json:"sender"`
 	Recipient    sdk.AccAddress `json:"recipient"`
 	Denom        string         `json:"denom"`
-	ID           string         `json:"id"`
 	Name         string         `json:"name"`
 	Description  string         `json:"description"`
 	MediaURI     string         `json:"media_uri"`
@@ -53,12 +53,12 @@ type editONFTReq struct {
 }
 
 type transferONFTReq struct {
-	BaseReq    rest.BaseReq   `json:"base_req"`
-	Sender     sdk.AccAddress `json:"sender"`
-	Recipient  string         `json:"recipient"`
+	BaseReq   rest.BaseReq   `json:"base_req"`
+	Sender    sdk.AccAddress `json:"sender"`
+	Recipient string         `json:"recipient"`
 }
 
 type burnONFTReq struct {
-	BaseReq rest.BaseReq    `json:"base_req"`
-	sender   sdk.AccAddress `json:"sender"`
+	BaseReq rest.BaseReq   `json:"base_req"`
+	sender  sdk.AccAddress `json:"sender"`
 }

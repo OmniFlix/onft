@@ -22,9 +22,10 @@ message Denom {
     option (gogoproto.equal) = true;
 
     string id = 1;
-    string name = 2;
-    string schema = 3;
-    bytes creator = 4 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+    string symbol = 2;
+    string name = 3;
+    string schema = 4;
+    bytes creator = 5 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
 }
 
 //ASSET or ONFT

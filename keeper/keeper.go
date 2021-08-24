@@ -30,14 +30,14 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k Keeper) CreateDenom(ctx sdk.Context,
-	id, name, schema string,
+	id, symbol, name, schema string,
 	creator sdk.AccAddress) error {
-	return k.SetDenom(ctx, types.NewDenom(id, name, schema, creator))
+	return k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator))
 }
 
 func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata *types.Metadata, assetType types.AssetType,
-	transferable bool, owner sdk.AccAddress) error {
-	if !k.HasPermissionToMint(ctx, denomID, owner) {
+	transferable bool, sender, owner sdk.AccAddress) error {
+	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
 	if !k.HasDenomID(ctx, denomID) {
@@ -95,6 +95,13 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata *type
 		}
 	}
 	if transferable != types.DoNotModify {
+		denom, err := k.GetDenom(ctx, denomID)
+		if err != nil {
+			return err
+		}
+		if denom.Creator.String() != onft.Owner.String() {
+			return sdkerrors.Wrapf(types.ErrNotEditable, "onft %s: transferability can be modified only when creator and owner of onft are equal.", onftID)
+		}
 		switch transferable := strings.ToLower(transferable); transferable {
 		case "yes":
 			onft.TransferEnabled = true

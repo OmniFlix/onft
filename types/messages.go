@@ -1,17 +1,19 @@
 package types
 
 import (
-	"strings"
-	"unicode/utf8"
-
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/google/uuid"
+	"strings"
+	"unicode/utf8"
 )
 
-func NewMsgCreateDenom(id, name, schema string, sender sdk.AccAddress) *MsgCreateDenom {
+func NewMsgCreateDenom(symbol, name, schema string, sender sdk.AccAddress) *MsgCreateDenom {
 	return &MsgCreateDenom{
 		Sender: sender,
-		Id:     strings.ToLower(strings.TrimSpace(id)),
+		Id:     fmt.Sprintf("onftdenom%s", strings.ReplaceAll(uuid.New().String(), "-", "")),
+		Symbol: strings.ToLower(strings.TrimSpace(symbol)),
 		Name:   strings.TrimSpace(name),
 		Schema: strings.TrimSpace(schema),
 	}
@@ -25,7 +27,9 @@ func (msg MsgCreateDenom) ValidateBasic() error {
 	if err := ValidateDenomID(msg.Id); err != nil {
 		return err
 	}
-
+	if err := ValidateDenomSymbol(msg.Symbol); err != nil {
+		return err
+	}
 	name := strings.TrimSpace(msg.Name)
 	if len(name) > 0 && !utf8.ValidString(name) {
 		return sdkerrors.Wrap(ErrInvalidDenom, "denom name is invalid")
@@ -47,16 +51,16 @@ func (msg MsgCreateDenom) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Sender}
 }
 
-func NewMsgMintONFT(id, denom string, metadata *Metadata, assetType AssetType, transferable bool, sender, recipient sdk.AccAddress) *MsgMintONFT {
+func NewMsgMintONFT(denom string, metadata *Metadata, assetType AssetType, transferable bool, sender, recipient sdk.AccAddress) *MsgMintONFT {
 
 	return &MsgMintONFT{
-		Id:        strings.ToLower(strings.TrimSpace(id)),
-		Denom:     strings.TrimSpace(denom),
-		Metadata:  metadata,
-		AssetType: assetType,
+		Id:           fmt.Sprintf("onft%s", strings.ReplaceAll(uuid.New().String(), "-", "")),
+		Denom:        strings.TrimSpace(denom),
+		Metadata:     metadata,
+		AssetType:    assetType,
 		Transferable: transferable,
-		Sender:    sender,
-		Recipient: recipient,
+		Sender:       sender,
+		Recipient:    recipient,
 	}
 }
 
@@ -89,7 +93,6 @@ func (msg MsgMintONFT) GetSignBytes() []byte {
 func (msg MsgMintONFT) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Sender}
 }
-
 
 func NewMsgTransferONFT(id, denom string, sender, recipient sdk.AccAddress) *MsgTransferONFT {
 
@@ -131,12 +134,12 @@ func (msg MsgTransferONFT) GetSigners() []sdk.AccAddress {
 
 func NewMsgEditONFT(id, denom string, metadata *Metadata, assetType string, transferable string, sender sdk.AccAddress) *MsgEditONFT {
 	return &MsgEditONFT{
-		Id:     strings.ToLower(strings.TrimSpace(id)),
-		Denom:  strings.TrimSpace(denom),
-		Metadata: metadata,
-		AssetType: assetType,
+		Id:           strings.ToLower(strings.TrimSpace(id)),
+		Denom:        strings.TrimSpace(denom),
+		Metadata:     metadata,
+		AssetType:    assetType,
 		Transferable: transferable,
-		Sender: sender,
+		Sender:       sender,
 	}
 }
 

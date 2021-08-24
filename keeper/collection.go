@@ -4,16 +4,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-    "github.com/OmniFlix/onft/types"
+	"github.com/OmniFlix/onft/types"
 )
 
 func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) error {
 	for _, onft := range collection.ONFTs {
 		metadata := &types.Metadata{
-			Name: onft.GetName(),
+			Name:        onft.GetName(),
 			Description: onft.GetDescription(),
-			Media: onft.GetMediaURI(),
-			Preview: onft.GetPreviewURI(),
+			Media:       onft.GetMediaURI(),
+			Preview:     onft.GetPreviewURI(),
 		}
 		var aType types.AssetType
 		switch onft.GetType() {
@@ -32,6 +32,7 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 			metadata,
 			aType,
 			onft.IsTransferable(),
+			onft.GetOwner(),
 			onft.GetOwner(),
 		); err != nil {
 			return err

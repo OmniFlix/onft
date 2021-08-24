@@ -110,7 +110,6 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.NewMsgMintONFT(
-			req.ID,
 			req.Denom,
 			metadata,
 			onftType,
