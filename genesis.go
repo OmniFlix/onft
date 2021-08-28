@@ -35,7 +35,7 @@ func DefaultGenesisState() *types.GenesisState {
 
 func ValidateGenesis(data types.GenesisState) error {
 	for _, c := range data.Collections {
-		if err := types.ValidateDenomID(c.Denom.Name); err != nil {
+		if err := types.ValidateDenomID(c.Denom.Id); err != nil {
 			return err
 		}
 		if !utf8.ValidString(c.Denom.Name) {

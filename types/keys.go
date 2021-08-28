@@ -19,8 +19,8 @@ var (
 	PrefixONFT       = []byte{0x01}
 	PrefixOwners     = []byte{0x02} // key for a owner
 	PrefixCollection = []byte{0x03} // key for balance of oNFTs held by the denom
-	PrefixDenom      = []byte{0x04} // key for denom of the nft
-	PrefixDenomName  = []byte{0x05} // key for denom name of the nft
+	PrefixDenom      = []byte{0x04} // key for denom of the onft
+	PrefixDenomSymbol  = []byte{0x05} // key for denom symbol of the onft
 
 	delimiter = []byte("/")
 )
@@ -80,7 +80,7 @@ func KeyDenomID(id string) []byte {
 	return append(key, []byte(id)...)
 }
 
-func KeyDenomName(name string) []byte {
-	key := append(PrefixDenomName, delimiter...)
-	return append(key, []byte(name)...)
+func KeyDenomSymbol(symbol string) []byte {
+	key := append(PrefixDenomSymbol, delimiter...)
+	return append(key, []byte(symbol)...)
 }
