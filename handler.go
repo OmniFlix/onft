@@ -48,7 +48,7 @@ func HandleMsgCreateDenom(ctx sdk.Context, msg *types.MsgCreateDenom, k keeper.K
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreateDenom,
-			sdk.NewAttribute(types.AttributeKeyDenom, id),
+			sdk.NewAttribute(types.AttributeKeyDenomID, id),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -76,7 +76,7 @@ func HandleMsgTransferONFT(ctx sdk.Context, msg *types.MsgTransferONFT, k keeper
 		sdk.NewEvent(
 			types.EventTypeTransfer,
 			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient.String()),
-			sdk.NewAttribute(types.AttributeKeyDenom, denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, denom),
 			sdk.NewAttribute(types.AttributeKeyONFTID, id),
 		),
 		sdk.NewEvent(
@@ -105,7 +105,7 @@ func HandleMsgEditONFT(ctx sdk.Context, msg *types.MsgEditONFT, k keeper.Keeper)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeEditNFT,
-			sdk.NewAttribute(types.AttributeKeyDenom, denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, denom),
 			sdk.NewAttribute(types.AttributeKeyONFTID, id),
 			sdk.NewAttribute(types.AttributeKeyMediaURI, msg.Metadata.Media),
 		),
@@ -138,9 +138,8 @@ func HandleMsgMintONFT(ctx sdk.Context, msg *types.MsgMintONFT, k keeper.Keeper,
 		sdk.NewEvent(
 			types.EventTypeMintNFT,
 			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient.String()),
-			sdk.NewAttribute(types.AttributeKeyDenom, denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, denom),
 			sdk.NewAttribute(types.AttributeKeyONFTID, id),
-			sdk.NewAttribute(types.AttributeKeyMediaURI, msg.Metadata.Media),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -167,7 +166,7 @@ func HandleMsgBurnONFT(ctx sdk.Context, msg *types.MsgBurnONFT, k keeper.Keeper,
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeBurnNFT,
-			sdk.NewAttribute(types.AttributeKeyDenom, denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, denom),
 			sdk.NewAttribute(types.AttributeKeyONFTID, id),
 		),
 		sdk.NewEvent(
