@@ -12,14 +12,14 @@ import (
 
 var _ exported.ONFT = ONFT{}
 
-func NewONFT(id string, metadata *Metadata, assetType AssetType, transferable bool, owner sdk.AccAddress) ONFT {
+func NewONFT(id string, metadata Metadata, assetType AssetType, transferable bool, owner sdk.AccAddress, createdTime time.Time) ONFT {
 	return ONFT{
-		Id:    strings.ToLower(strings.TrimSpace(id)),
-		Metadata: metadata,
-		Type: assetType,
-		Owner: owner,
+		Id:              strings.ToLower(strings.TrimSpace(id)),
+		Metadata:        metadata,
+		Type:            assetType,
+		Owner:           owner,
 		TransferEnabled: transferable,
-		Created:  time.Now(),
+		Created:         createdTime,
 	}
 }
 

@@ -9,7 +9,9 @@ option (gogoproto.goproto_getters_all) = false;
 
 //ASSETS or collections
 message Collection {
-    Denom denom = 1;
+    option (gogoproto.equal) = true;
+
+    Denom denom = 1 [ (gogoproto.nullable) = false ];
     repeated ONFT onfts = 2 [(gogoproto.customname) = "ONFTs", (gogoproto.nullable) = false];
 }
 
@@ -33,7 +35,7 @@ message ONFT {
     option (gogoproto.equal) = true;
 
     string id                           = 1;
-    Metadata metadata                   = 2;
+    Metadata metadata                   = 2 [ (gogoproto.nullable) = false ];
     bytes owner                         = 3 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
     AssetType type                      = 4;
     bool transfer_enabled               = 5;

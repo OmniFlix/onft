@@ -20,7 +20,7 @@ func (k Keeper) HasDenomSymbol(ctx sdk.Context, symbol string) bool {
 	return store.Has(types.KeyDenomSymbol(symbol))
 }
 
-func (k Keeper) SetDenom(ctx sdk.Context, denom *types.Denom) error {
+func (k Keeper) SetDenom(ctx sdk.Context, denom types.Denom) error {
 	if k.HasDenomID(ctx, denom.Id) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
 	}
@@ -30,7 +30,7 @@ func (k Keeper) SetDenom(ctx sdk.Context, denom *types.Denom) error {
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(denom)
+	bz := k.cdc.MustMarshal(&denom)
 	store.Set(types.KeyDenomID(denom.Id), bz)
 	if len(denom.Symbol) > 0 {
 		store.Set(types.KeyDenomSymbol(denom.Symbol), []byte(denom.Id))

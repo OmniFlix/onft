@@ -51,7 +51,7 @@ func (msg MsgCreateDenom) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Sender}
 }
 
-func NewMsgMintONFT(denom string, metadata *Metadata, assetType AssetType, transferable bool, sender, recipient sdk.AccAddress) *MsgMintONFT {
+func NewMsgMintONFT(denom string, metadata Metadata, assetType AssetType, transferable bool, sender, recipient sdk.AccAddress) *MsgMintONFT {
 
 	return &MsgMintONFT{
 		Id:           fmt.Sprintf("onft%s", strings.ReplaceAll(uuid.New().String(), "-", "")),
@@ -132,7 +132,7 @@ func (msg MsgTransferONFT) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Sender}
 }
 
-func NewMsgEditONFT(id, denom string, metadata *Metadata, assetType string, transferable string, sender sdk.AccAddress) *MsgEditONFT {
+func NewMsgEditONFT(id, denom string, metadata Metadata, assetType string, transferable string, sender sdk.AccAddress) *MsgEditONFT {
 	return &MsgEditONFT{
 		Id:           strings.ToLower(strings.TrimSpace(id)),
 		Denom:        strings.TrimSpace(denom),

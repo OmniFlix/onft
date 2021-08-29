@@ -7,8 +7,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress) *Denom {
-	return &Denom{
+func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress) Denom {
+	return Denom{
 		Id:      id,
 		Symbol:  symbol,
 		Name:    name,
