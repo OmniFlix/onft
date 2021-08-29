@@ -78,7 +78,7 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if req.Recipient.Empty() {
 			req.Recipient = req.Sender
 		}
-		metadata := &types.Metadata{}
+		metadata := types.Metadata{}
 		if len(req.Name) > 0 {
 			metadata.Name = req.Name
 		}
@@ -139,7 +139,7 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 
 		vars := mux.Vars(r)
 
-		metadata := &types.Metadata{}
+		metadata := types.Metadata{}
 		if len(req.Name) > 0 {
 			metadata.Name = req.Name
 		}

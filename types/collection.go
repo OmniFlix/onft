@@ -4,7 +4,7 @@ import (
 	"github.com/OmniFlix/onft/exported"
 )
 
-func NewCollection(denom *Denom, onfts []exported.ONFT) (c Collection) {
+func NewCollection(denom Denom, onfts []exported.ONFT) (c Collection) {
 	c.Denom = denom
 	for _, onft := range onfts {
 		c = c.AddONFT(onft.(ONFT))
@@ -24,4 +24,3 @@ func (c Collection) Supply() int {
 func NewCollections(c ...Collection) []Collection {
 	return append([]Collection{}, c...)
 }
-

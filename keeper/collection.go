@@ -9,7 +9,7 @@ import (
 
 func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) error {
 	for _, onft := range collection.ONFTs {
-		metadata := &types.Metadata{
+		metadata := types.Metadata{
 			Name:        onft.GetName(),
 			Description: onft.GetDescription(),
 			Media:       onft.GetMediaURI(),
@@ -48,13 +48,13 @@ func (k Keeper) GetCollection(ctx sdk.Context, denomID string) (types.Collection
 	}
 
 	onfts := k.GetONFTs(ctx, denomID)
-	return types.NewCollection(&denom, onfts), nil
+	return types.NewCollection(denom, onfts), nil
 }
 
 func (k Keeper) GetCollections(ctx sdk.Context) (cs []types.Collection) {
 	for _, denom := range k.GetDenoms(ctx) {
 		onfts := k.GetONFTs(ctx, denom.Id)
-		cs = append(cs, types.NewCollection(&denom, onfts))
+		cs = append(cs, types.NewCollection(denom, onfts))
 	}
 	return cs
 }

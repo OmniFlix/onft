@@ -98,7 +98,7 @@ $ %s tx onft mint [denomID] --type <onft-type> --name <onft-name> --description 
 				}
 			}
 
-			onftMetadata := &types.Metadata{}
+			onftMetadata := types.Metadata{}
 			onftName := viper.GetString(FlagONFTName)
 			onftDescription := viper.GetString(FlagONFTDescription)
 			onftMediaURI := viper.GetString(FlagONFTMediaURI)
@@ -169,7 +169,7 @@ $ %s tx onft edit [denomID] [onftID] --name=<onft-name> --description=<onft-desc
 				return err
 			}
 
-			onftMetadata := &types.Metadata{}
+			onftMetadata := types.Metadata{}
 			onftName := viper.GetString(FlagONFTName)
 			onftDescription := viper.GetString(FlagONFTDescription)
 			onftMediaURI := viper.GetString(FlagONFTMediaURI)

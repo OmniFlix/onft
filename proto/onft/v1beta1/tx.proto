@@ -22,7 +22,7 @@ message MsgMintONFT {
 
     string id = 1;
     string denom = 2;
-    Metadata metadata = 3;
+    Metadata metadata = 3 [ (gogoproto.nullable) = false ];
     AssetType assetType = 4;
     bool transferable = 5;
     bytes sender = 6 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
@@ -44,7 +44,7 @@ message MsgEditONFT {
 
     string id = 1;
     string denom = 2;
-    Metadata metadata = 3;
+    Metadata metadata = 3 [ (gogoproto.nullable) = false ];
     string assetType = 4;
     string transferable = 5;
     bytes sender = 6 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
