@@ -64,7 +64,7 @@ message QueryONFTResponse {
 
 message QueryOwnerONFTsRequest {
     string denom = 1;
-    bytes owner = 2 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+    string owner = 2 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
 }
 
 message QueryOwnerONFTsResponse {
