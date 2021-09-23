@@ -10,7 +10,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
 	"github.com/OmniFlix/onft/types"
@@ -49,15 +48,7 @@ $ %s query onft supply [denom]`, version.AppName)),
 				return err
 			}
 
-			var owner sdk.AccAddress
-
 			ownerStr := strings.TrimSpace(viper.GetString(FlagOwner))
-			if len(ownerStr) > 0 {
-				owner, err = sdk.AccAddressFromBech32(ownerStr)
-				if err != nil {
-					return err
-				}
-			}
 
 			denom := strings.TrimSpace(args[0])
 			if err := types.ValidateDenomID(denom); err != nil {
@@ -67,7 +58,7 @@ $ %s query onft supply [denom]`, version.AppName)),
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Supply(context.Background(), &types.QuerySupplyRequest{
 				Denom: denom,
-				Owner: owner,
+				Owner: ownerStr,
 			})
 			if err != nil {
 				return err

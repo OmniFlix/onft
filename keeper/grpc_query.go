@@ -18,16 +18,16 @@ func (k Keeper) Supply(c context.Context, request *types.QuerySupplyRequest) (*t
 
 	var supply uint64
 	switch {
-	case request.Owner.Empty() && len(denom) > 0:
+	case len(request.Owner) == 0 && len(denom) > 0:
 		supply = k.GetTotalSupply(ctx, denom)
 	default:
-		supply = k.GetTotalSupplyOfOwner(ctx, denom, request.Owner)
+		onfts := k.GetOwnerONFTs(ctx, denom, request.Owner)
+		supply = uint64(len(onfts))
 	}
 	return &types.QuerySupplyResponse{
 		Amount: supply,
 	}, nil
 }
-
 
 func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequest) (*types.QueryCollectionResponse, error) {
 	denom := strings.ToLower(strings.TrimSpace(request.Denom))
