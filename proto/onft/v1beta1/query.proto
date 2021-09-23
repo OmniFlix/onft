@@ -72,7 +72,7 @@ message QueryOwnerONFTsResponse {
 }
 message QuerySupplyRequest {
     string denom = 1;
-    bytes owner = 2 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+    string owner = 2;
 }
 
 message QuerySupplyResponse {
