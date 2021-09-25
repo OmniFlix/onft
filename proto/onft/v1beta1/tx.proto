@@ -7,54 +7,74 @@ import "onft/v1beta1/onft.proto";
 option go_package = "github.com/OmniFlix/onft/types";
 option (gogoproto.goproto_getters_all) = false;
 
-message MsgCreateDenom {
-    option (gogoproto.equal) = true;
+service Msg {
+  rpc CreateDenom(MsgCreateDenom) returns (MsgCreateDenomResponse);
 
-    string id = 1;
-    string symbol = 2;
-    string name = 3;
-    string schema = 4;
-    bytes sender = 5 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  rpc MintONFT(MsgMintONFT) returns (MsgMintONFTResponse);
+
+  rpc EditONFT(MsgEditONFT) returns (MsgEditONFTResponse);
+
+  rpc TransferONFT(MsgTransferONFT) returns (MsgTransferONFTResponse);
+
+  rpc BurnONFT(MsgBurnONFT) returns (MsgBurnONFTResponse);
 }
+
+message MsgCreateDenom {
+  option (gogoproto.equal) = true;
+
+  string id                = 1;
+  string symbol            = 2;
+  string name              = 3;
+  string schema            = 4;
+  string sender            = 5 [(gogoproto.moretags) = "yaml:\"sender\""];
+}
+
+message MsgCreateDenomResponse {}
 
 message MsgMintONFT {
-    option (gogoproto.equal) = true;
+  option (gogoproto.equal) = true;
 
-    string id = 1;
-    string denom = 2;
-    Metadata metadata = 3 [ (gogoproto.nullable) = false ];
-    AssetType assetType = 4;
-    bool transferable = 5;
-    bytes sender = 6 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
-    bytes recipient = 7 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string    id             = 1;
+  string    denom          = 2;
+  Metadata  metadata       = 3 [(gogoproto.nullable) = false];
+  AssetType assetType      = 4;
+  bool      transferable   = 5;
+  string    sender         = 6 [(gogoproto.moretags) = "yaml:\"sender\""];
+  string    recipient      = 7 [(gogoproto.moretags) = "yaml:\"recipient\""];
 }
+
+message MsgMintONFTResponse {}
 
 message MsgTransferONFT {
-    option (gogoproto.equal) = true;
+  option (gogoproto.equal) = true;
 
-    string id = 1;
-    string denom = 2;
-    bytes sender = 3 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
-    bytes recipient = 4 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string id                = 1;
+  string denom             = 2;
+  string sender            = 3 [(gogoproto.moretags) = "yaml:\"sender\""];
+  string recipient         = 4 [(gogoproto.moretags) = "yaml:\"recipient\""];
 }
 
+message MsgTransferONFTResponse {}
 
 message MsgEditONFT {
-    option (gogoproto.equal) = true;
+  option (gogoproto.equal) = true;
 
-    string id = 1;
-    string denom = 2;
-    Metadata metadata = 3 [ (gogoproto.nullable) = false ];
-    string assetType = 4;
-    string transferable = 5;
-    bytes sender = 6 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string   id              = 1;
+  string   denom           = 2;
+  Metadata metadata        = 3 [(gogoproto.nullable) = false];
+  string   assetType       = 4;
+  string   transferable    = 5;
+  string   sender          = 6 [(gogoproto.moretags) = "yaml:\"sender\""];
 }
 
+message MsgEditONFTResponse {}
 
 message MsgBurnONFT {
-    option (gogoproto.equal) = true;
+  option (gogoproto.equal) = true;
 
-    string id = 1;
-    string denom = 2;
-    bytes sender = 3 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string id                = 1;
+  string denom             = 2;
+  string sender            = 3 [(gogoproto.moretags) = "yaml:\"recipient\""];
 }
+
+message MsgBurnONFTResponse {}

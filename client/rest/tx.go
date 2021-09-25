@@ -54,7 +54,7 @@ func createDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgCreateDenom(req.ID, req.Name, req.Schema, req.Sender)
+		msg := types.NewMsgCreateDenom(req.Symbol, req.Name, req.Schema, req.Sender.String())
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -111,11 +111,11 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 
 		msg := types.NewMsgMintONFT(
 			req.Denom,
+			req.Sender.String(),
+			req.Recipient.String(),
 			metadata,
 			onftType,
 			transferable,
-			req.Sender,
-			req.Recipient,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -159,8 +159,8 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 		transferable := strings.ToLower(req.Transferable)
-		if !(len(transferable) > 0 && (transferable == "no" || transferable == "yes" ||
-			transferable == types.DoNotModify)) {
+		if len(transferable) > 0 && !(transferable == "no" || transferable == "yes" ||
+			transferable == types.DoNotModify) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for transferable flag , valid options are yes,no")
 			return
 		}
@@ -170,7 +170,7 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata,
 			onftType,
 			transferable,
-			req.Sender,
+			req.Sender.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -201,8 +201,8 @@ func transferONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		msg := types.NewMsgTransferONFT(
 			vars[RestParamONFTID],
 			vars[RestParamDenom],
-			req.Sender,
-			recipient,
+			req.Sender.String(),
+			recipient.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -228,9 +228,9 @@ func burnONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 
 		// create the message
 		msg := types.NewMsgBurnONFT(
-			req.sender,
-			vars[RestParamONFTID],
 			vars[RestParamDenom],
+			vars[RestParamONFTID],
+			req.sender.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
