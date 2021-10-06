@@ -121,7 +121,7 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 			}
 			onftName = strings.TrimSpace(onftName)
 
-			onftDescription, err := cmd.Flags().GetString(FlagONFTName)
+			onftDescription, err := cmd.Flags().GetString(FlagONFTDescription)
 			if err != nil {
 				return err
 			}
@@ -233,7 +233,7 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 			}
 			onftName = strings.TrimSpace(onftName)
 
-			onftDescription, err := cmd.Flags().GetString(FlagONFTName)
+			onftDescription, err := cmd.Flags().GetString(FlagONFTDescription)
 			if err != nil {
 				return err
 			}
