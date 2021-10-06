@@ -100,7 +100,7 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types
 		if err != nil {
 			return err
 		}
-		if denom.Creator != onft.Owner {
+		if denom.Creator.String() != onft.Owner.String() {
 			return sdkerrors.Wrapf(types.ErrNotEditable, "onft %s: transferability can be modified only when creator and owner of onft are equal.", onftID)
 		}
 		switch transferable := strings.ToLower(transferable); transferable {
@@ -130,7 +130,7 @@ func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOw
 		return sdkerrors.Wrap(types.ErrNotTransferable, onft.GetID())
 	}
 
-	onft.Owner = dstOwner.String()
+	onft.Owner = dstOwner
 
 	k.setONFT(ctx, denomID, onft)
 	return nil

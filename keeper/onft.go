@@ -42,7 +42,7 @@ func (k Keeper) GetOwnerONFTs(ctx sdk.Context, denom string, owner string) (onft
 	for ; iterator.Valid(); iterator.Next() {
 		var oNFT types.ONFT
 		k.cdc.MustUnmarshal(iterator.Value(), &oNFT)
-		if oNFT.Owner == owner {
+		if oNFT.Owner.String() == owner {
 			onftList = append(onftList, &oNFT)
 		}
 	}
