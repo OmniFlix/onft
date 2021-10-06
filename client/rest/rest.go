@@ -59,5 +59,5 @@ type transferONFTReq struct {
 
 type burnONFTReq struct {
 	BaseReq rest.BaseReq   `json:"base_req"`
-	sender  sdk.AccAddress `json:"sender"`
+	Sender  sdk.AccAddress `json:"sender"`
 }

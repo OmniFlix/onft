@@ -230,7 +230,7 @@ func burnONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		msg := types.NewMsgBurnONFT(
 			vars[RestParamDenom],
 			vars[RestParamONFTID],
-			req.sender.String(),
+			req.Sender.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
