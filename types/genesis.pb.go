@@ -25,7 +25,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the nft module's genesis state.
 type GenesisState struct {
-	// this line is used by starport scaffolding # genesis/proto/state
 	Collections []Collection `protobuf:"bytes,1,rep,name=collections,proto3" json:"collections"`
 }
 

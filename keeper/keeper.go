@@ -36,7 +36,7 @@ func (k Keeper) CreateDenom(ctx sdk.Context,
 }
 
 func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata types.Metadata, assetType types.AssetType,
-	transferable bool, sender, owner sdk.AccAddress) error {
+	transferable bool, sender, recipient sdk.AccAddress) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
@@ -53,7 +53,7 @@ func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata types
 		metadata,
 		assetType,
 		transferable,
-		owner,
+		recipient,
 		ctx.BlockHeader().Time,
 	))
 	k.increaseSupply(ctx, denomID)

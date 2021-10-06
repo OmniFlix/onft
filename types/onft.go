@@ -44,7 +44,8 @@ func (onft ONFT) GetPreviewURI() string {
 }
 
 func (onft ONFT) GetOwner() sdk.AccAddress {
-	return onft.Owner
+	owner, _ := sdk.AccAddressFromBech32(onft.Owner.String())
+	return owner
 }
 
 func (onft ONFT) GetMetadata() string {
@@ -69,7 +70,7 @@ func NewONFTs(onfts ...exported.ONFT) ONFTs {
 	if len(onfts) == 0 {
 		return ONFTs{}
 	}
-	return ONFTs(onfts)
+	return onfts
 }
 
 func ValidateONFTID(onftID string) error {

@@ -1,27 +1,41 @@
 package types
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/google/uuid"
 	"strings"
 	"unicode/utf8"
 )
 
-func NewMsgCreateDenom(symbol, name, schema string, sender sdk.AccAddress) *MsgCreateDenom {
+const (
+	TypeMsgCreateDenom  = "create_denom"
+	TypeMsgMintONFT     = "mint_onft"
+	TypeMsgEditONFT     = "edit_onft"
+	TypeMsgTransferONFT = "transfer_onft"
+	TypeMsgBurnONFT     = "burn_onft"
+)
+
+var (
+	_ sdk.Msg = &MsgCreateDenom{}
+	_ sdk.Msg = &MsgMintONFT{}
+	_ sdk.Msg = &MsgEditONFT{}
+	_ sdk.Msg = &MsgTransferONFT{}
+	_ sdk.Msg = &MsgBurnONFT{}
+)
+
+func NewMsgCreateDenom(symbol, name, schema, sender string) *MsgCreateDenom {
 	return &MsgCreateDenom{
 		Sender: sender,
-		Id:     fmt.Sprintf("onftdenom%s", strings.ReplaceAll(uuid.New().String(), "-", "")),
-		Symbol: strings.ToLower(strings.TrimSpace(symbol)),
-		Name:   strings.TrimSpace(name),
-		Schema: strings.TrimSpace(schema),
+		Id:     GenUniqueID("onftdenom"),
+		Symbol: symbol,
+		Name:   name,
+		Schema: schema,
 	}
 }
 
 func (msg MsgCreateDenom) Route() string { return RouterKey }
 
-func (msg MsgCreateDenom) Type() string { return "create_denom" }
+func (msg MsgCreateDenom) Type() string { return TypeMsgCreateDenom }
 
 func (msg MsgCreateDenom) ValidateBasic() error {
 	if err := ValidateDenomID(msg.Id); err != nil {
@@ -35,8 +49,8 @@ func (msg MsgCreateDenom) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalidDenom, "denom name is invalid")
 	}
 
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
 	}
 	return nil
 }
@@ -48,14 +62,18 @@ func (msg MsgCreateDenom) GetSignBytes() []byte {
 }
 
 func (msg MsgCreateDenom) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
 }
 
-func NewMsgMintONFT(denom string, metadata Metadata, assetType AssetType, transferable bool, sender, recipient sdk.AccAddress) *MsgMintONFT {
+func NewMsgMintONFT(denom, sender, recipient string, metadata Metadata, assetType AssetType, transferable bool) *MsgMintONFT {
 
 	return &MsgMintONFT{
-		Id:           fmt.Sprintf("onft%s", strings.ReplaceAll(uuid.New().String(), "-", "")),
-		Denom:        strings.TrimSpace(denom),
+		Id:           GenUniqueID("onft"),
+		Denom:        denom,
 		Metadata:     metadata,
 		AssetType:    assetType,
 		Transferable: transferable,
@@ -66,15 +84,18 @@ func NewMsgMintONFT(denom string, metadata Metadata, assetType AssetType, transf
 
 func (msg MsgMintONFT) Route() string { return RouterKey }
 
-func (msg MsgMintONFT) Type() string { return "mint_onft" }
+func (msg MsgMintONFT) Type() string { return TypeMsgMintONFT }
 
 func (msg MsgMintONFT) ValidateBasic() error {
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
-	if msg.Recipient.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing receipt address")
+
+	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address; %s", err)
 	}
+
 	if err := ValidateDenomID(msg.Denom); err != nil {
 		return err
 	}
@@ -82,6 +103,7 @@ func (msg MsgMintONFT) ValidateBasic() error {
 	if err := ValidateMediaURI(msg.Metadata.Media); err != nil {
 		return err
 	}
+
 	return ValidateONFTID(msg.Id)
 }
 
@@ -91,10 +113,14 @@ func (msg MsgMintONFT) GetSignBytes() []byte {
 }
 
 func (msg MsgMintONFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
 }
 
-func NewMsgTransferONFT(id, denom string, sender, recipient sdk.AccAddress) *MsgTransferONFT {
+func NewMsgTransferONFT(id, denom, sender, recipient string) *MsgTransferONFT {
 
 	return &MsgTransferONFT{
 		Id:        strings.ToLower(strings.TrimSpace(id)),
@@ -106,19 +132,19 @@ func NewMsgTransferONFT(id, denom string, sender, recipient sdk.AccAddress) *Msg
 
 func (msg MsgTransferONFT) Route() string { return RouterKey }
 
-func (msg MsgTransferONFT) Type() string { return "transfer_onft" }
+func (msg MsgTransferONFT) Type() string { return TypeMsgTransferONFT }
 
 func (msg MsgTransferONFT) ValidateBasic() error {
 	if err := ValidateDenomID(msg.Denom); err != nil {
 		return err
 	}
 
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
 
-	if msg.Recipient.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing recipient address")
+	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address; %s", err)
 	}
 	return ValidateONFTID(msg.Id)
 }
@@ -129,13 +155,17 @@ func (msg MsgTransferONFT) GetSignBytes() []byte {
 }
 
 func (msg MsgTransferONFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
 }
 
-func NewMsgEditONFT(id, denom string, metadata Metadata, assetType string, transferable string, sender sdk.AccAddress) *MsgEditONFT {
+func NewMsgEditONFT(id, denom string, metadata Metadata, assetType, transferable, sender string) *MsgEditONFT {
 	return &MsgEditONFT{
-		Id:           strings.ToLower(strings.TrimSpace(id)),
-		Denom:        strings.TrimSpace(denom),
+		Id:           id,
+		Denom:        denom,
 		Metadata:     metadata,
 		AssetType:    assetType,
 		Transferable: transferable,
@@ -145,11 +175,11 @@ func NewMsgEditONFT(id, denom string, metadata Metadata, assetType string, trans
 
 func (msg MsgEditONFT) Route() string { return RouterKey }
 
-func (msg MsgEditONFT) Type() string { return "edit_onft" }
+func (msg MsgEditONFT) Type() string { return TypeMsgEditONFT }
 
 func (msg MsgEditONFT) ValidateBasic() error {
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
 
 	if err := ValidateDenomID(msg.Denom); err != nil {
@@ -168,24 +198,28 @@ func (msg MsgEditONFT) GetSignBytes() []byte {
 }
 
 func (msg MsgEditONFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
 }
 
-func NewMsgBurnONFT(sender sdk.AccAddress, id string, denom string) *MsgBurnONFT {
+func NewMsgBurnONFT(denom, id, sender string) *MsgBurnONFT {
 	return &MsgBurnONFT{
+		Denom:  denom,
+		Id:     id,
 		Sender: sender,
-		Id:     strings.ToLower(strings.TrimSpace(id)),
-		Denom:  strings.TrimSpace(denom),
 	}
 }
 
 func (msg MsgBurnONFT) Route() string { return RouterKey }
 
-func (msg MsgBurnONFT) Type() string { return "burn_onft" }
+func (msg MsgBurnONFT) Type() string { return TypeMsgBurnONFT }
 
 func (msg MsgBurnONFT) ValidateBasic() error {
-	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
 
 	if err := ValidateDenomID(msg.Denom); err != nil {
@@ -200,5 +234,9 @@ func (msg MsgBurnONFT) GetSignBytes() []byte {
 }
 
 func (msg MsgBurnONFT) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Sender}
+	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
 }
