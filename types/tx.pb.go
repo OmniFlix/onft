@@ -4,11 +4,14 @@
 package types
 
 import (
-	bytes "bytes"
+	context "context"
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
+	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -26,11 +29,11 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgCreateDenom struct {
-	Id     string                                        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Symbol string                                        `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Name   string                                        `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Schema string                                        `protobuf:"bytes,4,opt,name=schema,proto3" json:"schema,omitempty"`
-	Sender github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,5,opt,name=sender,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"sender,omitempty"`
+	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Symbol string `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Name   string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Schema string `protobuf:"bytes,4,opt,name=schema,proto3" json:"schema,omitempty"`
+	Sender string `protobuf:"bytes,5,opt,name=sender,proto3" json:"sender,omitempty" yaml:"sender"`
 }
 
 func (m *MsgCreateDenom) Reset()         { *m = MsgCreateDenom{} }
@@ -66,21 +69,57 @@ func (m *MsgCreateDenom) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateDenom proto.InternalMessageInfo
 
+type MsgCreateDenomResponse struct {
+}
+
+func (m *MsgCreateDenomResponse) Reset()         { *m = MsgCreateDenomResponse{} }
+func (m *MsgCreateDenomResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateDenomResponse) ProtoMessage()    {}
+func (*MsgCreateDenomResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1b5149965e8edc7, []int{1}
+}
+func (m *MsgCreateDenomResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCreateDenomResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCreateDenomResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCreateDenomResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateDenomResponse.Merge(m, src)
+}
+func (m *MsgCreateDenomResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCreateDenomResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateDenomResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCreateDenomResponse proto.InternalMessageInfo
+
 type MsgMintONFT struct {
-	Id           string                                        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Denom        string                                        `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Metadata     Metadata                                      `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata"`
-	AssetType    AssetType                                     `protobuf:"varint,4,opt,name=assetType,proto3,enum=OmniFlix.onft.v1beta1.AssetType" json:"assetType,omitempty"`
-	Transferable bool                                          `protobuf:"varint,5,opt,name=transferable,proto3" json:"transferable,omitempty"`
-	Sender       github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,6,opt,name=sender,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"sender,omitempty"`
-	Recipient    github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,7,opt,name=recipient,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"recipient,omitempty"`
+	Id           string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Denom        string    `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Metadata     Metadata  `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata"`
+	AssetType    AssetType `protobuf:"varint,4,opt,name=assetType,proto3,enum=OmniFlix.onft.v1beta1.AssetType" json:"assetType,omitempty"`
+	Transferable bool      `protobuf:"varint,5,opt,name=transferable,proto3" json:"transferable,omitempty"`
+	Sender       string    `protobuf:"bytes,6,opt,name=sender,proto3" json:"sender,omitempty" yaml:"sender"`
+	Recipient    string    `protobuf:"bytes,7,opt,name=recipient,proto3" json:"recipient,omitempty" yaml:"recipient"`
 }
 
 func (m *MsgMintONFT) Reset()         { *m = MsgMintONFT{} }
 func (m *MsgMintONFT) String() string { return proto.CompactTextString(m) }
 func (*MsgMintONFT) ProtoMessage()    {}
 func (*MsgMintONFT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1b5149965e8edc7, []int{1}
+	return fileDescriptor_d1b5149965e8edc7, []int{2}
 }
 func (m *MsgMintONFT) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -109,18 +148,54 @@ func (m *MsgMintONFT) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgMintONFT proto.InternalMessageInfo
 
+type MsgMintONFTResponse struct {
+}
+
+func (m *MsgMintONFTResponse) Reset()         { *m = MsgMintONFTResponse{} }
+func (m *MsgMintONFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgMintONFTResponse) ProtoMessage()    {}
+func (*MsgMintONFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1b5149965e8edc7, []int{3}
+}
+func (m *MsgMintONFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgMintONFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgMintONFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgMintONFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgMintONFTResponse.Merge(m, src)
+}
+func (m *MsgMintONFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgMintONFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgMintONFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgMintONFTResponse proto.InternalMessageInfo
+
 type MsgTransferONFT struct {
-	Id        string                                        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Denom     string                                        `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Sender    github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=sender,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"sender,omitempty"`
-	Recipient github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,4,opt,name=recipient,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"recipient,omitempty"`
+	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Denom     string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Sender    string `protobuf:"bytes,3,opt,name=sender,proto3" json:"sender,omitempty" yaml:"sender"`
+	Recipient string `protobuf:"bytes,4,opt,name=recipient,proto3" json:"recipient,omitempty" yaml:"recipient"`
 }
 
 func (m *MsgTransferONFT) Reset()         { *m = MsgTransferONFT{} }
 func (m *MsgTransferONFT) String() string { return proto.CompactTextString(m) }
 func (*MsgTransferONFT) ProtoMessage()    {}
 func (*MsgTransferONFT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1b5149965e8edc7, []int{2}
+	return fileDescriptor_d1b5149965e8edc7, []int{4}
 }
 func (m *MsgTransferONFT) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -149,20 +224,56 @@ func (m *MsgTransferONFT) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgTransferONFT proto.InternalMessageInfo
 
+type MsgTransferONFTResponse struct {
+}
+
+func (m *MsgTransferONFTResponse) Reset()         { *m = MsgTransferONFTResponse{} }
+func (m *MsgTransferONFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgTransferONFTResponse) ProtoMessage()    {}
+func (*MsgTransferONFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1b5149965e8edc7, []int{5}
+}
+func (m *MsgTransferONFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgTransferONFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgTransferONFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgTransferONFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgTransferONFTResponse.Merge(m, src)
+}
+func (m *MsgTransferONFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgTransferONFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgTransferONFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgTransferONFTResponse proto.InternalMessageInfo
+
 type MsgEditONFT struct {
-	Id           string                                        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Denom        string                                        `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Metadata     Metadata                                      `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata"`
-	AssetType    string                                        `protobuf:"bytes,4,opt,name=assetType,proto3" json:"assetType,omitempty"`
-	Transferable string                                        `protobuf:"bytes,5,opt,name=transferable,proto3" json:"transferable,omitempty"`
-	Sender       github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,6,opt,name=sender,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"sender,omitempty"`
+	Id           string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Denom        string   `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Metadata     Metadata `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata"`
+	AssetType    string   `protobuf:"bytes,4,opt,name=assetType,proto3" json:"assetType,omitempty"`
+	Transferable string   `protobuf:"bytes,5,opt,name=transferable,proto3" json:"transferable,omitempty"`
+	Sender       string   `protobuf:"bytes,6,opt,name=sender,proto3" json:"sender,omitempty" yaml:"sender"`
 }
 
 func (m *MsgEditONFT) Reset()         { *m = MsgEditONFT{} }
 func (m *MsgEditONFT) String() string { return proto.CompactTextString(m) }
 func (*MsgEditONFT) ProtoMessage()    {}
 func (*MsgEditONFT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1b5149965e8edc7, []int{3}
+	return fileDescriptor_d1b5149965e8edc7, []int{6}
 }
 func (m *MsgEditONFT) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -191,17 +302,53 @@ func (m *MsgEditONFT) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgEditONFT proto.InternalMessageInfo
 
+type MsgEditONFTResponse struct {
+}
+
+func (m *MsgEditONFTResponse) Reset()         { *m = MsgEditONFTResponse{} }
+func (m *MsgEditONFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgEditONFTResponse) ProtoMessage()    {}
+func (*MsgEditONFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1b5149965e8edc7, []int{7}
+}
+func (m *MsgEditONFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgEditONFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgEditONFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgEditONFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgEditONFTResponse.Merge(m, src)
+}
+func (m *MsgEditONFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgEditONFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgEditONFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgEditONFTResponse proto.InternalMessageInfo
+
 type MsgBurnONFT struct {
-	Id     string                                        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Denom  string                                        `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Sender github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=sender,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"sender,omitempty"`
+	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Denom  string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Sender string `protobuf:"bytes,3,opt,name=sender,proto3" json:"sender,omitempty" yaml:"recipient"`
 }
 
 func (m *MsgBurnONFT) Reset()         { *m = MsgBurnONFT{} }
 func (m *MsgBurnONFT) String() string { return proto.CompactTextString(m) }
 func (*MsgBurnONFT) ProtoMessage()    {}
 func (*MsgBurnONFT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1b5149965e8edc7, []int{4}
+	return fileDescriptor_d1b5149965e8edc7, []int{8}
 }
 func (m *MsgBurnONFT) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -230,48 +377,96 @@ func (m *MsgBurnONFT) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgBurnONFT proto.InternalMessageInfo
 
+type MsgBurnONFTResponse struct {
+}
+
+func (m *MsgBurnONFTResponse) Reset()         { *m = MsgBurnONFTResponse{} }
+func (m *MsgBurnONFTResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgBurnONFTResponse) ProtoMessage()    {}
+func (*MsgBurnONFTResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1b5149965e8edc7, []int{9}
+}
+func (m *MsgBurnONFTResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBurnONFTResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBurnONFTResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBurnONFTResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBurnONFTResponse.Merge(m, src)
+}
+func (m *MsgBurnONFTResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBurnONFTResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBurnONFTResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBurnONFTResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgCreateDenom)(nil), "OmniFlix.onft.v1beta1.MsgCreateDenom")
+	proto.RegisterType((*MsgCreateDenomResponse)(nil), "OmniFlix.onft.v1beta1.MsgCreateDenomResponse")
 	proto.RegisterType((*MsgMintONFT)(nil), "OmniFlix.onft.v1beta1.MsgMintONFT")
+	proto.RegisterType((*MsgMintONFTResponse)(nil), "OmniFlix.onft.v1beta1.MsgMintONFTResponse")
 	proto.RegisterType((*MsgTransferONFT)(nil), "OmniFlix.onft.v1beta1.MsgTransferONFT")
+	proto.RegisterType((*MsgTransferONFTResponse)(nil), "OmniFlix.onft.v1beta1.MsgTransferONFTResponse")
 	proto.RegisterType((*MsgEditONFT)(nil), "OmniFlix.onft.v1beta1.MsgEditONFT")
+	proto.RegisterType((*MsgEditONFTResponse)(nil), "OmniFlix.onft.v1beta1.MsgEditONFTResponse")
 	proto.RegisterType((*MsgBurnONFT)(nil), "OmniFlix.onft.v1beta1.MsgBurnONFT")
+	proto.RegisterType((*MsgBurnONFTResponse)(nil), "OmniFlix.onft.v1beta1.MsgBurnONFTResponse")
 }
 
 func init() { proto.RegisterFile("onft/v1beta1/tx.proto", fileDescriptor_d1b5149965e8edc7) }
 
 var fileDescriptor_d1b5149965e8edc7 = []byte{
-	// 475 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x54, 0x4f, 0x6f, 0xd3, 0x30,
-	0x14, 0x8f, 0xbb, 0xac, 0x2c, 0xde, 0x54, 0x24, 0x6b, 0x83, 0x68, 0x42, 0x69, 0xd5, 0xd3, 0x2e,
-	0x4b, 0xd4, 0x71, 0x43, 0x08, 0xa9, 0x05, 0x26, 0x71, 0x08, 0x95, 0xa2, 0x9e, 0xb8, 0x39, 0xf1,
-	0x5b, 0x66, 0xd1, 0xd8, 0x51, 0xec, 0xa1, 0xf5, 0xce, 0x85, 0x1b, 0x1f, 0x81, 0x2f, 0xc1, 0x77,
-	0xe8, 0x71, 0x47, 0xb8, 0x4c, 0xd0, 0x5e, 0xf8, 0x0c, 0x88, 0x03, 0xaa, 0xe3, 0xd1, 0x8d, 0x3f,
-	0x42, 0x40, 0x81, 0x93, 0xfd, 0xde, 0xfb, 0xbd, 0x9f, 0xde, 0xfb, 0xf9, 0x27, 0xe3, 0x1d, 0x29,
-	0x8e, 0x74, 0xf4, 0xac, 0x97, 0x82, 0xa6, 0xbd, 0x48, 0x9f, 0x86, 0x65, 0x25, 0xb5, 0x24, 0x3b,
-	0xc3, 0x42, 0xf0, 0xc3, 0x31, 0x3f, 0x0d, 0x17, 0xf5, 0xd0, 0xd6, 0x77, 0xb7, 0x73, 0x99, 0x4b,
-	0x83, 0x88, 0x16, 0xb7, 0x1a, 0xbc, 0x7b, 0xf3, 0x0a, 0x87, 0x69, 0x30, 0x85, 0xee, 0x6b, 0x84,
-	0x5b, 0xb1, 0xca, 0xef, 0x57, 0x40, 0x35, 0x3c, 0x00, 0x21, 0x0b, 0xd2, 0xc2, 0x0d, 0xce, 0x7c,
-	0xd4, 0x41, 0x7b, 0x5e, 0xd2, 0xe0, 0x8c, 0xdc, 0xc0, 0x4d, 0x35, 0x29, 0x52, 0x39, 0xf6, 0x1b,
-	0x26, 0x67, 0x23, 0x42, 0xb0, 0x2b, 0x68, 0x01, 0xfe, 0x9a, 0xc9, 0x9a, 0xbb, 0xc1, 0x66, 0xc7,
-	0x50, 0x50, 0xdf, 0xb5, 0x58, 0x13, 0x91, 0x47, 0xb8, 0xa9, 0x40, 0x30, 0xa8, 0xfc, 0xf5, 0x0e,
-	0xda, 0xdb, 0x1a, 0xf4, 0x3e, 0x9e, 0xb7, 0xf7, 0x73, 0xae, 0x8f, 0x4f, 0xd2, 0x30, 0x93, 0x45,
-	0x94, 0x49, 0x55, 0x48, 0x65, 0x8f, 0x7d, 0xc5, 0x9e, 0x46, 0x7a, 0x52, 0x82, 0x0a, 0xfb, 0x59,
-	0xd6, 0x67, 0xac, 0x02, 0xa5, 0x12, 0x4b, 0x70, 0xc7, 0xfd, 0xf0, 0xaa, 0x8d, 0xba, 0x9f, 0x1a,
-	0x78, 0x33, 0x56, 0x79, 0xcc, 0x85, 0x1e, 0x3e, 0x3e, 0x1c, 0x7d, 0x33, 0xf4, 0x36, 0x5e, 0x67,
-	0x8b, 0x6d, 0xec, 0xcc, 0x75, 0x40, 0xfa, 0x78, 0xa3, 0x00, 0x4d, 0x19, 0xd5, 0xd4, 0x8c, 0xbd,
-	0x79, 0xd0, 0x0e, 0xbf, 0x2b, 0x63, 0x18, 0x5b, 0xd8, 0xc0, 0x9d, 0x9e, 0xb7, 0x9d, 0xe4, 0x4b,
-	0x1b, 0xb9, 0x87, 0x3d, 0xaa, 0x14, 0xe8, 0xd1, 0xa4, 0x04, 0xb3, 0x64, 0xeb, 0xa0, 0xf3, 0x03,
-	0x8e, 0xfe, 0x05, 0x2e, 0x59, 0xb6, 0x90, 0x2e, 0xde, 0xd2, 0x15, 0x15, 0xea, 0x08, 0x2a, 0x9a,
-	0x8e, 0xc1, 0xe8, 0xb1, 0x91, 0x5c, 0xc9, 0x5d, 0x52, 0xab, 0xf9, 0x87, 0x6a, 0x91, 0x21, 0xf6,
-	0x2a, 0xc8, 0x78, 0xc9, 0x41, 0x68, 0xff, 0xda, 0xef, 0xb2, 0x2d, 0x39, 0xac, 0xfc, 0x6f, 0x11,
-	0xbe, 0x1e, 0xab, 0x7c, 0x64, 0xa7, 0xfe, 0x85, 0x27, 0x58, 0xee, 0xb6, 0xb6, 0xd2, 0xdd, 0xdc,
-	0x95, 0xed, 0xf6, 0xa2, 0xb6, 0xd6, 0x43, 0xc6, 0xff, 0xb1, 0xb5, 0x6e, 0x7d, 0x6d, 0x2d, 0xef,
-	0x67, 0xc6, 0xf1, 0xfe, 0x9a, 0x71, 0xac, 0x16, 0xcf, 0x91, 0xd1, 0x62, 0x70, 0x52, 0x89, 0xff,
-	0xf2, 0xc6, 0xf5, 0x18, 0x83, 0xbb, 0xd3, 0xf7, 0x81, 0x33, 0x9d, 0x05, 0xe8, 0x6c, 0x16, 0xa0,
-	0x77, 0xb3, 0x00, 0xbd, 0x9c, 0x07, 0xce, 0xd9, 0x3c, 0x70, 0xde, 0xcc, 0x03, 0xe7, 0x49, 0x70,
-	0x89, 0xfa, 0x42, 0x72, 0xf3, 0xc7, 0xd5, 0xb4, 0x69, 0xd3, 0x7c, 0x75, 0xb7, 0x3f, 0x07, 0x00,
-	0x00, 0xff, 0xff, 0x98, 0x77, 0x76, 0xb2, 0x49, 0x05, 0x00, 0x00,
+	// 585 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0x8e, 0x93, 0x34, 0x24, 0x93, 0x12, 0x60, 0x49, 0x5a, 0x13, 0x21, 0xa7, 0xb2, 0x04, 0x02,
+	0x04, 0x8e, 0x1a, 0x6e, 0x15, 0x42, 0x6a, 0x80, 0xde, 0x4c, 0x25, 0x2b, 0xa7, 0xde, 0x36, 0xf1,
+	0xc6, 0xb5, 0x14, 0xaf, 0x2d, 0xef, 0x16, 0x35, 0x6f, 0xc1, 0x85, 0x1b, 0x07, 0xde, 0x84, 0x6b,
+	0x8e, 0x3d, 0x72, 0x8a, 0x20, 0x91, 0x10, 0x5c, 0xfb, 0x04, 0x28, 0x1b, 0xdb, 0xb1, 0x4d, 0x7e,
+	0x1a, 0x0e, 0xdc, 0xbc, 0x33, 0xdf, 0xcc, 0x7c, 0xf3, 0xcd, 0xac, 0x17, 0x6a, 0x2e, 0xed, 0xf3,
+	0xe6, 0x87, 0xc3, 0x2e, 0xe1, 0xf8, 0xb0, 0xc9, 0x2f, 0x35, 0xcf, 0x77, 0xb9, 0x8b, 0x6a, 0xa7,
+	0x0e, 0xb5, 0x4f, 0x06, 0xf6, 0xa5, 0x36, 0xf3, 0x6b, 0x81, 0xbf, 0x5e, 0xb5, 0x5c, 0xcb, 0x15,
+	0x88, 0xe6, 0xec, 0x6b, 0x0e, 0xae, 0xef, 0x27, 0x72, 0x88, 0x00, 0xe1, 0x50, 0x3f, 0x49, 0x50,
+	0xd1, 0x99, 0xf5, 0xc6, 0x27, 0x98, 0x93, 0xb7, 0x84, 0xba, 0x0e, 0xaa, 0x40, 0xd6, 0x36, 0x65,
+	0xe9, 0x40, 0x7a, 0x52, 0x32, 0xb2, 0xb6, 0x89, 0xf6, 0xa0, 0xc0, 0x86, 0x4e, 0xd7, 0x1d, 0xc8,
+	0x59, 0x61, 0x0b, 0x4e, 0x08, 0x41, 0x9e, 0x62, 0x87, 0xc8, 0x39, 0x61, 0x15, 0xdf, 0x02, 0xdb,
+	0x3b, 0x27, 0x0e, 0x96, 0xf3, 0x01, 0x56, 0x9c, 0xd0, 0x53, 0x28, 0x30, 0x42, 0x4d, 0xe2, 0xcb,
+	0x3b, 0x33, 0x7b, 0xfb, 0xde, 0xf5, 0xb8, 0x71, 0x7b, 0x88, 0x9d, 0xc1, 0x91, 0x3a, 0xb7, 0xab,
+	0x46, 0x00, 0x38, 0xca, 0xff, 0xfa, 0xd2, 0x90, 0x54, 0x19, 0xf6, 0x92, 0xb4, 0x0c, 0xc2, 0x3c,
+	0x97, 0x32, 0xa2, 0x7e, 0xcd, 0x42, 0x59, 0x67, 0x96, 0x6e, 0x53, 0x7e, 0xfa, 0xfe, 0xa4, 0xf3,
+	0x17, 0xdd, 0x2a, 0xec, 0x98, 0xb3, 0x80, 0x80, 0xed, 0xfc, 0x80, 0x8e, 0xa1, 0xe8, 0x10, 0x8e,
+	0x4d, 0xcc, 0xb1, 0x20, 0x5c, 0x6e, 0x35, 0xb4, 0xa5, 0x02, 0x6a, 0x7a, 0x00, 0x6b, 0xe7, 0x47,
+	0xe3, 0x46, 0xc6, 0x88, 0xc2, 0xd0, 0x6b, 0x28, 0x61, 0xc6, 0x08, 0xef, 0x0c, 0x3d, 0x22, 0xda,
+	0xab, 0xb4, 0x0e, 0x56, 0xe4, 0x38, 0x0e, 0x71, 0xc6, 0x22, 0x04, 0xa9, 0xb0, 0xcb, 0x7d, 0x4c,
+	0x59, 0x9f, 0xf8, 0xb8, 0x3b, 0x20, 0x42, 0x89, 0xa2, 0x91, 0xb0, 0xc5, 0x74, 0x2a, 0x6c, 0xd0,
+	0x09, 0xb5, 0xa0, 0xe4, 0x93, 0x9e, 0xed, 0xd9, 0x84, 0x72, 0xf9, 0x96, 0x40, 0x57, 0xaf, 0xc7,
+	0x8d, 0xbb, 0x73, 0x74, 0xe4, 0x52, 0x8d, 0x05, 0x2c, 0xd0, 0xb6, 0x06, 0xf7, 0x63, 0x02, 0x46,
+	0xc2, 0x7e, 0x96, 0xe0, 0x8e, 0xce, 0xac, 0x4e, 0xc0, 0x67, 0x0b, 0x71, 0x17, 0xac, 0x73, 0x5b,
+	0xb1, 0xce, 0x6f, 0xc3, 0xfa, 0x01, 0xec, 0xa7, 0xd8, 0x45, 0xcc, 0x7f, 0x4b, 0x62, 0x25, 0xde,
+	0x99, 0xf6, 0x7f, 0x5e, 0x89, 0x87, 0xe9, 0x95, 0x28, 0x6d, 0x1a, 0x78, 0xe9, 0x9f, 0x07, 0x9e,
+	0x18, 0x5e, 0xd8, 0x6a, 0x24, 0x81, 0x25, 0x14, 0x68, 0x5f, 0xf8, 0x74, 0x0b, 0x05, 0x9e, 0xa7,
+	0xe6, 0xb6, 0x7c, 0x12, 0xcb, 0xea, 0x87, 0x85, 0xc2, 0xfa, 0xad, 0x9f, 0x39, 0xc8, 0xe9, 0xcc,
+	0x42, 0x3d, 0x28, 0xc7, 0xff, 0x25, 0x8f, 0x56, 0x29, 0x9a, 0xb8, 0xdb, 0xf5, 0x17, 0x37, 0x82,
+	0x85, 0xc5, 0xd0, 0x19, 0x14, 0xa3, 0xeb, 0xaf, 0xae, 0x0e, 0x0d, 0x31, 0xf5, 0x67, 0x9b, 0x31,
+	0xf1, 0xdc, 0xd1, 0x1e, 0xad, 0xc9, 0x1d, 0x62, 0xd6, 0xe5, 0x4e, 0x0f, 0x09, 0xf5, 0x61, 0x37,
+	0x71, 0xbb, 0x1e, 0xaf, 0x8e, 0x8d, 0xe3, 0xea, 0xda, 0xcd, 0x70, 0xf1, 0x1e, 0xa2, 0x4d, 0x58,
+	0xd3, 0x43, 0x88, 0x59, 0xd7, 0x43, 0x7a, 0xd0, 0xed, 0x57, 0xa3, 0x1f, 0x4a, 0x66, 0x34, 0x51,
+	0xa4, 0xab, 0x89, 0x22, 0x7d, 0x9f, 0x28, 0xd2, 0xc7, 0xa9, 0x92, 0xb9, 0x9a, 0x2a, 0x99, 0x6f,
+	0x53, 0x25, 0x73, 0xa6, 0x58, 0x36, 0x3f, 0xbf, 0xe8, 0x6a, 0x3d, 0xd7, 0x69, 0x86, 0x39, 0xc5,
+	0x73, 0xd3, 0xe4, 0x43, 0x8f, 0xb0, 0x6e, 0x41, 0xbc, 0x3a, 0x2f, 0xff, 0x04, 0x00, 0x00, 0xff,
+	0xff, 0xed, 0x92, 0xb0, 0x26, 0xd4, 0x06, 0x00, 0x00,
 }
 
 func (this *MsgCreateDenom) Equal(that interface{}) bool {
@@ -305,7 +500,7 @@ func (this *MsgCreateDenom) Equal(that interface{}) bool {
 	if this.Schema != that1.Schema {
 		return false
 	}
-	if !bytes.Equal(this.Sender, that1.Sender) {
+	if this.Sender != that1.Sender {
 		return false
 	}
 	return true
@@ -344,10 +539,10 @@ func (this *MsgMintONFT) Equal(that interface{}) bool {
 	if this.Transferable != that1.Transferable {
 		return false
 	}
-	if !bytes.Equal(this.Sender, that1.Sender) {
+	if this.Sender != that1.Sender {
 		return false
 	}
-	if !bytes.Equal(this.Recipient, that1.Recipient) {
+	if this.Recipient != that1.Recipient {
 		return false
 	}
 	return true
@@ -377,10 +572,10 @@ func (this *MsgTransferONFT) Equal(that interface{}) bool {
 	if this.Denom != that1.Denom {
 		return false
 	}
-	if !bytes.Equal(this.Sender, that1.Sender) {
+	if this.Sender != that1.Sender {
 		return false
 	}
-	if !bytes.Equal(this.Recipient, that1.Recipient) {
+	if this.Recipient != that1.Recipient {
 		return false
 	}
 	return true
@@ -419,7 +614,7 @@ func (this *MsgEditONFT) Equal(that interface{}) bool {
 	if this.Transferable != that1.Transferable {
 		return false
 	}
-	if !bytes.Equal(this.Sender, that1.Sender) {
+	if this.Sender != that1.Sender {
 		return false
 	}
 	return true
@@ -449,11 +644,236 @@ func (this *MsgBurnONFT) Equal(that interface{}) bool {
 	if this.Denom != that1.Denom {
 		return false
 	}
-	if !bytes.Equal(this.Sender, that1.Sender) {
+	if this.Sender != that1.Sender {
 		return false
 	}
 	return true
 }
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// MsgClient is the client API for Msg service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type MsgClient interface {
+	CreateDenom(ctx context.Context, in *MsgCreateDenom, opts ...grpc.CallOption) (*MsgCreateDenomResponse, error)
+	MintONFT(ctx context.Context, in *MsgMintONFT, opts ...grpc.CallOption) (*MsgMintONFTResponse, error)
+	EditONFT(ctx context.Context, in *MsgEditONFT, opts ...grpc.CallOption) (*MsgEditONFTResponse, error)
+	TransferONFT(ctx context.Context, in *MsgTransferONFT, opts ...grpc.CallOption) (*MsgTransferONFTResponse, error)
+	BurnONFT(ctx context.Context, in *MsgBurnONFT, opts ...grpc.CallOption) (*MsgBurnONFTResponse, error)
+}
+
+type msgClient struct {
+	cc grpc1.ClientConn
+}
+
+func NewMsgClient(cc grpc1.ClientConn) MsgClient {
+	return &msgClient{cc}
+}
+
+func (c *msgClient) CreateDenom(ctx context.Context, in *MsgCreateDenom, opts ...grpc.CallOption) (*MsgCreateDenomResponse, error) {
+	out := new(MsgCreateDenomResponse)
+	err := c.cc.Invoke(ctx, "/OmniFlix.onft.v1beta1.Msg/CreateDenom", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) MintONFT(ctx context.Context, in *MsgMintONFT, opts ...grpc.CallOption) (*MsgMintONFTResponse, error) {
+	out := new(MsgMintONFTResponse)
+	err := c.cc.Invoke(ctx, "/OmniFlix.onft.v1beta1.Msg/MintONFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) EditONFT(ctx context.Context, in *MsgEditONFT, opts ...grpc.CallOption) (*MsgEditONFTResponse, error) {
+	out := new(MsgEditONFTResponse)
+	err := c.cc.Invoke(ctx, "/OmniFlix.onft.v1beta1.Msg/EditONFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) TransferONFT(ctx context.Context, in *MsgTransferONFT, opts ...grpc.CallOption) (*MsgTransferONFTResponse, error) {
+	out := new(MsgTransferONFTResponse)
+	err := c.cc.Invoke(ctx, "/OmniFlix.onft.v1beta1.Msg/TransferONFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) BurnONFT(ctx context.Context, in *MsgBurnONFT, opts ...grpc.CallOption) (*MsgBurnONFTResponse, error) {
+	out := new(MsgBurnONFTResponse)
+	err := c.cc.Invoke(ctx, "/OmniFlix.onft.v1beta1.Msg/BurnONFT", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MsgServer is the server API for Msg service.
+type MsgServer interface {
+	CreateDenom(context.Context, *MsgCreateDenom) (*MsgCreateDenomResponse, error)
+	MintONFT(context.Context, *MsgMintONFT) (*MsgMintONFTResponse, error)
+	EditONFT(context.Context, *MsgEditONFT) (*MsgEditONFTResponse, error)
+	TransferONFT(context.Context, *MsgTransferONFT) (*MsgTransferONFTResponse, error)
+	BurnONFT(context.Context, *MsgBurnONFT) (*MsgBurnONFTResponse, error)
+}
+
+// UnimplementedMsgServer can be embedded to have forward compatible implementations.
+type UnimplementedMsgServer struct {
+}
+
+func (*UnimplementedMsgServer) CreateDenom(ctx context.Context, req *MsgCreateDenom) (*MsgCreateDenomResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDenom not implemented")
+}
+func (*UnimplementedMsgServer) MintONFT(ctx context.Context, req *MsgMintONFT) (*MsgMintONFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MintONFT not implemented")
+}
+func (*UnimplementedMsgServer) EditONFT(ctx context.Context, req *MsgEditONFT) (*MsgEditONFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditONFT not implemented")
+}
+func (*UnimplementedMsgServer) TransferONFT(ctx context.Context, req *MsgTransferONFT) (*MsgTransferONFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransferONFT not implemented")
+}
+func (*UnimplementedMsgServer) BurnONFT(ctx context.Context, req *MsgBurnONFT) (*MsgBurnONFTResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BurnONFT not implemented")
+}
+
+func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
+	s.RegisterService(&_Msg_serviceDesc, srv)
+}
+
+func _Msg_CreateDenom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCreateDenom)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CreateDenom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OmniFlix.onft.v1beta1.Msg/CreateDenom",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CreateDenom(ctx, req.(*MsgCreateDenom))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_MintONFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgMintONFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).MintONFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OmniFlix.onft.v1beta1.Msg/MintONFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).MintONFT(ctx, req.(*MsgMintONFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_EditONFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgEditONFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).EditONFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OmniFlix.onft.v1beta1.Msg/EditONFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).EditONFT(ctx, req.(*MsgEditONFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_TransferONFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgTransferONFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).TransferONFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OmniFlix.onft.v1beta1.Msg/TransferONFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).TransferONFT(ctx, req.(*MsgTransferONFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_BurnONFT_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgBurnONFT)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).BurnONFT(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OmniFlix.onft.v1beta1.Msg/BurnONFT",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).BurnONFT(ctx, req.(*MsgBurnONFT))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Msg_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "OmniFlix.onft.v1beta1.Msg",
+	HandlerType: (*MsgServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateDenom",
+			Handler:    _Msg_CreateDenom_Handler,
+		},
+		{
+			MethodName: "MintONFT",
+			Handler:    _Msg_MintONFT_Handler,
+		},
+		{
+			MethodName: "EditONFT",
+			Handler:    _Msg_EditONFT_Handler,
+		},
+		{
+			MethodName: "TransferONFT",
+			Handler:    _Msg_TransferONFT_Handler,
+		},
+		{
+			MethodName: "BurnONFT",
+			Handler:    _Msg_BurnONFT_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "onft/v1beta1/tx.proto",
+}
+
 func (m *MsgCreateDenom) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -509,6 +929,29 @@ func (m *MsgCreateDenom) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCreateDenomResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCreateDenomResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCreateDenomResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	return len(dAtA) - i, nil
 }
 
@@ -588,6 +1031,29 @@ func (m *MsgMintONFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgMintONFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgMintONFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgMintONFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func (m *MsgTransferONFT) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -636,6 +1102,29 @@ func (m *MsgTransferONFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgTransferONFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgTransferONFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgTransferONFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	return len(dAtA) - i, nil
 }
 
@@ -707,6 +1196,29 @@ func (m *MsgEditONFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgEditONFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgEditONFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgEditONFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func (m *MsgBurnONFT) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -751,6 +1263,29 @@ func (m *MsgBurnONFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgBurnONFTResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgBurnONFTResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgBurnONFTResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -791,6 +1326,15 @@ func (m *MsgCreateDenom) Size() (n int) {
 	return n
 }
 
+func (m *MsgCreateDenomResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgMintONFT) Size() (n int) {
 	if m == nil {
 		return 0
@@ -824,6 +1368,15 @@ func (m *MsgMintONFT) Size() (n int) {
 	return n
 }
 
+func (m *MsgMintONFTResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgTransferONFT) Size() (n int) {
 	if m == nil {
 		return 0
@@ -846,6 +1399,15 @@ func (m *MsgTransferONFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	return n
+}
+
+func (m *MsgTransferONFTResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
 	return n
 }
 
@@ -880,6 +1442,15 @@ func (m *MsgEditONFT) Size() (n int) {
 	return n
 }
 
+func (m *MsgEditONFTResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgBurnONFT) Size() (n int) {
 	if m == nil {
 		return 0
@@ -898,6 +1469,15 @@ func (m *MsgBurnONFT) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	return n
+}
+
+func (m *MsgBurnONFTResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
 	return n
 }
 
@@ -1068,7 +1648,7 @@ func (m *MsgCreateDenom) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1078,26 +1658,74 @@ func (m *MsgCreateDenom) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sender = append(m.Sender[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sender == nil {
-				m.Sender = []byte{}
-			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCreateDenomResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCreateDenomResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCreateDenomResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1288,7 +1916,7 @@ func (m *MsgMintONFT) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1298,31 +1926,29 @@ func (m *MsgMintONFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sender = append(m.Sender[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sender == nil {
-				m.Sender = []byte{}
-			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Recipient", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1332,26 +1958,74 @@ func (m *MsgMintONFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Recipient = append(m.Recipient[:0], dAtA[iNdEx:postIndex]...)
-			if m.Recipient == nil {
-				m.Recipient = []byte{}
-			}
+			m.Recipient = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgMintONFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgMintONFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgMintONFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1470,7 +2144,7 @@ func (m *MsgTransferONFT) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1480,31 +2154,29 @@ func (m *MsgTransferONFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sender = append(m.Sender[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sender == nil {
-				m.Sender = []byte{}
-			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Recipient", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1514,26 +2186,74 @@ func (m *MsgTransferONFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Recipient = append(m.Recipient[:0], dAtA[iNdEx:postIndex]...)
-			if m.Recipient == nil {
-				m.Recipient = []byte{}
-			}
+			m.Recipient = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgTransferONFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgTransferONFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgTransferONFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1749,7 +2469,7 @@ func (m *MsgEditONFT) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1759,26 +2479,74 @@ func (m *MsgEditONFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sender = append(m.Sender[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sender == nil {
-				m.Sender = []byte{}
-			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgEditONFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgEditONFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgEditONFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1897,7 +2665,7 @@ func (m *MsgBurnONFT) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1907,26 +2675,74 @@ func (m *MsgBurnONFT) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sender = append(m.Sender[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sender == nil {
-				m.Sender = []byte{}
-			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgBurnONFTResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgBurnONFTResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgBurnONFTResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

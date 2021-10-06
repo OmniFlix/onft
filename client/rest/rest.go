@@ -22,7 +22,6 @@ const (
 type createDenomReq struct {
 	BaseReq rest.BaseReq   `json:"base_req"`
 	Sender  sdk.AccAddress `json:"sender"`
-	ID      string         `json:"id"`
 	Symbol  string         `json:"symbol"`
 	Name    string         `json:"name"`
 	Schema  string         `json:"schema"`
@@ -60,5 +59,5 @@ type transferONFTReq struct {
 
 type burnONFTReq struct {
 	BaseReq rest.BaseReq   `json:"base_req"`
-	sender  sdk.AccAddress `json:"sender"`
+	Sender  sdk.AccAddress `json:"sender"`
 }

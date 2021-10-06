@@ -262,7 +262,7 @@ func request_Query_OwnerONFTs_0(ctx context.Context, marshaler runtime.Marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "owner")
 	}
 
-	protoReq.Owner, err = runtime.Bytes(val)
+	protoReq.Owner, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "owner", err)
@@ -300,7 +300,7 @@ func local_request_Query_OwnerONFTs_0(ctx context.Context, marshaler runtime.Mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "owner")
 	}
 
-	protoReq.Owner, err = runtime.Bytes(val)
+	protoReq.Owner, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "owner", err)
@@ -700,7 +700,7 @@ var (
 
 	pattern_Query_ONFT_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6}, []string{"omniflix", "onft", "v1beta1", "denoms", "denom", "onfts", "id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_OwnerONFTs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"omniflix", "onft", "v1beta1", "onfts", "denoms", "denom", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_OwnerONFTs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"omniflix", "onft", "v1beta1", "onfts", "denom", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_Supply_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"omniflix", "onft", "v1beta1", "denoms", "denom", "supply"}, "", runtime.AssumeColonVerbOpt(true)))
 )

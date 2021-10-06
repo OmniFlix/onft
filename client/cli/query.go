@@ -3,15 +3,13 @@ package cli
 import (
 	"context"
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/spf13/cobra"
 
 	"github.com/OmniFlix/onft/types"
 )
@@ -36,11 +34,11 @@ func GetQueryCmd() *cobra.Command {
 
 func GetCmdQuerySupply() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "supply [denomID]",
+		Use: "supply [denom-id]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`total supply of a collection of oNFTs.
 Example:
-$ %s query onft supply [denom]`, version.AppName)),
+$ %s query onft supply [denom-id]`, version.AppName)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -50,8 +48,11 @@ $ %s query onft supply [denom]`, version.AppName)),
 			}
 
 			var owner sdk.AccAddress
+			ownerStr, err := cmd.Flags().GetString(FlagOwner)
+			if err != nil {
+				return err
+			}
 
-			ownerStr := strings.TrimSpace(viper.GetString(FlagOwner))
 			if len(ownerStr) > 0 {
 				owner, err = sdk.AccAddressFromBech32(ownerStr)
 				if err != nil {
@@ -59,15 +60,12 @@ $ %s query onft supply [denom]`, version.AppName)),
 				}
 			}
 
-			denom := strings.TrimSpace(args[0])
-			if err := types.ValidateDenomID(denom); err != nil {
-				return err
-			}
+			denomId := strings.ToLower(strings.TrimSpace(args[0]))
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Supply(context.Background(), &types.QuerySupplyRequest{
-				Denom: denom,
-				Owner: owner,
+				Denom: denomId,
+				Owner: owner.String(),
 			})
 			if err != nil {
 				return err
@@ -83,11 +81,11 @@ $ %s query onft supply [denom]`, version.AppName)),
 
 func GetCmdQueryCollection() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "collection [denomID]",
+		Use: "collection [denom-id]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Get all the oNFTs from a given collection
 Example:
-$ %s query onft collection <denom>`, version.AppName)),
+$ %s query onft collection <denom-id>`, version.AppName)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -96,14 +94,11 @@ $ %s query onft collection <denom>`, version.AppName)),
 				return err
 			}
 
-			denom := strings.TrimSpace(args[0])
-			if err := types.ValidateDenomID(denom); err != nil {
-				return err
-			}
+			denomId := strings.ToLower(strings.TrimSpace(args[0]))
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Collection(context.Background(), &types.QueryCollectionRequest{
-				Denom: denom,
+				Denom: denomId,
 			})
 			if err != nil {
 				return err
@@ -145,11 +140,11 @@ $ %s query onft denoms`, version.AppName)),
 
 func GetCmdQueryDenom() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "denom [denomID]",
+		Use: "denom [denom-id]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query the denominations by the specified denom name
 Example:
-$ %s query onft denom <denom>`, version.AppName)),
+$ %s query onft denom <denom-id>`, version.AppName)),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -158,14 +153,14 @@ $ %s query onft denom <denom>`, version.AppName)),
 				return err
 			}
 
-			denom := strings.TrimSpace(args[0])
-			if err := types.ValidateDenomID(denom); err != nil {
+			denomId := strings.ToLower(strings.TrimSpace(args[0]))
+			if err := types.ValidateDenomID(denomId); err != nil {
 				return err
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Denom(context.Background(), &types.QueryDenomRequest{
-				Denom: denom,
+				Denom: denomId,
 			})
 			if err != nil {
 				return err
@@ -180,11 +175,11 @@ $ %s query onft denom <denom>`, version.AppName)),
 
 func GetCmdQueryONFT() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "asset [denomID] [onftID]",
+		Use: "asset [denom-id] [onft-id]",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query a single oNFT from a collection
 Example:
-$ %s query onft asset <denom> <onftID>`, version.AppName)),
+$ %s query onft asset <denom> <onft-id>`, version.AppName)),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -193,20 +188,13 @@ $ %s query onft asset <denom> <onftID>`, version.AppName)),
 				return err
 			}
 
-			denom := strings.TrimSpace(args[0])
-			if err := types.ValidateDenomID(denom); err != nil {
-				return err
-			}
-
-			onftID := strings.TrimSpace(args[1])
-			if err := types.ValidateONFTID(onftID); err != nil {
-				return err
-			}
+			denomId := strings.ToLower(strings.TrimSpace(args[0]))
+			onftId := strings.ToLower(strings.TrimSpace(args[1]))
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.ONFT(context.Background(), &types.QueryONFTRequest{
-				Denom: denom,
-				Id:    onftID,
+				Denom: denomId,
+				Id:    onftId,
 			})
 			if err != nil {
 				return err

@@ -1,10 +1,10 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/OmniFlix/onft/exported"
 	"github.com/OmniFlix/onft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) GetONFT(ctx sdk.Context, denomID, onftID string) (nft exported.ONFT, err error) {
@@ -33,16 +33,18 @@ func (k Keeper) GetONFTs(ctx sdk.Context, denom string) (onfts []exported.ONFT) 
 	return onfts
 }
 
-func (k Keeper) GetOwnerONFTs(ctx sdk.Context, denom string, owner sdk.AccAddress) (onfts []*types.ONFT) {
+func (k Keeper) GetOwnerONFTs(ctx sdk.Context, denom string, owner string) (onfts []*types.ONFT) {
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyOwner(owner, denom, ""))
+	iterator := sdk.KVStorePrefixIterator(store, types.KeyONFT(denom, ""))
 	defer iterator.Close()
 	var onftList []*types.ONFT
 	for ; iterator.Valid(); iterator.Next() {
 		var oNFT types.ONFT
 		k.cdc.MustUnmarshal(iterator.Value(), &oNFT)
-		onftList = append(onftList, &oNFT)
+		if oNFT.Owner.String() == owner {
+			onftList = append(onftList, &oNFT)
+		}
 	}
 	return onftList
 }
