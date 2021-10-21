@@ -17,7 +17,7 @@ func NewONFT(id string, metadata Metadata, assetType AssetType, transferable boo
 		Id:              strings.ToLower(strings.TrimSpace(id)),
 		Metadata:        metadata,
 		Type:            assetType,
-		Owner:           owner,
+		Owner:           owner.String(),
 		TransferEnabled: transferable,
 		Created:         createdTime,
 	}
@@ -44,7 +44,7 @@ func (onft ONFT) GetPreviewURI() string {
 }
 
 func (onft ONFT) GetOwner() sdk.AccAddress {
-	owner, _ := sdk.AccAddressFromBech32(onft.Owner.String())
+	owner, _ := sdk.AccAddressFromBech32(onft.Owner)
 	return owner
 }
 

@@ -27,7 +27,7 @@ message Denom {
   string symbol            = 2 [(gogoproto.moretags) = "yaml:\"symbol\""];
   string name              = 3 [(gogoproto.moretags) = "yaml:\"name\""];
   string schema            = 4 [(gogoproto.moretags) = "yaml:\"schema\""];
-  bytes  creator           = 5 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string creator           = 5;
 }
 
 //ASSET or ONFT
@@ -36,7 +36,7 @@ message ONFT {
 
   string                    id               = 1;
   Metadata                  metadata         = 2 [(gogoproto.nullable) = false];
-  bytes                     owner            = 3 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string                    owner            = 3;
   AssetType                 type             = 4;
   bool                      transfer_enabled = 5;
   google.protobuf.Timestamp created          = 6 [
