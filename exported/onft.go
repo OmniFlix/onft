@@ -14,6 +14,6 @@ type ONFT interface {
 	GetPreviewURI() string
 	GetType() string
 	IsTransferable() bool
+	IsExtensible() bool
 	GetCreatedTime() time.Time
 }
-

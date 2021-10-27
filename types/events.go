@@ -2,6 +2,8 @@ package types
 
 var (
 	EventTypeCreateDenom  = "create_denom"
+	EventTypeUpdateDenom = "update_denom"
+	EventTypeTransferDenom = "transfer_denom"
 	EventTypeMintONFT     = "mint_onft"
 	EventTypeTransferONFT = "transfer_onft"
 	EventTypeEditONFT     = "edit_onft"

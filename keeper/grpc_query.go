@@ -13,7 +13,7 @@ import (
 var _ types.QueryServer = Keeper{}
 
 func (k Keeper) Supply(c context.Context, request *types.QuerySupplyRequest) (*types.QuerySupplyResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.Denom))
+	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
 
 	var supply uint64
@@ -30,7 +30,7 @@ func (k Keeper) Supply(c context.Context, request *types.QuerySupplyRequest) (*t
 }
 
 func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequest) (*types.QueryCollectionResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.Denom))
+	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
 
 	collection, err := k.GetCollection(ctx, denom)
@@ -43,7 +43,7 @@ func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequ
 }
 
 func (k Keeper) Denom(c context.Context, request *types.QueryDenomRequest) (*types.QueryDenomResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.Denom))
+	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
 
 	denomObject, err := k.GetDenom(ctx, denom)
@@ -65,18 +65,18 @@ func (k Keeper) Denoms(c context.Context, request *types.QueryDenomsRequest) (*t
 }
 
 func (k Keeper) ONFT(c context.Context, request *types.QueryONFTRequest) (*types.QueryONFTResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.Denom))
+	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	onftID := strings.ToLower(strings.TrimSpace(request.Id))
 	ctx := sdk.UnwrapSDKContext(c)
 
 	nft, err := k.GetONFT(ctx, denom, onftID)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid ONFT %s from collection %s", request.Id, request.Denom)
+		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid ONFT %s from collection %s", request.Id, request.DenomId)
 	}
 
 	oNFT, ok := nft.(types.ONFT)
 	if !ok {
-		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid type NFT %s from collection %s", request.Id, request.Denom)
+		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid type NFT %s from collection %s", request.Id, request.DenomId)
 	}
 
 	return &types.QueryONFTResponse{
@@ -84,7 +84,7 @@ func (k Keeper) ONFT(c context.Context, request *types.QueryONFTRequest) (*types
 	}, nil
 }
 func (k Keeper) OwnerONFTs(c context.Context, request *types.QueryOwnerONFTsRequest) (*types.QueryOwnerONFTsResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.Denom))
+	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
 
 	onfts := k.GetOwnerONFTs(ctx, denom, request.Owner)

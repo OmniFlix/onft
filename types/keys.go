@@ -8,19 +8,19 @@ import (
 )
 
 const (
-	ModuleName = "onft"
-	StoreKey = ModuleName
-	MemStoreKey = "mem_capability"
+	ModuleName   = "onft"
+	StoreKey     = ModuleName
+	MemStoreKey  = "mem_capability"
 	QuerierRoute = ModuleName
-	RouterKey = ModuleName
+	RouterKey    = ModuleName
 )
 
 var (
-	PrefixONFT       = []byte{0x01}
-	PrefixOwners     = []byte{0x02} // key for a owner
-	PrefixCollection = []byte{0x03} // key for balance of oNFTs held by the denom
-	PrefixDenom      = []byte{0x04} // key for denom of the onft
-	PrefixDenomSymbol  = []byte{0x05} // key for denom symbol of the onft
+	PrefixONFT        = []byte{0x01}
+	PrefixOwners      = []byte{0x02}
+	PrefixCollection  = []byte{0x03}
+	PrefixDenom       = []byte{0x04}
+	PrefixDenomSymbol = []byte{0x05}
 
 	delimiter = []byte("/")
 )

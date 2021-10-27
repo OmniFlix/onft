@@ -64,7 +64,7 @@ $ %s query onft supply [denom-id]`, version.AppName)),
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Supply(context.Background(), &types.QuerySupplyRequest{
-				Denom: denomId,
+				DenomId: denomId,
 				Owner: owner.String(),
 			})
 			if err != nil {
@@ -98,7 +98,7 @@ $ %s query onft collection <denom-id>`, version.AppName)),
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Collection(context.Background(), &types.QueryCollectionRequest{
-				Denom: denomId,
+				DenomId: denomId,
 			})
 			if err != nil {
 				return err
@@ -160,7 +160,7 @@ $ %s query onft denom <denom-id>`, version.AppName)),
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Denom(context.Background(), &types.QueryDenomRequest{
-				Denom: denomId,
+				DenomId: denomId,
 			})
 			if err != nil {
 				return err
@@ -193,7 +193,7 @@ $ %s query onft asset <denom> <onft-id>`, version.AppName)),
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.ONFT(context.Background(), &types.QueryONFTRequest{
-				Denom: denomId,
+				DenomId: denomId,
 				Id:    onftId,
 			})
 			if err != nil {

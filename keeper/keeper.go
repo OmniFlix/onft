@@ -31,12 +31,21 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) CreateDenom(ctx sdk.Context,
 	id, symbol, name, schema string,
-	creator sdk.AccAddress) error {
-	return k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator))
+	creator sdk.AccAddress, description, previewUri string) error {
+	return k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
+}
+func (k Keeper) UpdateDenom(ctx sdk.Context)  {
+	// TODO: Implement Update Denom keeper functionality
 }
 
-func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata types.Metadata, assetType types.AssetType,
-	transferable bool, sender, recipient sdk.AccAddress) error {
+func (k Keeper) TransferDenomOwner(ctx sdk.Context) {
+	// TODO: impletment transfer denom
+}
+
+func (k Keeper) MintONFT(
+	ctx sdk.Context, denomID, onftID string,
+	metadata types.Metadata, assetType types.AssetType,
+	transferable, extensible bool, sender, recipient sdk.AccAddress) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
@@ -53,6 +62,7 @@ func (k Keeper) MintONFT(ctx sdk.Context, denomID, onftID string, metadata types
 		metadata,
 		assetType,
 		transferable,
+		extensible,
 		recipient,
 		ctx.BlockHeader().Time,
 	))
@@ -101,15 +111,19 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types
 			return err
 		}
 		if denom.Creator != onft.Owner {
-			return sdkerrors.Wrapf(types.ErrNotEditable, "onft %s: transferability can be modified only when creator and owner of onft are equal.", onftID)
+			return sdkerrors.Wrapf(
+				types.ErrNotEditable,
+				"onft %s: transferability can be modified only when creator and owner of onft are equal.",
+				onftID,
+			)
 		}
 		switch transferable := strings.ToLower(transferable); transferable {
 		case "yes":
-			onft.TransferEnabled = true
+			onft.Transferable = true
 		case "no":
-			onft.TransferEnabled = false
+			onft.Transferable = false
 		default:
-			onft.TransferEnabled = true
+			onft.Transferable = true
 		}
 	}
 

@@ -27,7 +27,15 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.CreateDenom(ctx, msg.Id, msg.Symbol, msg.Name, msg.Schema, sender); err != nil {
+	if err := m.Keeper.CreateDenom(ctx,
+		msg.Id,
+		msg.Symbol,
+		msg.Name,
+		msg.Schema,
+		sender,
+		msg.Description,
+		msg.PreviewUri,
+	); err != nil {
 		return nil, err
 	}
 
@@ -49,6 +57,16 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 	return &types.MsgCreateDenomResponse{}, nil
 }
 
+// TODO: update UpdateDenom function
+func (m msgServer) UpdateDenom(goCtx context.Context, msg *types.MsgUpdateDenom) (*types.MsgUpdateDenomResponse, error) {
+	return &types.MsgUpdateDenomResponse{}, nil
+}
+
+// TODO: Update TransferDenom function
+func (m msgServer) TransferDenom(goCtx context.Context, msg *types.MsgTransferDenom) (*types.MsgTransferDenomResponse, error) {
+	return &types.MsgTransferDenomResponse{}, nil
+}
+
 func (m msgServer) MintONFT(goCtx context.Context,
 	msg *types.MsgMintONFT) (*types.MsgMintONFTResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -63,10 +81,12 @@ func (m msgServer) MintONFT(goCtx context.Context,
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if err := m.Keeper.MintONFT(ctx,
-		msg.Denom, msg.Id,
+		msg.DenomId,
+		msg.Id,
 		msg.Metadata,
 		msg.AssetType,
 		msg.Transferable,
+		msg.Extensible,
 		sender,
 		recipient,
 	); err != nil {
@@ -77,7 +97,7 @@ func (m msgServer) MintONFT(goCtx context.Context,
 		sdk.NewEvent(
 			types.EventTypeMintONFT,
 			sdk.NewAttribute(types.AttributeKeyONFTID, msg.Id),
-			sdk.NewAttribute(types.AttributeKeyDenomID, msg.Denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, msg.DenomId),
 			sdk.NewAttribute(types.AttributeKeyMediaURI, msg.Metadata.Media),
 			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient),
 		),
@@ -100,7 +120,7 @@ func (m msgServer) EditONFT(goCtx context.Context,
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.EditONFT(ctx, msg.Denom, msg.Id,
+	if err := m.Keeper.EditONFT(ctx, msg.DenomId, msg.Id,
 		msg.Metadata,
 		msg.AssetType,
 		msg.Transferable,
@@ -113,7 +133,7 @@ func (m msgServer) EditONFT(goCtx context.Context,
 		sdk.NewEvent(
 			types.EventTypeEditONFT,
 			sdk.NewAttribute(types.AttributeKeyONFTID, msg.Id),
-			sdk.NewAttribute(types.AttributeKeyDenomID, msg.Denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, msg.DenomId),
 			sdk.NewAttribute(types.AttributeKeyMediaURI, msg.Metadata.Media),
 			sdk.NewAttribute(types.AttributeKeyOwner, msg.Sender),
 		),
@@ -140,7 +160,7 @@ func (m msgServer) TransferONFT(goCtx context.Context,
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.TransferOwnership(ctx, msg.Denom, msg.Id,
+	if err := m.Keeper.TransferOwnership(ctx, msg.DenomId, msg.Id,
 		sender,
 		recipient,
 	); err != nil {
@@ -151,7 +171,7 @@ func (m msgServer) TransferONFT(goCtx context.Context,
 		sdk.NewEvent(
 			types.EventTypeTransferONFT,
 			sdk.NewAttribute(types.AttributeKeyONFTID, msg.Id),
-			sdk.NewAttribute(types.AttributeKeyDenomID, msg.Denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, msg.DenomId),
 			sdk.NewAttribute(types.AttributeKeySender, msg.Sender),
 			sdk.NewAttribute(types.AttributeKeyRecipient, msg.Recipient),
 		),
@@ -174,14 +194,14 @@ func (m msgServer) BurnONFT(goCtx context.Context,
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.BurnONFT(ctx, msg.Denom, msg.Id, sender); err != nil {
+	if err := m.Keeper.BurnONFT(ctx, msg.DenomId, msg.Id, sender); err != nil {
 		return nil, err
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeBurnONFT,
-			sdk.NewAttribute(types.AttributeKeyDenomID, msg.Denom),
+			sdk.NewAttribute(types.AttributeKeyDenomID, msg.DenomId),
 			sdk.NewAttribute(types.AttributeKeyONFTID, msg.Id),
 			sdk.NewAttribute(types.AttributeKeyOwner, msg.Sender),
 		),

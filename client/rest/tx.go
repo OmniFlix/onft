@@ -54,7 +54,14 @@ func createDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgCreateDenom(req.Symbol, req.Name, req.Schema, req.Sender.String())
+		msg := types.NewMsgCreateDenom(
+			req.Symbol,
+			req.Name,
+			req.Schema,
+			req.Sender.String(),
+			req.Description,
+			req.PreviewURI,
+		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -108,6 +115,11 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if len(transferability) > 0 && (transferability == "no" || transferability == "false") {
 			transferable = false
 		}
+		extensible := true
+		extensibility := strings.ToLower(req.Extensible)
+		if len(extensibility) > 0 && (extensibility == "no" || extensibility == "false") {
+			extensible = false
+		}
 
 		msg := types.NewMsgMintONFT(
 			req.Denom,
@@ -116,6 +128,7 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata,
 			onftType,
 			transferable,
+			extensible,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -164,12 +177,19 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for transferable flag , valid options are yes,no")
 			return
 		}
+		extensible := strings.ToLower(req.Extensible)
+		if len(extensible) > 0 && !(extensible == "no" || extensible == "yes" ||
+			extensible == types.DoNotModify) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for extensible flag , valid options are yes,no")
+			return
+		}
 		msg := types.NewMsgEditONFT(
 			vars[RestParamONFTID],
 			vars[RestParamDenom],
 			metadata,
 			onftType,
 			transferable,
+			extensible,
 			req.Sender.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {

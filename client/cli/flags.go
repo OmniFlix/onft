@@ -5,17 +5,20 @@ import (
 )
 
 const (
-	FlagONFTName = "name"
-	FlagONFTDescription = "description"
-	FlagONFTMediaURI  = "media-uri"
-	FlagONFTPreviewURI = "preview-uri"
-	FlagONFTType = "type"
-	FlagTransferable = "transferable"
-	FlagRecipient = "recipient"
-	FlagOwner     = "owner"
-	FlagDenomName = "name"
-	FlagDenom     = "denom"
-	FlagSchema    = "schema"
+	FlagONFTName         = "name"
+	FlagONFTDescription  = "description"
+	FlagONFTMediaURI     = "media-uri"
+	FlagONFTPreviewURI   = "preview-uri"
+	FlagONFTType         = "type"
+	FlagTransferable     = "transferable"
+	FlagExtensible     = "extensible"
+	FlagRecipient        = "recipient"
+	FlagOwner            = "owner"
+	FlagDenomName        = "name"
+	FlagDenom            = "denom"
+	FlagSchema           = "schema"
+	FlagDenomDescription = "description"
+	FlagDenomPreviewURI  = "preview-uri"
 )
 
 var (
@@ -23,13 +26,15 @@ var (
 	FsMintONFT     = flag.NewFlagSet("", flag.ContinueOnError)
 	FsEditONFT     = flag.NewFlagSet("", flag.ContinueOnError)
 	FsTransferONFT = flag.NewFlagSet("", flag.ContinueOnError)
-	FsQuerySupply = flag.NewFlagSet("", flag.ContinueOnError)
-	FsQueryOwner  = flag.NewFlagSet("", flag.ContinueOnError)
+	FsQuerySupply  = flag.NewFlagSet("", flag.ContinueOnError)
+	FsQueryOwner   = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
 	FsCreateDenom.String(FlagSchema, "", "Denom schema")
 	FsCreateDenom.String(FlagDenomName, "", "Name of the denom")
+	FsCreateDenom.String(FlagDenomDescription, "", "Description for denom")
+	FsCreateDenom.String(FlagDenomPreviewURI, "", "Preview image uri for denom")
 
 	FsMintONFT.String(FlagONFTMediaURI, "", "Media uri of onft")
 	FsMintONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
@@ -45,7 +50,6 @@ func init() {
 	FsEditONFT.String(FlagONFTDescription, "[do-not-modify]", "Description of onft")
 	FsEditONFT.String(FlagONFTType, "[do-not-modify]", "type of onft")
 	FsEditONFT.String(FlagTransferable, "[do-not-modify]", "transferability of onft")
-
 
 	FsTransferONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
 	FsQuerySupply.String(FlagOwner, "", "The owner of a nft")

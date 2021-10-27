@@ -61,10 +61,23 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --chain-id=<chain-i
 				return err
 			}
 			schema = strings.TrimSpace(schema)
+			description, err := cmd.Flags().GetString(FlagDenomDescription)
+			if err != nil {
+				return err
+			}
+			description = strings.TrimSpace(description)
+			previewUri, err := cmd.Flags().GetString(FlagDenomPreviewURI)
+			if err != nil {
+				return err
+			}
+			previewUri = strings.TrimSpace(previewUri)
+
 			msg := types.NewMsgCreateDenom(symbol,
 				denomName,
 				schema,
 				clientCtx.GetFromAddress().String(),
+				description,
+				previewUri,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -168,13 +181,19 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				return fmt.Errorf("invalid onft type, valid types are artwork,audio,video")
 			}
 			transferable := true
-			transferability, err := cmd.Flags().GetString(FlagONFTType)
+			transferability, err := cmd.Flags().GetString(FlagTransferable)
 			if err != nil {
 				return err
 			}
 			transferability = strings.ToLower(strings.TrimSpace(transferability))
 			if len(transferability) > 0 && (transferability == "no" || transferability == "false") {
 				transferable = false
+			}
+			extensible := true
+			extensibility, err := cmd.Flags().GetString(FlagTransferable)
+			extensibility = strings.ToLower(strings.TrimSpace(extensibility))
+			if len(extensibility) > 0 && (extensibility == "no" || extensibility == "false") {
+				extensible = false
 			}
 			msg := types.NewMsgMintONFT(
 				denomId,
@@ -183,6 +202,7 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				onftMetadata,
 				onftType,
 				transferable,
+				extensible,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -272,12 +292,21 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 				transferable == types.DoNotModify)) {
 				return fmt.Errorf("invalid option for transferable flag , valid options are yes|no")
 			}
+			extensible, err := cmd.Flags().GetString(FlagExtensible)
+			if err != nil {
+				return err
+			}
+			if !(len(extensible) > 0 && (extensible == "no" || extensible == "yes" ||
+				extensible == types.DoNotModify)) {
+				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
+			}
 			msg := types.NewMsgEditONFT(
 				onftId,
 				denomId,
 				onftMetadata,
 				onftType,
 				transferable,
+				extensible,
 				clientCtx.GetFromAddress().String(),
 			)
 			if err := msg.ValidateBasic(); err != nil {

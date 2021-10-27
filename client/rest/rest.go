@@ -20,11 +20,13 @@ const (
 )
 
 type createDenomReq struct {
-	BaseReq rest.BaseReq   `json:"base_req"`
-	Sender  sdk.AccAddress `json:"sender"`
-	Symbol  string         `json:"symbol"`
-	Name    string         `json:"name"`
-	Schema  string         `json:"schema"`
+	BaseReq     rest.BaseReq   `json:"base_req"`
+	Sender      sdk.AccAddress `json:"sender"`
+	Symbol      string         `json:"symbol"`
+	Name        string         `json:"name"`
+	Schema      string         `json:"schema"`
+	Description string         `json:"description"`
+	PreviewURI  string         `json:"preview_uri"`
 }
 
 type mintONFTReq struct {
@@ -38,6 +40,7 @@ type mintONFTReq struct {
 	PreviewURI   string         `json:"preview_uri"`
 	Type         string         `json:"type"`
 	Transferable string         `json:"transferable"`
+	Extensible   string         `json:"extensible"`
 }
 
 type editONFTReq struct {
@@ -49,6 +52,7 @@ type editONFTReq struct {
 	PreviewURI   string         `json:"preview_uri"`
 	Type         string         `json:"type"`
 	Transferable string         `json:"transferable"`
+	Extensible   string         `json:"extensible"`
 }
 
 type transferONFTReq struct {

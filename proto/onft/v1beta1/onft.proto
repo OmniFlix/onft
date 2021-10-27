@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/OmniFlix/onft/types";
 option (gogoproto.goproto_getters_all) = false;
 
-//ASSETS or collections
+// Collection
 message Collection {
   option (gogoproto.equal) = true;
 
@@ -16,33 +16,39 @@ message Collection {
 }
 
 message IDCollection {
-  string          denom = 1;
-  repeated string ids   = 2;
+  option (gogoproto.equal) = true;
+
+  string          denom_id = 1 [(gogoproto.moretags) = "yaml:\"denom_id\""];
+  repeated string onft_ids = 2 [(gogoproto.moretags) = "yaml:\"onft_ids\""];
 }
 
 message Denom {
   option (gogoproto.equal) = true;
 
-  string id                = 1 [(gogoproto.moretags) = "yaml:\"id\""];
-  string symbol            = 2 [(gogoproto.moretags) = "yaml:\"symbol\""];
-  string name              = 3 [(gogoproto.moretags) = "yaml:\"name\""];
-  string schema            = 4 [(gogoproto.moretags) = "yaml:\"schema\""];
+  string id                = 1;
+  string symbol            = 2;
+  string name              = 3;
+  string schema            = 4;
   string creator           = 5;
+  string description       = 6;
+  string preview_uri       = 7 [(gogoproto.moretags) = "yaml:\"created_at\""];
 }
 
 //ASSET or ONFT
 message ONFT {
-  option (gogoproto.equal)                   = true;
+  option (gogoproto.equal)               = true;
 
-  string                    id               = 1;
-  Metadata                  metadata         = 2 [(gogoproto.nullable) = false];
-  string                    owner            = 3;
-  AssetType                 type             = 4;
-  bool                      transfer_enabled = 5;
-  google.protobuf.Timestamp created          = 6 [
+  string                    id           = 1;
+  Metadata                  metadata     = 2 [(gogoproto.nullable) = false];
+  string                    data         = 3;
+  string                    owner        = 4;
+  AssetType                 type         = 5;
+  bool                      transferable = 6;
+  bool                      extensible   = 7;
+  google.protobuf.Timestamp created_at   = 8 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime)  = true,
-    (gogoproto.moretags) = "yaml:\"created\""
+    (gogoproto.moretags) = "yaml:\"created_at\""
   ];
 }
 
@@ -53,14 +59,27 @@ enum AssetType {
   ARTWORK                                = 0;
   AUDIO                                  = 1;
   VIDEO                                  = 2;
+  DOCUMENT                               = 3;
 }
 
 message Metadata {
   option (gogoproto.equal) = true;
 
-  string name              = 1 [(gogoproto.moretags) = "yaml:\"name\""];
-  string description       = 2 [(gogoproto.moretags) = "yaml:\"description\""];
-  string preview           = 3 [(gogoproto.moretags) = "yaml:\"preview\""];
-  string media             = 4 [(gogoproto.moretags) = "yaml:\"media\""];
+  string name              = 1;
+  string description       = 2;
+  string preview           = 3;
+  string media             = 4;
 }
 
+
+// Entry defines a type of owner
+message Entry {
+  option (gogoproto.equal)             = true;
+
+  string                address        = 1;
+  repeated IDCollection id_collections = 2 [
+    (gogoproto.moretags)   = "yaml:\"idcs\"",
+    (gogoproto.customname) = "IDCollections",
+    (gogoproto.nullable)   = false
+  ];
+}

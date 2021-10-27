@@ -32,6 +32,7 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 			metadata,
 			aType,
 			onft.IsTransferable(),
+			onft.IsExtensible(),
 			onft.GetOwner(),
 			onft.GetOwner(),
 		); err != nil {

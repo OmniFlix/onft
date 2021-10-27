@@ -12,14 +12,18 @@ import (
 
 var _ exported.ONFT = ONFT{}
 
-func NewONFT(id string, metadata Metadata, assetType AssetType, transferable bool, owner sdk.AccAddress, createdTime time.Time) ONFT {
+func NewONFT(
+	id string, metadata Metadata, assetType AssetType,
+	transferable, extensible bool, owner sdk.AccAddress,
+	createdTime time.Time) ONFT {
 	return ONFT{
-		Id:              strings.ToLower(strings.TrimSpace(id)),
-		Metadata:        metadata,
-		Type:            assetType,
-		Owner:           owner.String(),
-		TransferEnabled: transferable,
-		Created:         createdTime,
+		Id:           id,
+		Metadata:     metadata,
+		Type:         assetType,
+		Owner:        owner.String(),
+		Transferable: transferable,
+		Extensible:   extensible,
+		CreatedAt:    createdTime,
 	}
 }
 
@@ -56,10 +60,13 @@ func (onft ONFT) GetType() string {
 	return onft.Type.String()
 }
 func (onft ONFT) IsTransferable() bool {
-	return onft.TransferEnabled
+	return onft.Transferable
+}
+func (onft ONFT) IsExtensible() bool {
+	return onft.Extensible
 }
 func (onft ONFT) GetCreatedTime() time.Time {
-	return onft.Created
+	return onft.CreatedAt
 }
 
 // ONFT
@@ -92,8 +99,8 @@ func ValidateMediaURI(mediaURI string) error {
 }
 
 func ValidatePreviewURI(previewURI string) error {
-	if len(previewURI) > MaxPreviewURIlen {
-		return sdkerrors.Wrapf(ErrInvalidPreviewURI, "invalid previewURI %s, only accepts value [0, %d]", previewURI, MaxPreviewURIlen)
+	if len(previewURI) > MaxPreviewURILen {
+		return sdkerrors.Wrapf(ErrInvalidPreviewURI, "invalid previewURI %s, only accepts value [0, %d]", previewURI, MaxPreviewURILen)
 	}
 	return nil
 }
