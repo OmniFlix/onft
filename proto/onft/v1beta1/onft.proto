@@ -42,38 +42,32 @@ message ONFT {
   Metadata                  metadata     = 2 [(gogoproto.nullable) = false];
   string                    data         = 3;
   string                    owner        = 4;
-  AssetType                 type         = 5;
-  bool                      transferable = 6;
-  bool                      extensible   = 7;
-  google.protobuf.Timestamp created_at   = 8 [
+  bool                      transferable = 5;
+  bool                      extensible   = 6;
+  google.protobuf.Timestamp created_at   = 7 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime)  = true,
     (gogoproto.moretags) = "yaml:\"created_at\""
   ];
 }
 
-
-enum AssetType {
-  option (gogoproto.goproto_enum_prefix) = false;
-
-  ARTWORK                                = 0;
-  AUDIO                                  = 1;
-  VIDEO                                  = 2;
-  DOCUMENT                               = 3;
-}
-
 message Metadata {
   option (gogoproto.equal) = true;
 
-  string name              = 1;
-  string description       = 2;
-  string preview           = 3;
-  string media             = 4;
+  string name              = 1 [(gogoproto.moretags) = "yaml:\"name\""];
+  string description       = 2 [(gogoproto.moretags) = "yaml:\"description\""];
+  string media_uri       = 3 [
+    (gogoproto.moretags) = "yaml:\"media_uri\"",
+    (gogoproto.customname) = "MediaURI"
+  ];
+  string preview_uri         = 4 [
+    (gogoproto.moretags) = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
 }
 
 
-// Entry defines a type of owner
-message Entry {
+message Owner {
   option (gogoproto.equal)             = true;
 
   string                address        = 1;

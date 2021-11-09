@@ -62,15 +62,14 @@ message MsgTransferDenomResponse {}
 message MsgMintONFT {
   option (gogoproto.equal) = true;
 
-  string    id             = 1;
-  string    denom_id       = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
-  Metadata  metadata       = 3 [(gogoproto.nullable) = false];
-  string    data           = 4;
-  AssetType assetType      = 5;
-  bool      transferable   = 6;
-  bool      extensible     = 7;
-  string    sender         = 8;
-  string    recipient      = 9;
+  string   id              = 1;
+  string   denom_id        = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
+  Metadata metadata        = 3 [(gogoproto.nullable) = false];
+  string   data            = 4;
+  bool     transferable    = 5;
+  bool     extensible      = 6;
+  string   sender          = 7;
+  string   recipient       = 8;
 }
 
 message MsgMintONFTResponse {}
@@ -93,7 +92,7 @@ message MsgEditONFT {
   string   id              = 1;
   string   denom_id        = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
   Metadata metadata        = 3 [(gogoproto.nullable) = false];
-  string   assetType       = 4;
+  string   data            = 4;
   string   transferable    = 5;
   string   extensible      = 6;
   string   sender          = 7;

@@ -13,13 +13,12 @@ import (
 var _ exported.ONFT = ONFT{}
 
 func NewONFT(
-	id string, metadata Metadata, assetType AssetType,
-	transferable, extensible bool, owner sdk.AccAddress,
+	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
 	createdTime time.Time) ONFT {
 	return ONFT{
 		Id:           id,
 		Metadata:     metadata,
-		Type:         assetType,
+		Data:         data,
 		Owner:        owner.String(),
 		Transferable: transferable,
 		Extensible:   extensible,
@@ -40,11 +39,11 @@ func (onft ONFT) GetDescription() string {
 }
 
 func (onft ONFT) GetMediaURI() string {
-	return onft.Metadata.Media
+	return onft.Metadata.MediaURI
 }
 
 func (onft ONFT) GetPreviewURI() string {
-	return onft.Metadata.Preview
+	return onft.Metadata.PreviewURI
 }
 
 func (onft ONFT) GetOwner() sdk.AccAddress {
@@ -55,9 +54,8 @@ func (onft ONFT) GetOwner() sdk.AccAddress {
 func (onft ONFT) GetMetadata() string {
 	return onft.Metadata.String()
 }
-
-func (onft ONFT) GetType() string {
-	return onft.Type.String()
+func (onft ONFT) GetData() string {
+	return onft.Data
 }
 func (onft ONFT) IsTransferable() bool {
 	return onft.Transferable
@@ -83,10 +81,14 @@ func NewONFTs(onfts ...exported.ONFT) ONFTs {
 func ValidateONFTID(onftID string) error {
 	onftID = strings.TrimSpace(onftID)
 	if len(onftID) < MinDenomLen || len(onftID) > MaxDenomLen {
-		return sdkerrors.Wrapf(ErrInvalidONFTID, "invalid onftID %s, only accepts value [%d, %d]", onftID, MinDenomLen, MaxDenomLen)
+		return sdkerrors.Wrapf(
+			ErrInvalidONFTID,
+			"invalid onftID %s, only accepts value [%d, %d]", onftID, MinDenomLen, MaxDenomLen)
 	}
 	if !IsBeginWithAlpha(onftID) || !IsAlphaNumeric(onftID) {
-		return sdkerrors.Wrapf(ErrInvalidONFTID, "invalid onftID %s, only accepts alphanumeric characters,and begin with an english letter", onftID)
+		return sdkerrors.Wrapf(
+			ErrInvalidONFTID,
+			"invalid onftID %s, only accepts alphanumeric characters,and begin with an english letter", onftID)
 	}
 	return nil
 }

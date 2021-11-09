@@ -38,7 +38,7 @@ type mintONFTReq struct {
 	Description  string         `json:"description"`
 	MediaURI     string         `json:"media_uri"`
 	PreviewURI   string         `json:"preview_uri"`
-	Type         string         `json:"type"`
+	Data         string         `json:"data"`
 	Transferable string         `json:"transferable"`
 	Extensible   string         `json:"extensible"`
 }
@@ -50,7 +50,7 @@ type editONFTReq struct {
 	Description  string         `json:"description"`
 	MediaURI     string         `json:"media_uri"`
 	PreviewURI   string         `json:"preview_uri"`
-	Type         string         `json:"type"`
+	Data         string         `json:"data"`
 	Transferable string         `json:"transferable"`
 	Extensible   string         `json:"extensible"`
 }

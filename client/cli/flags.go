@@ -9,13 +9,13 @@ const (
 	FlagONFTDescription  = "description"
 	FlagONFTMediaURI     = "media-uri"
 	FlagONFTPreviewURI   = "preview-uri"
-	FlagONFTType         = "type"
+	FlagData             = "data"
 	FlagTransferable     = "transferable"
-	FlagExtensible     = "extensible"
+	FlagExtensible       = "extensible"
 	FlagRecipient        = "recipient"
 	FlagOwner            = "owner"
 	FlagDenomName        = "name"
-	FlagDenom            = "denom"
+	FlagDenomID          = "denom-id"
 	FlagSchema           = "schema"
 	FlagDenomDescription = "description"
 	FlagDenomPreviewURI  = "preview-uri"
@@ -41,15 +41,17 @@ func init() {
 	FsMintONFT.String(FlagONFTPreviewURI, "", "Preview uri of onft")
 	FsMintONFT.String(FlagONFTName, "", "Name of onft")
 	FsMintONFT.String(FlagONFTDescription, "", "Description of onft")
-	FsMintONFT.String(FlagONFTType, "video", "type of onft (artwork|audio|video)")
-	FsMintONFT.String(FlagTransferable, "yes", " transferability of onft (yes|no)")
+	FsMintONFT.String(FlagData, "", "custom data of onft")
+
+	FsMintONFT.Bool(FlagTransferable, true, "transferability of onft (true | false)")
+	FsMintONFT.Bool(FlagExtensible, false, "extensisbility of onft (true | false)")
 
 	FsEditONFT.String(FlagONFTMediaURI, "[do-not-modify]", "Media uri of onft")
 	FsEditONFT.String(FlagONFTPreviewURI, "[do-not-modify]", "Preview uri of onft")
 	FsEditONFT.String(FlagONFTName, "[do-not-modify]", "Name of nft")
 	FsEditONFT.String(FlagONFTDescription, "[do-not-modify]", "Description of onft")
-	FsEditONFT.String(FlagONFTType, "[do-not-modify]", "type of onft")
 	FsEditONFT.String(FlagTransferable, "[do-not-modify]", "transferability of onft")
+	FsEditONFT.String(FlagData, "[do-not-modify]", "custom data of onft")
 
 	FsTransferONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
 	FsQuerySupply.String(FlagOwner, "", "The owner of a nft")

@@ -30,7 +30,7 @@ var (
 func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender string) *MsgCreateDenom {
 	return &MsgCreateDenom{
 		Sender:      sender,
-		Id:          GenUniqueID("onftdenom"),
+		Id:          GenUniqueID(DenomPrefix),
 		Symbol:      symbol,
 		Name:        name,
 		Schema:      schema,
@@ -155,14 +155,13 @@ func (msg MsgTransferDenom) GetSigners() []sdk.AccAddress {
 }
 
 func NewMsgMintONFT(
-	denomId, sender, recipient string, metadata Metadata,
-	assetType AssetType, transferable, extensible bool) *MsgMintONFT {
+	denomId, sender, recipient string, metadata Metadata, data string, transferable, extensible bool) *MsgMintONFT {
 
 	return &MsgMintONFT{
-		Id:           GenUniqueID("onft"),
+		Id:           GenUniqueID(IDPrefix),
 		DenomId:      denomId,
 		Metadata:     metadata,
-		AssetType:    assetType,
+		Data:         data,
 		Transferable: transferable,
 		Extensible:   extensible,
 		Sender:       sender,
@@ -188,7 +187,7 @@ func (msg MsgMintONFT) ValidateBasic() error {
 		return err
 	}
 
-	if err := ValidateMediaURI(msg.Metadata.Media); err != nil {
+	if err := ValidateMediaURI(msg.Metadata.MediaURI); err != nil {
 		return err
 	}
 
@@ -251,13 +250,13 @@ func (msg MsgTransferONFT) GetSigners() []sdk.AccAddress {
 }
 
 func NewMsgEditONFT(
-	id, denomId string, metadata Metadata, assetType,
+	id, denomId string, metadata Metadata, data,
 	transferable, extensible, sender string) *MsgEditONFT {
 	return &MsgEditONFT{
 		Id:           id,
 		DenomId:      denomId,
 		Metadata:     metadata,
-		AssetType:    assetType,
+		Data:         data,
 		Transferable: transferable,
 		Extensible:   extensible,
 		Sender:       sender,
@@ -277,7 +276,7 @@ func (msg MsgEditONFT) ValidateBasic() error {
 		return err
 	}
 
-	if err := ValidateMediaURI(msg.Metadata.Media); err != nil {
+	if err := ValidateMediaURI(msg.Metadata.MediaURI); err != nil {
 		return err
 	}
 	return ValidateONFTID(msg.Id)

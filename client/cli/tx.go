@@ -159,48 +159,32 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				onftMetadata.Description = onftDescription
 			}
 			if len(onftMediaURI) > 0 {
-				onftMetadata.Media = onftMediaURI
+				onftMetadata.MediaURI = onftMediaURI
 			}
 			if len(onftPreviewURI) > 0 {
-				onftMetadata.Preview = onftPreviewURI
+				onftMetadata.PreviewURI = onftPreviewURI
 			}
-			var onftType types.AssetType
-			onftAssetType, err := cmd.Flags().GetString(FlagONFTType)
+			data, err := cmd.Flags().GetString(FlagData)
 			if err != nil {
 				return err
 			}
-			onftAssetType = strings.ToLower(strings.TrimSpace(onftAssetType))
-			switch onftAssetType {
-			case "artwork":
-				onftType = types.ARTWORK
-			case "audio":
-				onftType = types.AUDIO
-			case "video":
-				onftType = types.VIDEO
-			default:
-				return fmt.Errorf("invalid onft type, valid types are artwork,audio,video")
-			}
-			transferable := true
-			transferability, err := cmd.Flags().GetString(FlagTransferable)
+
+			transferable, err := cmd.Flags().GetBool(FlagTransferable)
 			if err != nil {
 				return err
 			}
-			transferability = strings.ToLower(strings.TrimSpace(transferability))
-			if len(transferability) > 0 && (transferability == "no" || transferability == "false") {
-				transferable = false
+
+			extensible, err := cmd.Flags().GetBool(FlagExtensible)
+			if err != nil {
+				return err
 			}
-			extensible := true
-			extensibility, err := cmd.Flags().GetString(FlagTransferable)
-			extensibility = strings.ToLower(strings.TrimSpace(extensibility))
-			if len(extensibility) > 0 && (extensibility == "no" || extensibility == "false") {
-				extensible = false
-			}
+
 			msg := types.NewMsgMintONFT(
 				denomId,
 				sender,
 				recipient,
 				onftMetadata,
-				onftType,
+				data,
 				transferable,
 				extensible,
 			)
@@ -269,28 +253,23 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 				onftMetadata.Description = onftDescription
 			}
 			if len(onftMediaURI) > 0 {
-				onftMetadata.Media = onftMediaURI
+				onftMetadata.MediaURI = onftMediaURI
 			}
 			if len(onftPreviewURI) > 0 {
-				onftMetadata.Preview = onftPreviewURI
+				onftMetadata.PreviewURI = onftPreviewURI
 			}
-			onftType, err := cmd.Flags().GetString(FlagONFTType)
+			data, err := cmd.Flags().GetString(FlagData)
 			if err != nil {
 				return err
 			}
-			onftType = strings.ToLower(strings.TrimSpace(onftType))
 
-			if len(onftType) > 0 && !(onftType == "artwork" || onftType == "audio" || onftType == "video" ||
-				onftType == types.DoNotModify) {
-				return fmt.Errorf("invalid option for type flag , valid options are artwork|audio|video")
-			}
 			transferable, err := cmd.Flags().GetString(FlagTransferable)
 			if err != nil {
 				return err
 			}
 			if !(len(transferable) > 0 && (transferable == "no" || transferable == "yes" ||
 				transferable == types.DoNotModify)) {
-				return fmt.Errorf("invalid option for transferable flag , valid options are yes|no")
+				return fmt.Errorf("invalid option for transferable flag , valid options are yes | no")
 			}
 			extensible, err := cmd.Flags().GetString(FlagExtensible)
 			if err != nil {
@@ -304,7 +283,7 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 				onftId,
 				denomId,
 				onftMetadata,
-				onftType,
+				data,
 				transferable,
 				extensible,
 				clientCtx.GetFromAddress().String(),

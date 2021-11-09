@@ -34,7 +34,7 @@ func (k Keeper) CreateDenom(ctx sdk.Context,
 	creator sdk.AccAddress, description, previewUri string) error {
 	return k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
 }
-func (k Keeper) UpdateDenom(ctx sdk.Context)  {
+func (k Keeper) UpdateDenom(ctx sdk.Context) {
 	// TODO: Implement Update Denom keeper functionality
 }
 
@@ -44,8 +44,8 @@ func (k Keeper) TransferDenomOwner(ctx sdk.Context) {
 
 func (k Keeper) MintONFT(
 	ctx sdk.Context, denomID, onftID string,
-	metadata types.Metadata, assetType types.AssetType,
-	transferable, extensible bool, sender, recipient sdk.AccAddress) error {
+	metadata types.Metadata, data string, transferable, extensible bool,
+	sender, recipient sdk.AccAddress) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
@@ -60,7 +60,7 @@ func (k Keeper) MintONFT(
 	k.setONFT(ctx, denomID, types.NewONFT(
 		onftID,
 		metadata,
-		assetType,
+		data,
 		transferable,
 		extensible,
 		recipient,
@@ -70,7 +70,7 @@ func (k Keeper) MintONFT(
 	return nil
 }
 
-func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types.Metadata, assetType string,
+func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types.Metadata,
 	transferable string, owner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
@@ -87,23 +87,11 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types
 	if metadata.Description != types.DoNotModify {
 		onft.Metadata.Description = metadata.Description
 	}
-	if metadata.Preview != types.DoNotModify {
-		onft.Metadata.Preview = metadata.Preview
+	if metadata.PreviewURI != types.DoNotModify {
+		onft.Metadata.PreviewURI = metadata.PreviewURI
 	}
-	if metadata.Media != types.DoNotModify {
-		onft.Metadata.Media = metadata.Media
-	}
-	if assetType != types.DoNotModify {
-		switch _type := strings.ToLower(assetType); _type {
-		case "artwork":
-			onft.Type = types.ARTWORK
-		case "audio":
-			onft.Type = types.AUDIO
-		case "video":
-			onft.Type = types.VIDEO
-		default:
-			onft.Type = types.ARTWORK
-		}
+	if metadata.MediaURI != types.DoNotModify {
+		onft.Metadata.MediaURI = metadata.MediaURI
 	}
 	if transferable != types.DoNotModify {
 		denom, err := k.GetDenom(ctx, denomID)
@@ -113,7 +101,7 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types
 		if denom.Creator != onft.Owner {
 			return sdkerrors.Wrapf(
 				types.ErrNotEditable,
-				"onft %s: transferability can be modified only when creator and owner of onft are equal.",
+				"onft %s: transferability can be modified only when creator is the owner of onft.",
 				onftID,
 			)
 		}

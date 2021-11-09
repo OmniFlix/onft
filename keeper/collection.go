@@ -12,25 +12,15 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 		metadata := types.Metadata{
 			Name:        onft.GetName(),
 			Description: onft.GetDescription(),
-			Media:       onft.GetMediaURI(),
-			Preview:     onft.GetPreviewURI(),
+			MediaURI:       onft.GetMediaURI(),
+			PreviewURI:     onft.GetPreviewURI(),
 		}
-		var aType types.AssetType
-		switch onft.GetType() {
-		case "artwork":
-			aType = types.ARTWORK
-		case "audio":
-			aType = types.AUDIO
-		case "video":
-			aType = types.VIDEO
-		default:
-			aType = types.VIDEO
-		}
+
 		if err := k.MintONFT(ctx,
 			collection.Denom.Id,
 			onft.GetID(),
 			metadata,
-			aType,
+			onft.GetData(),
 			onft.IsTransferable(),
 			onft.IsExtensible(),
 			onft.GetOwner(),

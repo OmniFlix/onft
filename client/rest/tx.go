@@ -93,22 +93,10 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata.Description = req.Description
 		}
 		if len(req.MediaURI) > 0 {
-			metadata.Media = req.MediaURI
+			metadata.MediaURI = req.MediaURI
 		}
 		if len(req.PreviewURI) > 0 {
-			metadata.Preview = req.PreviewURI
-		}
-		var onftType types.AssetType
-		switch strings.ToLower(req.Type) {
-		case "artwork":
-			onftType = types.ARTWORK
-		case "audio":
-			onftType = types.AUDIO
-		case "video":
-			onftType = types.VIDEO
-		default:
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid onft type, valid types are artwork,audio,video")
-			return
+			metadata.PreviewURI = req.PreviewURI
 		}
 		transferable := true
 		transferability := strings.ToLower(req.Transferable)
@@ -126,7 +114,7 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Sender.String(),
 			req.Recipient.String(),
 			metadata,
-			onftType,
+			req.Data,
 			transferable,
 			extensible,
 		)
@@ -160,17 +148,13 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata.Description = req.Description
 		}
 		if len(req.MediaURI) > 0 {
-			metadata.Media = req.MediaURI
+			metadata.MediaURI = req.MediaURI
 		}
 		if len(req.PreviewURI) > 0 {
-			metadata.Preview = req.PreviewURI
+			metadata.PreviewURI = req.PreviewURI
 		}
-		onftType := strings.ToLower(req.Type)
-		if !(len(onftType) > 0 && (onftType == "artwork" || onftType == "audio" || onftType == "video" ||
-			onftType == types.DoNotModify)) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid onft type, valid types are artwork,audio,video")
-			return
-		}
+
+
 		transferable := strings.ToLower(req.Transferable)
 		if len(transferable) > 0 && !(transferable == "no" || transferable == "yes" ||
 			transferable == types.DoNotModify) {
@@ -187,7 +171,7 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			vars[RestParamONFTID],
 			vars[RestParamDenom],
 			metadata,
-			onftType,
+			req.Data,
 			transferable,
 			extensible,
 			req.Sender.String(),

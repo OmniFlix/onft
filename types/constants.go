@@ -10,4 +10,6 @@ const (
 	MaxPreviewURILen  = 256
 	MaxMediaURILen    = 256
 	DoNotModify       = "[do-not-modify]"
+	IDPrefix          = "onft"
+	DenomPrefix       = "onftdenom"
 )
