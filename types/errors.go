@@ -22,5 +22,6 @@ var (
 	ErrInvalidPreviewURI = sdkerrors.Register(ModuleName, 14, "invalid preview URI")
 	ErrNotTransferable   = sdkerrors.Register(ModuleName, 15, "onft is not transferable")
 	ErrNotEditable       = sdkerrors.Register(ModuleName, 16, "onft is not editable")
+	ErrInvalidOption     = sdkerrors.Register(ModuleName, 17, "invalid option")
 	// this line is used by starport scaffolding # ibc/errors
 )

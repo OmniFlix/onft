@@ -1,6 +1,8 @@
 syntax = "proto3";
 package OmniFlix.onft.v1beta1;
 
+import "gogoproto/gogo.proto";
+
 option go_package = "github.com/OmniFlix/onft/types";
 
 // EventCreateDenom is emitted on Denom Creation
@@ -29,22 +31,22 @@ message EventTransferDenom {
 
 // EventMintONFT is emitted on Mint
 message EventMintONFT {
-  string denom_id = 1;
+  string denom_id = 1 [(gogoproto.moretags) = "yaml:\"denom_id\""];
   string id       = 2;
-  string uri      = 3;
+  string uri      = 3 [(gogoproto.customname) = "URI"];
   string owner    = 4;
 }
 
 // EventEditONFT is emitted on Edit
 message EventEditONFT {
-  string denom_id = 1;
+  string denom_id = 1 [(gogoproto.moretags) = "yaml:\"denom_id\""];
   string id       = 2;
   string owner    = 3;
 }
 
 // EventTransferONFT is emitted on Transfer
 message EventTransferONFT {
-  string denom_id  = 1;
+  string denom_id  = 1 [(gogoproto.moretags) = "yaml:\"denom_id\""];
   string id        = 2;
   string sender    = 3;
   string recipient = 4;
@@ -52,7 +54,7 @@ message EventTransferONFT {
 
 // EventBurnONFT is emitted on Burn
 message EventBurnONFT {
-  string denom_id = 1;
+  string denom_id = 1 [(gogoproto.moretags) = "yaml:\"denom_id\""];
   string id       = 2;
   string owner    = 3;
 }

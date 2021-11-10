@@ -12,8 +12,8 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 		metadata := types.Metadata{
 			Name:        onft.GetName(),
 			Description: onft.GetDescription(),
-			MediaURI:       onft.GetMediaURI(),
-			PreviewURI:     onft.GetPreviewURI(),
+			MediaURI:    onft.GetMediaURI(),
+			PreviewURI:  onft.GetPreviewURI(),
 		}
 
 		if err := k.MintONFT(ctx,

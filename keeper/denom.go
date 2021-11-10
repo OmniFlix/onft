@@ -62,6 +62,18 @@ func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []types.Denom) {
 	}
 	return denoms
 }
+func (k Keeper) AuthorizeDenomCreator(ctx sdk.Context, id string, creator sdk.AccAddress) (types.Denom, error) {
+	denom, err := k.GetDenom(ctx, id)
+	if err != nil {
+		return types.Denom{}, err
+	}
+
+	if creator.String() != denom.Creator {
+		return types.Denom{}, sdkerrors.Wrap(types.ErrUnauthorized, creator.String())
+	}
+	return denom, nil
+}
+
 func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, sender sdk.AccAddress) bool {
 	denom, err := k.GetDenom(ctx, denomID)
 	if err != nil {

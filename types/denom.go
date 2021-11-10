@@ -7,7 +7,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress, description, previewUri string) Denom {
+func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress, description, previewURI string) Denom {
 	return Denom{
 		Id:      id,
 		Symbol:  symbol,
@@ -15,7 +15,7 @@ func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress, descripti
 		Schema:  schema,
 		Creator: creator.String(),
 		Description: description,
-		PreviewUri: previewUri,
+		PreviewURI: previewURI,
 	}
 }
 

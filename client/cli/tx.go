@@ -50,34 +50,34 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --chain-id=<chain-i
 			if err != nil {
 				return err
 			}
-			symbol := strings.TrimSpace(args[0])
+			symbol := args[0]
+
 			denomName, err := cmd.Flags().GetString(FlagDenomName)
 			if err != nil {
 				return err
 			}
-			denomName = strings.TrimSpace(denomName)
+
 			schema, err := cmd.Flags().GetString(FlagSchema)
 			if err != nil {
 				return err
 			}
-			schema = strings.TrimSpace(schema)
+
 			description, err := cmd.Flags().GetString(FlagDenomDescription)
 			if err != nil {
 				return err
 			}
-			description = strings.TrimSpace(description)
-			previewUri, err := cmd.Flags().GetString(FlagDenomPreviewURI)
+
+			previewURI, err := cmd.Flags().GetString(FlagDenomPreviewURI)
 			if err != nil {
 				return err
 			}
-			previewUri = strings.TrimSpace(previewUri)
 
 			msg := types.NewMsgCreateDenom(symbol,
 				denomName,
 				schema,
 				clientCtx.GetFromAddress().String(),
 				description,
-				previewUri,
+				previewURI,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -109,7 +109,7 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 			if err != nil {
 				return err
 			}
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
+			denomId := args[0]
 
 			sender := clientCtx.GetFromAddress().String()
 
@@ -118,9 +118,9 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				return err
 			}
 
-			recipientStr := strings.TrimSpace(recipient)
-			if len(recipientStr) > 0 {
-				if _, err = sdk.AccAddressFromBech32(recipientStr); err != nil {
+
+			if len(recipient) > 0 {
+				if _, err = sdk.AccAddressFromBech32(recipient); err != nil {
 					return err
 				}
 			} else {
@@ -132,25 +132,22 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 			if err != nil {
 				return err
 			}
-			onftName = strings.TrimSpace(onftName)
 
 			onftDescription, err := cmd.Flags().GetString(FlagONFTDescription)
 			if err != nil {
 				return err
 			}
-			onftDescription = strings.TrimSpace(onftDescription)
+
 
 			onftMediaURI, err := cmd.Flags().GetString(FlagONFTMediaURI)
 			if err != nil {
 				return err
 			}
-			onftMediaURI = strings.TrimSpace(onftMediaURI)
 
 			onftPreviewURI, err := cmd.Flags().GetString(FlagONFTPreviewURI)
 			if err != nil {
 				return err
 			}
-			onftPreviewURI = strings.TrimSpace(onftPreviewURI)
 
 			if len(onftName) > 0 {
 				onftMetadata.Name = onftName

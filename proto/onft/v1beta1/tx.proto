@@ -30,7 +30,10 @@ message MsgCreateDenom {
   string symbol            = 2;
   string name              = 3;
   string description       = 4;
-  string preview_uri       = 5 [(gogoproto.moretags) = "yaml:\"preview_uri\""];
+  string preview_uri       = 5 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
   string schema            = 6;
   string sender            = 7;
 }
@@ -43,7 +46,10 @@ message MsgUpdateDenom {
   string id                = 1;
   string name              = 2;
   string description       = 3;
-  string preview_uri       = 4 [(gogoproto.moretags) = "yaml:\"preview_uri\""];
+  string preview_uri       = 4 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
   string sender            = 5;
 }
 

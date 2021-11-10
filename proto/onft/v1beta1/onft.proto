@@ -31,7 +31,10 @@ message Denom {
   string schema            = 4;
   string creator           = 5;
   string description       = 6;
-  string preview_uri       = 7 [(gogoproto.moretags) = "yaml:\"created_at\""];
+  string preview_uri       = 7 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
 }
 
 //ASSET or ONFT
@@ -56,12 +59,12 @@ message Metadata {
 
   string name              = 1 [(gogoproto.moretags) = "yaml:\"name\""];
   string description       = 2 [(gogoproto.moretags) = "yaml:\"description\""];
-  string media_uri       = 3 [
-    (gogoproto.moretags) = "yaml:\"media_uri\"",
+  string media_uri         = 3 [
+    (gogoproto.moretags)   = "yaml:\"media_uri\"",
     (gogoproto.customname) = "MediaURI"
   ];
-  string preview_uri         = 4 [
-    (gogoproto.moretags) = "yaml:\"preview_uri\"",
+  string preview_uri       = 4 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
     (gogoproto.customname) = "PreviewURI"
   ];
 }

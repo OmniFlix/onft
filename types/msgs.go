@@ -35,7 +35,7 @@ func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender str
 		Name:        name,
 		Schema:      schema,
 		Description: description,
-		PreviewUri:  previewUri,
+		PreviewURI:  previewUri,
 	}
 }
 
@@ -80,7 +80,7 @@ func NewMsgUpdateDenom(id, name, description, previewUri, sender string) *MsgUpd
 		Id:          id,
 		Name:        name,
 		Description: description,
-		PreviewUri:  previewUri,
+		PreviewURI:  previewUri,
 		Sender:      sender,
 	}
 }
