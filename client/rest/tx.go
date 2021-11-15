@@ -22,6 +22,16 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 	).Methods("POST")
 
 	r.HandleFunc(
+		fmt.Sprintf("/onft/denoms/{%s}", RestParamDenom),
+		updateDenomHandlerFn(cliCtx),
+	).Methods("PUT")
+
+	r.HandleFunc(
+		fmt.Sprintf("/onft/denoms/{%s}/transfer", RestParamDenom),
+		transferDenomHandlerFn(cliCtx),
+	).Methods("POST")
+
+	r.HandleFunc(
 		fmt.Sprintf("/onft/onfts/mint"),
 		mintONFTHandlerFn(cliCtx),
 	).Methods("POST")
@@ -61,6 +71,65 @@ func createDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Sender.String(),
 			req.Description,
 			req.PreviewURI,
+		)
+		if err := msg.ValidateBasic(); err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
+	}
+}
+
+func updateDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req updateDenomReq
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		vars := mux.Vars(r)
+
+		msg := types.NewMsgUpdateDenom(
+			vars[RestParamDenom],
+			req.Name,
+			req.Description,
+			req.PreviewURI,
+			req.Sender.String(),
+		)
+		if err := msg.ValidateBasic(); err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
+	}
+}
+
+func transferDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req transferDenomReq
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		recipient, err := sdk.AccAddressFromBech32(req.Recipient)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		vars := mux.Vars(r)
+		msg := types.NewMsgTransferDenom(
+			vars[RestParamDenom],
+			req.Sender.String(),
+			recipient.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -153,7 +222,6 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if len(req.PreviewURI) > 0 {
 			metadata.PreviewURI = req.PreviewURI
 		}
-
 
 		transferable := strings.ToLower(req.Transferable)
 		if len(transferable) > 0 && !(transferable == "no" || transferable == "yes" ||

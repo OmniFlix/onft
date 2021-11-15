@@ -29,6 +29,20 @@ type createDenomReq struct {
 	PreviewURI  string         `json:"preview_uri"`
 }
 
+type updateDenomReq struct {
+	BaseReq     rest.BaseReq   `json:"base_req"`
+	Sender      sdk.AccAddress `json:"sender"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	PreviewURI  string         `json:"preview_uri"`
+}
+
+type transferDenomReq struct {
+	BaseReq   rest.BaseReq   `json:"base_req"`
+	Sender    sdk.AccAddress `json:"sender"`
+	Recipient string         `json:"recipient"`
+}
+
 type mintONFTReq struct {
 	BaseReq      rest.BaseReq   `json:"base_req"`
 	Sender       sdk.AccAddress `json:"sender"`

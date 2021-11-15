@@ -27,6 +27,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryCollection(),
 		GetCmdQuerySupply(),
 		GetCmdQueryONFT(),
+		GetCmdQueryOwner(),
 	)
 
 	return queryCmd
@@ -65,7 +66,7 @@ $ %s query onft supply [denom-id]`, version.AppName)),
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Supply(context.Background(), &types.QuerySupplyRequest{
 				DenomId: denomId,
-				Owner: owner.String(),
+				Owner:   owner.String(),
 			})
 			if err != nil {
 				return err
@@ -75,6 +76,48 @@ $ %s query onft supply [denom-id]`, version.AppName)),
 	}
 	cmd.Flags().AddFlagSet(FsQuerySupply)
 	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdQueryOwner() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "owner [address]",
+		Long:    "Get the oNFTs owned by an account address.",
+		Example: fmt.Sprintf("$ %s query onft owner <addr> --denom-id=<denom-id>", version.AppName),
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			if _, err := sdk.AccAddressFromBech32(args[0]); err != nil {
+				return err
+			}
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+			denomID, err := cmd.Flags().GetString(FlagDenomID)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			resp, err := queryClient.OwnerONFTs(context.Background(), &types.QueryOwnerONFTsRequest{
+				DenomId:    denomID,
+				Owner:      args[0],
+				Pagination: pageReq,
+			})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(resp)
+		},
+	}
+	cmd.Flags().AddFlagSet(FsQueryOwner)
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "owner onfts")
 
 	return cmd
 }
@@ -94,11 +137,16 @@ $ %s query onft collection <denom-id>`, version.AppName)),
 				return err
 			}
 
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
+			denomId := args[0]
+			pagination, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Collection(context.Background(), &types.QueryCollectionRequest{
-				DenomId: denomId,
+				DenomId:    denomId,
+				Pagination: pagination,
 			})
 			if err != nil {
 				return err
@@ -107,7 +155,7 @@ $ %s query onft collection <denom-id>`, version.AppName)),
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
-
+	flags.AddPaginationFlagsToCmd(cmd, "onfts")
 	return cmd
 }
 
@@ -124,9 +172,13 @@ $ %s query onft denoms`, version.AppName)),
 			if err != nil {
 				return err
 			}
+			pagination, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-			resp, err := queryClient.Denoms(context.Background(), &types.QueryDenomsRequest{})
+			resp, err := queryClient.Denoms(context.Background(), &types.QueryDenomsRequest{Pagination: pagination})
 			if err != nil {
 				return err
 			}
@@ -134,7 +186,7 @@ $ %s query onft denoms`, version.AppName)),
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
-
+	flags.AddPaginationFlagsToCmd(cmd, "denoms")
 	return cmd
 }
 
@@ -194,7 +246,7 @@ $ %s query onft asset <denom> <onft-id>`, version.AppName)),
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.ONFT(context.Background(), &types.QueryONFTRequest{
 				DenomId: denomId,
-				Id:    onftId,
+				Id:      onftId,
 			})
 			if err != nil {
 				return err

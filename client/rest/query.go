@@ -17,27 +17,32 @@ import (
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/supply", RestParamDenom),
+		fmt.Sprintf("/%s/denoms/{%s}/supply", types.ModuleName, RestParamDenom),
 		querySupply(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/collections/{%s}", RestParamDenom),
+		fmt.Sprintf("/%s/collections/{%s}", types.ModuleName, RestParamDenom),
 		queryCollection(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		"/onft/denoms",
+		fmt.Sprintf("/%s/denoms", types.ModuleName),
 		queryDenoms(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}", RestParamDenom),
+		fmt.Sprintf("/%s/denoms/{%s}", types.ModuleName, RestParamDenom),
 		queryDenom(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/asset/{%s}/{%s}", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/%s/owners/{%s}", types.ModuleName, RestParamOwner),
+		queryOwnerONFTs(cliCtx, queryRoute),
+	).Methods("GET")
+
+	r.HandleFunc(
+		fmt.Sprintf("/%s/asset/{%s}/{%s}", types.ModuleName, RestParamDenom, RestParamONFTID),
 		queryONFT(cliCtx, queryRoute),
 	).Methods("GET")
 }
@@ -80,6 +85,45 @@ func querySupply(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 		out := binary.LittleEndian.Uint64(res)
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, out)
+	}
+}
+
+func queryOwnerONFTs(cliCtx client.Context, queryRoute string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ownerStr := mux.Vars(r)[RestParamOwner]
+		if len(ownerStr) == 0 {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "owner should not be empty")
+		}
+
+		owner, err := sdk.AccAddressFromBech32(ownerStr)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		denomID := r.FormValue(RestParamDenom)
+		params := types.NewQueryOwnerParams(denomID, owner)
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData(
+			fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryOwner), bz,
+		)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
 

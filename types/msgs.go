@@ -118,7 +118,7 @@ func (msg MsgUpdateDenom) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{from}
 }
 
-func NewMsgTransferDenom(id, denomId, sender, recipient string) *MsgTransferDenom {
+func NewMsgTransferDenom(id, sender, recipient string) *MsgTransferDenom {
 	return &MsgTransferDenom{
 		Id:        id,
 		Sender:    sender,
