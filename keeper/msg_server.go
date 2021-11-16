@@ -86,10 +86,6 @@ func (m msgServer) TransferDenom(goCtx context.Context, msg *types.MsgTransferDe
 	if err != nil {
 		return nil, err
 	}
-	denom, err := m.Keeper.GetDenom(ctx, msg.Id)
-	if err != nil {
-		return nil, err
-	}
 
 	err = m.Keeper.TransferDenomOwner(ctx, msg.Id, sender, recipient)
 	if err != nil {
@@ -97,8 +93,7 @@ func (m msgServer) TransferDenom(goCtx context.Context, msg *types.MsgTransferDe
 	}
 	ctx.EventManager().EmitTypedEvent(
 		&types.EventTransferDenom{
-			Id:        denom.Id,
-			Symbol:    denom.Symbol,
+			Id:        msg.Id,
 			Sender:    msg.Sender,
 			Recipient: msg.Recipient,
 		},

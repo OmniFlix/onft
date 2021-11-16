@@ -21,14 +21,6 @@ func (k Keeper) HasDenomSymbol(ctx sdk.Context, symbol string) bool {
 }
 
 func (k Keeper) SetDenom(ctx sdk.Context, denom types.Denom) error {
-	if k.HasDenomID(ctx, denom.Id) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
-	}
-
-	if k.HasDenomSymbol(ctx, denom.Symbol) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
-	}
-
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&denom)
 	store.Set(types.KeyDenomID(denom.Id), bz)

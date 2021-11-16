@@ -29,11 +29,20 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("OmniFlix/%s", types.ModuleName))
 }
 
-func (k Keeper) CreateDenom(ctx sdk.Context,
-	id, symbol, name, schema string,
+func (k Keeper) CreateDenom(
+	ctx sdk.Context, id, symbol, name, schema string,
 	creator sdk.AccAddress, description, previewUri string) error {
+
+	if k.HasDenomID(ctx, id) {
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", id)
+	}
+
+	if k.HasDenomSymbol(ctx, symbol) {
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", symbol)
+	}
 	return k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
 }
+
 func (k Keeper) UpdateDenom(ctx sdk.Context, id, name, description, previewURI string, sender sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, id) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom id %s not exists", id)
