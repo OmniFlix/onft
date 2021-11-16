@@ -102,7 +102,7 @@ func GetCmdMintONFT() *cobra.Command {
 			fmt.Sprintf(`Mint an oNFT.
 Example:
 $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description <onft-descritpion> --media-uri=<uri> --preview-uri=<uri> 
---transferable <yes/no> --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
+--transferable --extensible --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
 				version.AppName,
 			),
 		),

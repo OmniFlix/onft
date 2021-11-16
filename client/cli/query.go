@@ -95,7 +95,7 @@ func GetCmdQueryOwner() *cobra.Command {
 			if _, err := sdk.AccAddressFromBech32(args[0]); err != nil {
 				return err
 			}
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			pagination, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -107,7 +107,7 @@ func GetCmdQueryOwner() *cobra.Command {
 			resp, err := queryClient.OwnerONFTs(context.Background(), &types.QueryOwnerONFTsRequest{
 				DenomId:    denomID,
 				Owner:      args[0],
-				Pagination: pageReq,
+				Pagination: pagination,
 			})
 			if err != nil {
 				return err
@@ -240,8 +240,8 @@ $ %s query onft asset <denom> <onft-id>`, version.AppName)),
 				return err
 			}
 
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
-			onftId := strings.ToLower(strings.TrimSpace(args[1]))
+			denomId := args[0]
+			onftId := args[1]
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.ONFT(context.Background(), &types.QueryONFTRequest{

@@ -76,7 +76,7 @@ message QueryOwnerONFTsRequest {
 }
 
 message QueryOwnerONFTsResponse {
-  repeated ONFT                          onfts      = 1;
+  Owner                                  owner      = 1;
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

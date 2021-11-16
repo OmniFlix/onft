@@ -93,7 +93,7 @@ func (msg MsgUpdateDenom) ValidateBasic() error {
 	if err := ValidateDenomID(msg.Id); err != nil {
 		return err
 	}
-	name := strings.TrimSpace(msg.Name)
+	name := msg.Name
 	if len(name) > 0 && !utf8.ValidString(name) {
 		return sdkerrors.Wrap(ErrInvalidDenom, "denom name is invalid")
 	}
@@ -138,7 +138,7 @@ func (msg MsgTransferDenom) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address; %s", err)
 	}
-	return ValidateDenomID(msg.Id)
+	return nil
 }
 
 func (msg MsgTransferDenom) GetSignBytes() []byte {

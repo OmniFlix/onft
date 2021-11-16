@@ -10,7 +10,7 @@ const (
 	QueryCollection = "collection"
 	QueryDenoms     = "denoms"
 	QueryDenom      = "denom"
-	QueryONFT        = "onft"
+	QueryONFT       = "onft"
 )
 
 type QuerySupplyParams struct {
@@ -62,13 +62,13 @@ func NewQueryDenomParams(id string) QueryDenomParams {
 }
 
 type QueryONFTParams struct {
-	Denom   string
+	Denom  string
 	ONFTID string
 }
 
 func NewQueryONFTParams(denom, id string) QueryONFTParams {
 	return QueryONFTParams{
-		Denom:   denom,
+		Denom:  denom,
 		ONFTID: id,
 	}
 }

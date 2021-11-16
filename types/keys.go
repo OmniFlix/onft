@@ -38,6 +38,17 @@ func SplitKeyOwner(key []byte) (address sdk.AccAddress, denom, id string, err er
 	return
 }
 
+func SplitKeyDenom(key []byte) (denomID, tokenID string, err error) {
+	keys := bytes.Split(key, delimiter)
+	if len(keys) != 2 {
+		return denomID, tokenID, errors.New("wrong KeyOwner")
+	}
+
+	denomID = string(keys[0])
+	tokenID = string(keys[1])
+	return
+}
+
 func KeyOwner(address sdk.AccAddress, denomID, onftID string) []byte {
 	key := append(PrefixOwners, delimiter...)
 	if address != nil {
