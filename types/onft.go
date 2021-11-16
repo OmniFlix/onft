@@ -12,14 +12,17 @@ import (
 
 var _ exported.ONFT = ONFT{}
 
-func NewONFT(id string, metadata Metadata, assetType AssetType, transferable bool, owner sdk.AccAddress, createdTime time.Time) ONFT {
+func NewONFT(
+	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
+	createdTime time.Time) ONFT {
 	return ONFT{
-		Id:              strings.ToLower(strings.TrimSpace(id)),
-		Metadata:        metadata,
-		Type:            assetType,
-		Owner:           owner.String(),
-		TransferEnabled: transferable,
-		Created:         createdTime,
+		Id:           id,
+		Metadata:     metadata,
+		Data:         data,
+		Owner:        owner.String(),
+		Transferable: transferable,
+		Extensible:   extensible,
+		CreatedAt:    createdTime,
 	}
 }
 
@@ -36,11 +39,11 @@ func (onft ONFT) GetDescription() string {
 }
 
 func (onft ONFT) GetMediaURI() string {
-	return onft.Metadata.Media
+	return onft.Metadata.MediaURI
 }
 
 func (onft ONFT) GetPreviewURI() string {
-	return onft.Metadata.Preview
+	return onft.Metadata.PreviewURI
 }
 
 func (onft ONFT) GetOwner() sdk.AccAddress {
@@ -51,15 +54,17 @@ func (onft ONFT) GetOwner() sdk.AccAddress {
 func (onft ONFT) GetMetadata() string {
 	return onft.Metadata.String()
 }
-
-func (onft ONFT) GetType() string {
-	return onft.Type.String()
+func (onft ONFT) GetData() string {
+	return onft.Data
 }
 func (onft ONFT) IsTransferable() bool {
-	return onft.TransferEnabled
+	return onft.Transferable
+}
+func (onft ONFT) IsExtensible() bool {
+	return onft.Extensible
 }
 func (onft ONFT) GetCreatedTime() time.Time {
-	return onft.Created
+	return onft.CreatedAt
 }
 
 // ONFT
@@ -76,10 +81,14 @@ func NewONFTs(onfts ...exported.ONFT) ONFTs {
 func ValidateONFTID(onftID string) error {
 	onftID = strings.TrimSpace(onftID)
 	if len(onftID) < MinDenomLen || len(onftID) > MaxDenomLen {
-		return sdkerrors.Wrapf(ErrInvalidONFTID, "invalid onftID %s, only accepts value [%d, %d]", onftID, MinDenomLen, MaxDenomLen)
+		return sdkerrors.Wrapf(
+			ErrInvalidONFTID,
+			"invalid onftID %s, only accepts value [%d, %d]", onftID, MinDenomLen, MaxDenomLen)
 	}
 	if !IsBeginWithAlpha(onftID) || !IsAlphaNumeric(onftID) {
-		return sdkerrors.Wrapf(ErrInvalidONFTID, "invalid onftID %s, only accepts alphanumeric characters,and begin with an english letter", onftID)
+		return sdkerrors.Wrapf(
+			ErrInvalidONFTID,
+			"invalid onftID %s, only accepts alphanumeric characters,and begin with an english letter", onftID)
 	}
 	return nil
 }
@@ -92,8 +101,8 @@ func ValidateMediaURI(mediaURI string) error {
 }
 
 func ValidatePreviewURI(previewURI string) error {
-	if len(previewURI) > MaxPreviewURIlen {
-		return sdkerrors.Wrapf(ErrInvalidPreviewURI, "invalid previewURI %s, only accepts value [0, %d]", previewURI, MaxPreviewURIlen)
+	if len(previewURI) > MaxPreviewURILen {
+		return sdkerrors.Wrapf(ErrInvalidPreviewURI, "invalid previewURI %s, only accepts value [0, %d]", previewURI, MaxPreviewURILen)
 	}
 	return nil
 }

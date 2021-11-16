@@ -20,11 +20,27 @@ const (
 )
 
 type createDenomReq struct {
-	BaseReq rest.BaseReq   `json:"base_req"`
-	Sender  sdk.AccAddress `json:"sender"`
-	Symbol  string         `json:"symbol"`
-	Name    string         `json:"name"`
-	Schema  string         `json:"schema"`
+	BaseReq     rest.BaseReq   `json:"base_req"`
+	Sender      sdk.AccAddress `json:"sender"`
+	Symbol      string         `json:"symbol"`
+	Name        string         `json:"name"`
+	Schema      string         `json:"schema"`
+	Description string         `json:"description"`
+	PreviewURI  string         `json:"preview_uri"`
+}
+
+type updateDenomReq struct {
+	BaseReq     rest.BaseReq   `json:"base_req"`
+	Sender      sdk.AccAddress `json:"sender"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	PreviewURI  string         `json:"preview_uri"`
+}
+
+type transferDenomReq struct {
+	BaseReq   rest.BaseReq   `json:"base_req"`
+	Sender    sdk.AccAddress `json:"sender"`
+	Recipient string         `json:"recipient"`
 }
 
 type mintONFTReq struct {
@@ -36,8 +52,9 @@ type mintONFTReq struct {
 	Description  string         `json:"description"`
 	MediaURI     string         `json:"media_uri"`
 	PreviewURI   string         `json:"preview_uri"`
-	Type         string         `json:"type"`
+	Data         string         `json:"data"`
 	Transferable string         `json:"transferable"`
+	Extensible   string         `json:"extensible"`
 }
 
 type editONFTReq struct {
@@ -47,8 +64,9 @@ type editONFTReq struct {
 	Description  string         `json:"description"`
 	MediaURI     string         `json:"media_uri"`
 	PreviewURI   string         `json:"preview_uri"`
-	Type         string         `json:"type"`
+	Data         string         `json:"data"`
 	Transferable string         `json:"transferable"`
+	Extensible   string         `json:"extensible"`
 }
 
 type transferONFTReq struct {

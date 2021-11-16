@@ -27,35 +27,7 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type AssetType int32
-
-const (
-	ARTWORK AssetType = 0
-	AUDIO   AssetType = 1
-	VIDEO   AssetType = 2
-)
-
-var AssetType_name = map[int32]string{
-	0: "ARTWORK",
-	1: "AUDIO",
-	2: "VIDEO",
-}
-
-var AssetType_value = map[string]int32{
-	"ARTWORK": 0,
-	"AUDIO":   1,
-	"VIDEO":   2,
-}
-
-func (x AssetType) String() string {
-	return proto.EnumName(AssetType_name, int32(x))
-}
-
-func (AssetType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_651c3270ad840fa5, []int{0}
-}
-
-//ASSETS or collections
+// Collection
 type Collection struct {
 	Denom Denom  `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom"`
 	ONFTs []ONFT `protobuf:"bytes,2,rep,name=onfts,proto3" json:"onfts"`
@@ -95,8 +67,8 @@ func (m *Collection) XXX_DiscardUnknown() {
 var xxx_messageInfo_Collection proto.InternalMessageInfo
 
 type IDCollection struct {
-	Denom string   `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty"`
-	Ids   []string `protobuf:"bytes,2,rep,name=ids,proto3" json:"ids,omitempty"`
+	DenomId string   `protobuf:"bytes,1,opt,name=denom_id,json=denomId,proto3" json:"denom_id,omitempty" yaml:"denom_id"`
+	OnftIds []string `protobuf:"bytes,2,rep,name=onft_ids,json=onftIds,proto3" json:"onft_ids,omitempty" yaml:"onft_ids"`
 }
 
 func (m *IDCollection) Reset()         { *m = IDCollection{} }
@@ -133,11 +105,13 @@ func (m *IDCollection) XXX_DiscardUnknown() {
 var xxx_messageInfo_IDCollection proto.InternalMessageInfo
 
 type Denom struct {
-	Id      string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" yaml:"id"`
-	Symbol  string `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
-	Name    string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty" yaml:"name"`
-	Schema  string `protobuf:"bytes,4,opt,name=schema,proto3" json:"schema,omitempty" yaml:"schema"`
-	Creator string `protobuf:"bytes,5,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id          string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Symbol      string `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Name        string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Schema      string `protobuf:"bytes,4,opt,name=schema,proto3" json:"schema,omitempty"`
+	Creator     string `protobuf:"bytes,5,opt,name=creator,proto3" json:"creator,omitempty"`
+	Description string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	PreviewURI  string `protobuf:"bytes,7,opt,name=preview_uri,json=previewUri,proto3" json:"preview_uri,omitempty" yaml:"preview_uri"`
 }
 
 func (m *Denom) Reset()         { *m = Denom{} }
@@ -175,12 +149,13 @@ var xxx_messageInfo_Denom proto.InternalMessageInfo
 
 //ASSET or ONFT
 type ONFT struct {
-	Id              string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Metadata        Metadata  `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata"`
-	Owner           string    `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
-	Type            AssetType `protobuf:"varint,4,opt,name=type,proto3,enum=OmniFlix.onft.v1beta1.AssetType" json:"type,omitempty"`
-	TransferEnabled bool      `protobuf:"varint,5,opt,name=transfer_enabled,json=transferEnabled,proto3" json:"transfer_enabled,omitempty"`
-	Created         time.Time `protobuf:"bytes,6,opt,name=created,proto3,stdtime" json:"created" yaml:"created"`
+	Id           string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Metadata     Metadata  `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata"`
+	Data         string    `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Owner        string    `protobuf:"bytes,4,opt,name=owner,proto3" json:"owner,omitempty"`
+	Transferable bool      `protobuf:"varint,5,opt,name=transferable,proto3" json:"transferable,omitempty"`
+	Extensible   bool      `protobuf:"varint,6,opt,name=extensible,proto3" json:"extensible,omitempty"`
+	CreatedAt    time.Time `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3,stdtime" json:"created_at" yaml:"created_at"`
 }
 
 func (m *ONFT) Reset()         { *m = ONFT{} }
@@ -219,8 +194,8 @@ var xxx_messageInfo_ONFT proto.InternalMessageInfo
 type Metadata struct {
 	Name        string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" yaml:"name"`
 	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty" yaml:"description"`
-	Preview     string `protobuf:"bytes,3,opt,name=preview,proto3" json:"preview,omitempty" yaml:"preview"`
-	Media       string `protobuf:"bytes,4,opt,name=media,proto3" json:"media,omitempty" yaml:"media"`
+	MediaURI    string `protobuf:"bytes,3,opt,name=media_uri,json=mediaUri,proto3" json:"media_uri,omitempty" yaml:"media_uri"`
+	PreviewURI  string `protobuf:"bytes,4,opt,name=preview_uri,json=previewUri,proto3" json:"preview_uri,omitempty" yaml:"preview_uri"`
 }
 
 func (m *Metadata) Reset()         { *m = Metadata{} }
@@ -256,60 +231,101 @@ func (m *Metadata) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Metadata proto.InternalMessageInfo
 
+type Owner struct {
+	Address       string         `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	IDCollections []IDCollection `protobuf:"bytes,2,rep,name=id_collections,json=idCollections,proto3" json:"id_collections" yaml:"idcs"`
+}
+
+func (m *Owner) Reset()         { *m = Owner{} }
+func (m *Owner) String() string { return proto.CompactTextString(m) }
+func (*Owner) ProtoMessage()    {}
+func (*Owner) Descriptor() ([]byte, []int) {
+	return fileDescriptor_651c3270ad840fa5, []int{5}
+}
+func (m *Owner) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Owner) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Owner.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Owner) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Owner.Merge(m, src)
+}
+func (m *Owner) XXX_Size() int {
+	return m.Size()
+}
+func (m *Owner) XXX_DiscardUnknown() {
+	xxx_messageInfo_Owner.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Owner proto.InternalMessageInfo
+
 func init() {
-	proto.RegisterEnum("OmniFlix.onft.v1beta1.AssetType", AssetType_name, AssetType_value)
 	proto.RegisterType((*Collection)(nil), "OmniFlix.onft.v1beta1.Collection")
 	proto.RegisterType((*IDCollection)(nil), "OmniFlix.onft.v1beta1.IDCollection")
 	proto.RegisterType((*Denom)(nil), "OmniFlix.onft.v1beta1.Denom")
 	proto.RegisterType((*ONFT)(nil), "OmniFlix.onft.v1beta1.ONFT")
 	proto.RegisterType((*Metadata)(nil), "OmniFlix.onft.v1beta1.Metadata")
+	proto.RegisterType((*Owner)(nil), "OmniFlix.onft.v1beta1.Owner")
 }
 
 func init() { proto.RegisterFile("onft/v1beta1/onft.proto", fileDescriptor_651c3270ad840fa5) }
 
 var fileDescriptor_651c3270ad840fa5 = []byte{
-	// 648 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x94, 0xcf, 0x6b, 0xd4, 0x40,
-	0x14, 0xc7, 0x93, 0x6d, 0xd2, 0x76, 0x67, 0xfb, 0x63, 0x1d, 0xaa, 0x86, 0x55, 0x33, 0x25, 0x82,
-	0xb4, 0x22, 0x09, 0x5d, 0x8b, 0x94, 0xe2, 0xc1, 0x5d, 0xb7, 0x85, 0x22, 0xba, 0x32, 0xac, 0x0a,
-	0x5e, 0x24, 0xbb, 0x99, 0x6e, 0x07, 0x92, 0xcc, 0x92, 0x4c, 0x5b, 0xf7, 0x3f, 0xf0, 0x24, 0xfd,
-	0x13, 0x04, 0x2f, 0xfe, 0x1b, 0x1e, 0x84, 0x1e, 0x7b, 0xf4, 0x14, 0x75, 0x7b, 0xf1, 0x9c, 0xbf,
-	0x40, 0x66, 0x26, 0x69, 0x17, 0xb4, 0xde, 0xe6, 0xbd, 0xf7, 0x79, 0x2f, 0xdf, 0xf7, 0x83, 0x80,
-	0x9b, 0x2c, 0xde, 0xe7, 0xde, 0xd1, 0x46, 0x9f, 0x70, 0x7f, 0xc3, 0x13, 0x86, 0x3b, 0x4a, 0x18,
-	0x67, 0xf0, 0x7a, 0x37, 0x8a, 0xe9, 0x6e, 0x48, 0xdf, 0xbb, 0xd2, 0x59, 0x10, 0x8d, 0x95, 0x21,
-	0x1b, 0x32, 0x49, 0x78, 0xe2, 0xa5, 0xe0, 0x06, 0x1a, 0x32, 0x36, 0x0c, 0x89, 0x27, 0xad, 0xfe,
-	0xe1, 0xbe, 0xc7, 0x69, 0x44, 0x52, 0xee, 0x47, 0x23, 0x05, 0x38, 0x1f, 0x75, 0x00, 0x9e, 0xb2,
-	0x30, 0x24, 0x03, 0x4e, 0x59, 0x0c, 0xb7, 0x80, 0x19, 0x90, 0x98, 0x45, 0x96, 0xbe, 0xaa, 0xaf,
-	0xd5, 0x9a, 0xb7, 0xdd, 0x7f, 0x7e, 0xcc, 0xed, 0x08, 0xa6, 0x6d, 0x9c, 0x66, 0x48, 0xc3, 0x2a,
-	0x01, 0x3e, 0x01, 0xa6, 0x40, 0x52, 0xab, 0xb2, 0x3a, 0xb3, 0x56, 0x6b, 0xde, 0xba, 0x22, 0xb3,
-	0xfb, 0x62, 0xb7, 0xd7, 0x5e, 0x14, 0x89, 0x93, 0x0c, 0x99, 0xc2, 0x4a, 0xb1, 0x4a, 0xdc, 0x36,
-	0x7e, 0x7f, 0x42, 0xba, 0xf3, 0x08, 0x2c, 0xec, 0x75, 0xa6, 0x14, 0xad, 0x4c, 0x2b, 0xaa, 0x96,
-	0x5f, 0xab, 0x83, 0x19, 0x1a, 0xa8, 0x6f, 0x55, 0xb1, 0x78, 0x3a, 0x5f, 0x75, 0x60, 0x4a, 0x59,
-	0xf0, 0x0e, 0xa8, 0xd0, 0x40, 0xe1, 0xed, 0xc5, 0x3c, 0x43, 0xd5, 0xb1, 0x1f, 0x85, 0xdb, 0x0e,
-	0x0d, 0x1c, 0x5c, 0xa1, 0x01, 0x5c, 0x07, 0xb3, 0xe9, 0x38, 0xea, 0xb3, 0xd0, 0xaa, 0x48, 0xe4,
-	0x5a, 0x9e, 0xa1, 0x45, 0x85, 0x28, 0xbf, 0x83, 0x0b, 0x00, 0xde, 0x05, 0x46, 0xec, 0x47, 0xc4,
-	0x9a, 0x91, 0xe0, 0x72, 0x9e, 0xa1, 0x9a, 0x02, 0x85, 0xd7, 0xc1, 0x32, 0x28, 0xeb, 0x0d, 0x0e,
-	0x48, 0xe4, 0x5b, 0xc6, 0x5f, 0xf5, 0xa4, 0x5f, 0xd4, 0x93, 0x0f, 0x68, 0x81, 0xb9, 0x41, 0x42,
-	0x7c, 0xce, 0x12, 0xcb, 0x94, 0xdd, 0x94, 0x66, 0xd1, 0xfb, 0x97, 0x0a, 0x30, 0xc4, 0x48, 0xe0,
-	0xd2, 0x65, 0x0b, 0x52, 0x73, 0x0b, 0xcc, 0x47, 0x84, 0xfb, 0x81, 0xcf, 0x7d, 0xa9, 0xba, 0xd6,
-	0x44, 0x57, 0xcc, 0xf7, 0x79, 0x81, 0x15, 0xcb, 0xb9, 0x48, 0x13, 0x73, 0x64, 0xc7, 0x31, 0x49,
-	0x54, 0x33, 0x58, 0x19, 0x70, 0x13, 0x18, 0x7c, 0x3c, 0x22, 0x52, 0xfa, 0x52, 0x73, 0xf5, 0x8a,
-	0xa2, 0xad, 0x34, 0x25, 0xbc, 0x37, 0x1e, 0x11, 0x2c, 0x69, 0xb8, 0x0e, 0xea, 0x3c, 0xf1, 0xe3,
-	0x74, 0x9f, 0x24, 0xef, 0x48, 0xec, 0xf7, 0x43, 0x12, 0xc8, 0x86, 0xe6, 0xf1, 0x72, 0xe9, 0xdf,
-	0x51, 0x6e, 0xf8, 0xb2, 0x68, 0x99, 0x04, 0xd6, 0xac, 0x14, 0xde, 0x70, 0xd5, 0x49, 0xba, 0xe5,
-	0x49, 0xba, 0xbd, 0xf2, 0x24, 0xdb, 0x0d, 0xa1, 0x39, 0xcf, 0xd0, 0x92, 0x1a, 0x5f, 0x91, 0xe8,
-	0x9c, 0xfc, 0x40, 0x3a, 0x2e, 0xcb, 0x14, 0xa3, 0xfa, 0xa6, 0x83, 0xf9, 0xb2, 0xd7, 0x8b, 0x3d,
-	0xe9, 0xff, 0xdb, 0xd3, 0x16, 0xa8, 0x05, 0x24, 0x1d, 0x24, 0x74, 0x24, 0xee, 0xaa, 0x58, 0xfe,
-	0x8d, 0x3c, 0x43, 0x50, 0xb1, 0x53, 0x41, 0x07, 0x4f, 0xa3, 0xf0, 0x01, 0x98, 0x1b, 0x25, 0xe4,
-	0x88, 0x92, 0xe3, 0xe2, 0x12, 0xe0, 0xa5, 0xc6, 0x22, 0xe0, 0xe0, 0x12, 0x81, 0xf7, 0x80, 0x19,
-	0x91, 0x80, 0x96, 0xe7, 0x50, 0xcf, 0x33, 0xb4, 0xa0, 0x58, 0xe9, 0x76, 0xb0, 0x0a, 0xab, 0x3e,
-	0xee, 0x6f, 0x82, 0xea, 0xc5, 0x74, 0x61, 0x0d, 0xcc, 0xb5, 0x70, 0xef, 0x4d, 0x17, 0x3f, 0xab,
-	0x6b, 0xb0, 0x0a, 0xcc, 0xd6, 0xab, 0xce, 0x5e, 0xb7, 0xae, 0x8b, 0xe7, 0xeb, 0xbd, 0xce, 0x4e,
-	0xb7, 0x5e, 0x69, 0x18, 0x1f, 0x3e, 0xdb, 0x5a, 0xfb, 0xf1, 0xe9, 0x2f, 0x5b, 0x3b, 0x9d, 0xd8,
-	0xfa, 0xd9, 0xc4, 0xd6, 0x7f, 0x4e, 0x6c, 0xfd, 0xe4, 0xdc, 0xd6, 0xce, 0xce, 0x6d, 0xed, 0xfb,
-	0xb9, 0xad, 0xbd, 0xb5, 0x87, 0x94, 0x1f, 0x1c, 0xf6, 0xdd, 0x01, 0x8b, 0xbc, 0x72, 0xa1, 0xf2,
-	0x0f, 0xe2, 0x89, 0xed, 0xa5, 0xfd, 0x59, 0x39, 0xfa, 0x87, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff,
-	0x28, 0x76, 0x5a, 0x39, 0x63, 0x04, 0x00, 0x00,
+	// 701 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0x3b, 0x6f, 0xd4, 0x4a,
+	0x14, 0x5e, 0x6f, 0xf6, 0x95, 0xb3, 0x79, 0xdc, 0x3b, 0x37, 0x37, 0x58, 0x01, 0xec, 0x95, 0x93,
+	0x22, 0x95, 0x57, 0x59, 0x9a, 0x28, 0x02, 0x89, 0x98, 0x10, 0x69, 0x8b, 0x10, 0x64, 0x25, 0x12,
+	0xa2, 0x59, 0x79, 0x77, 0x26, 0x9b, 0x91, 0x6c, 0xcf, 0xca, 0x9e, 0xbc, 0xfe, 0x04, 0x4a, 0x4b,
+	0x47, 0xc7, 0x5f, 0x49, 0x99, 0x92, 0xca, 0xc0, 0x86, 0x82, 0x7a, 0x25, 0x7a, 0x34, 0x0f, 0x27,
+	0x5e, 0x20, 0x15, 0xdd, 0x9c, 0xef, 0x7c, 0xc7, 0x73, 0xce, 0x77, 0xbe, 0x31, 0x3c, 0x60, 0xf1,
+	0x11, 0x6f, 0x9f, 0x6e, 0xf4, 0x09, 0x0f, 0x36, 0xda, 0x22, 0x70, 0x47, 0x09, 0xe3, 0x0c, 0xfd,
+	0xbf, 0x1f, 0xc5, 0x74, 0x37, 0xa4, 0xe7, 0xae, 0x04, 0x35, 0x63, 0x65, 0x69, 0xc8, 0x86, 0x4c,
+	0x32, 0xda, 0xe2, 0xa4, 0xc8, 0x2b, 0xf6, 0x90, 0xb1, 0x61, 0x48, 0xda, 0x32, 0xea, 0x9f, 0x1c,
+	0xb5, 0x39, 0x8d, 0x48, 0xca, 0x83, 0x68, 0xa4, 0x08, 0xce, 0x3b, 0x03, 0xe0, 0x05, 0x0b, 0x43,
+	0x32, 0xe0, 0x94, 0xc5, 0x68, 0x13, 0xaa, 0x98, 0xc4, 0x2c, 0x32, 0x8d, 0x96, 0xb1, 0xde, 0xec,
+	0x3c, 0x72, 0xff, 0x78, 0x99, 0xbb, 0x23, 0x38, 0x5e, 0xe5, 0x2a, 0xb3, 0x4b, 0xbe, 0x2a, 0x40,
+	0xcf, 0xa1, 0x2a, 0x28, 0xa9, 0x59, 0x6e, 0xcd, 0xac, 0x37, 0x3b, 0x0f, 0xef, 0xa9, 0xdc, 0x7f,
+	0xb5, 0x7b, 0xe0, 0xcd, 0x8b, 0xc2, 0x71, 0x66, 0x57, 0x45, 0x94, 0xfa, 0xaa, 0x70, 0xab, 0xf2,
+	0xfd, 0x83, 0x6d, 0x38, 0x1c, 0xe6, 0xba, 0x3b, 0x85, 0x8e, 0x5c, 0x68, 0xc8, 0x0b, 0x7a, 0x14,
+	0xcb, 0xa6, 0x66, 0xbd, 0xff, 0x26, 0x99, 0xbd, 0x78, 0x11, 0x44, 0xe1, 0x96, 0x93, 0x67, 0x1c,
+	0xbf, 0x2e, 0x8f, 0x5d, 0x2c, 0xf8, 0xe2, 0x73, 0x3d, 0x8a, 0x55, 0x2b, 0x53, 0xfc, 0x3c, 0xe3,
+	0xf8, 0x75, 0x71, 0xec, 0xe2, 0xfc, 0xd6, 0x6f, 0x06, 0x54, 0xe5, 0x50, 0x68, 0x01, 0xca, 0xf9,
+	0x4d, 0x7e, 0x99, 0x62, 0xb4, 0x0c, 0xb5, 0xf4, 0x22, 0xea, 0xb3, 0xd0, 0x2c, 0x4b, 0x4c, 0x47,
+	0x08, 0x41, 0x25, 0x0e, 0x22, 0x62, 0xce, 0x48, 0x54, 0x9e, 0x25, 0x77, 0x70, 0x4c, 0xa2, 0xc0,
+	0xac, 0x68, 0xae, 0x8c, 0x90, 0x09, 0xf5, 0x41, 0x42, 0x02, 0xce, 0x12, 0xb3, 0x2a, 0x13, 0x79,
+	0x88, 0x5a, 0xd0, 0xc4, 0x24, 0x1d, 0x24, 0x74, 0x24, 0x86, 0x35, 0x6b, 0x32, 0x5b, 0x84, 0xd0,
+	0x4b, 0x68, 0x8e, 0x12, 0x72, 0x4a, 0xc9, 0x59, 0xef, 0x24, 0xa1, 0x66, 0x5d, 0x4a, 0xb0, 0x36,
+	0xce, 0x6c, 0x78, 0xad, 0xe0, 0x43, 0xbf, 0x3b, 0xc9, 0x6c, 0xa4, 0x06, 0x2c, 0x50, 0x1d, 0x1f,
+	0x74, 0x74, 0x98, 0x50, 0x3d, 0xe6, 0xc7, 0x32, 0x54, 0x84, 0xe6, 0xbf, 0x4d, 0xb9, 0x0d, 0x8d,
+	0x88, 0xf0, 0x00, 0x07, 0x3c, 0x90, 0x73, 0x36, 0x3b, 0xf6, 0x3d, 0x0b, 0xdc, 0xd3, 0x34, 0xbd,
+	0xfd, 0xdb, 0x32, 0x21, 0x88, 0x2c, 0xd7, 0x82, 0x48, 0x6c, 0x09, 0xaa, 0xec, 0x2c, 0x26, 0x89,
+	0xd6, 0x43, 0x05, 0xc8, 0x81, 0x39, 0x9e, 0x04, 0x71, 0x7a, 0x44, 0x92, 0xa0, 0x1f, 0x12, 0xa9,
+	0x49, 0xc3, 0x9f, 0xc2, 0x90, 0x05, 0x40, 0xce, 0x39, 0x89, 0x53, 0x2a, 0x18, 0x35, 0xc9, 0x28,
+	0x20, 0xe8, 0x0d, 0x80, 0xd4, 0x90, 0xe0, 0x5e, 0xc0, 0xa5, 0x2a, 0xcd, 0xce, 0x8a, 0xab, 0xdc,
+	0xee, 0xe6, 0x6e, 0x77, 0x0f, 0x72, 0xb7, 0x7b, 0x8f, 0x45, 0xb7, 0x93, 0xcc, 0xfe, 0x57, 0xe9,
+	0x74, 0x57, 0xeb, 0x5c, 0x7e, 0xb6, 0x0d, 0x7f, 0x56, 0x03, 0xdb, 0x5c, 0x2b, 0xf5, 0xc3, 0x80,
+	0x46, 0x3e, 0x2a, 0x5a, 0xd5, 0xbb, 0x56, 0xfe, 0x5b, 0x9c, 0x64, 0x76, 0x53, 0x7d, 0x46, 0xa0,
+	0x8e, 0x5e, 0xfe, 0xe6, 0xf4, 0x2a, 0xa5, 0x5b, 0xbc, 0xe5, 0xbb, 0xd5, 0x14, 0x92, 0xce, 0xf4,
+	0x8a, 0x9f, 0xc1, 0x6c, 0x44, 0x30, 0x0d, 0xe4, 0x82, 0xa5, 0x7c, 0x5e, 0x6b, 0x9c, 0xd9, 0x8d,
+	0x3d, 0x01, 0xaa, 0xf5, 0xfe, 0xa3, 0xbe, 0x71, 0x4b, 0x73, 0x84, 0xf0, 0x22, 0x9b, 0xd0, 0x5f,
+	0x1d, 0x52, 0xf9, 0x2b, 0x87, 0xbc, 0x37, 0xa0, 0xba, 0x2f, 0xb7, 0x64, 0x42, 0x3d, 0xc0, 0x38,
+	0x21, 0x69, 0xaa, 0x7d, 0x92, 0x87, 0x68, 0x04, 0x0b, 0x14, 0xf7, 0x06, 0xb7, 0x6f, 0x34, 0x7f,
+	0xf3, 0xab, 0xf7, 0x58, 0xa6, 0xf8, 0x9e, 0xbd, 0x35, 0xfd, 0xf6, 0xe7, 0x8b, 0x68, 0x7a, 0x27,
+	0x29, 0xc5, 0x83, 0xd4, 0xf1, 0xe7, 0x29, 0x2e, 0x64, 0x55, 0x6f, 0xde, 0xd3, 0xab, 0xaf, 0x56,
+	0xe9, 0x6a, 0x6c, 0x19, 0xd7, 0x63, 0xcb, 0xf8, 0x32, 0xb6, 0x8c, 0xcb, 0x1b, 0xab, 0x74, 0x7d,
+	0x63, 0x95, 0x3e, 0xdd, 0x58, 0xa5, 0xb7, 0xd6, 0x90, 0xf2, 0xe3, 0x93, 0xbe, 0x3b, 0x60, 0x51,
+	0x3b, 0xef, 0x43, 0xfe, 0x37, 0xdb, 0xfc, 0x62, 0x44, 0xd2, 0x7e, 0x4d, 0xba, 0xe2, 0xc9, 0xcf,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0x21, 0x80, 0x17, 0x82, 0x59, 0x05, 0x00, 0x00,
 }
 
 func (this *Collection) Equal(that interface{}) bool {
@@ -339,6 +355,38 @@ func (this *Collection) Equal(that interface{}) bool {
 	}
 	for i := range this.ONFTs {
 		if !this.ONFTs[i].Equal(&that1.ONFTs[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *IDCollection) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*IDCollection)
+	if !ok {
+		that2, ok := that.(IDCollection)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.DenomId != that1.DenomId {
+		return false
+	}
+	if len(this.OnftIds) != len(that1.OnftIds) {
+		return false
+	}
+	for i := range this.OnftIds {
+		if this.OnftIds[i] != that1.OnftIds[i] {
 			return false
 		}
 	}
@@ -378,6 +426,12 @@ func (this *Denom) Equal(that interface{}) bool {
 	if this.Creator != that1.Creator {
 		return false
 	}
+	if this.Description != that1.Description {
+		return false
+	}
+	if this.PreviewURI != that1.PreviewURI {
+		return false
+	}
 	return true
 }
 func (this *ONFT) Equal(that interface{}) bool {
@@ -405,16 +459,19 @@ func (this *ONFT) Equal(that interface{}) bool {
 	if !this.Metadata.Equal(&that1.Metadata) {
 		return false
 	}
+	if this.Data != that1.Data {
+		return false
+	}
 	if this.Owner != that1.Owner {
 		return false
 	}
-	if this.Type != that1.Type {
+	if this.Transferable != that1.Transferable {
 		return false
 	}
-	if this.TransferEnabled != that1.TransferEnabled {
+	if this.Extensible != that1.Extensible {
 		return false
 	}
-	if !this.Created.Equal(that1.Created) {
+	if !this.CreatedAt.Equal(that1.CreatedAt) {
 		return false
 	}
 	return true
@@ -444,11 +501,43 @@ func (this *Metadata) Equal(that interface{}) bool {
 	if this.Description != that1.Description {
 		return false
 	}
-	if this.Preview != that1.Preview {
+	if this.MediaURI != that1.MediaURI {
 		return false
 	}
-	if this.Media != that1.Media {
+	if this.PreviewURI != that1.PreviewURI {
 		return false
+	}
+	return true
+}
+func (this *Owner) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Owner)
+	if !ok {
+		that2, ok := that.(Owner)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Address != that1.Address {
+		return false
+	}
+	if len(this.IDCollections) != len(that1.IDCollections) {
+		return false
+	}
+	for i := range this.IDCollections {
+		if !this.IDCollections[i].Equal(&that1.IDCollections[i]) {
+			return false
+		}
 	}
 	return true
 }
@@ -519,19 +608,19 @@ func (m *IDCollection) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Ids) > 0 {
-		for iNdEx := len(m.Ids) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Ids[iNdEx])
-			copy(dAtA[i:], m.Ids[iNdEx])
-			i = encodeVarintOnft(dAtA, i, uint64(len(m.Ids[iNdEx])))
+	if len(m.OnftIds) > 0 {
+		for iNdEx := len(m.OnftIds) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.OnftIds[iNdEx])
+			copy(dAtA[i:], m.OnftIds[iNdEx])
+			i = encodeVarintOnft(dAtA, i, uint64(len(m.OnftIds[iNdEx])))
 			i--
 			dAtA[i] = 0x12
 		}
 	}
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintOnft(dAtA, i, uint64(len(m.Denom)))
+	if len(m.DenomId) > 0 {
+		i -= len(m.DenomId)
+		copy(dAtA[i:], m.DenomId)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.DenomId)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -558,6 +647,20 @@ func (m *Denom) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.PreviewURI) > 0 {
+		i -= len(m.PreviewURI)
+		copy(dAtA[i:], m.PreviewURI)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.PreviewURI)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.Description) > 0 {
+		i -= len(m.Description)
+		copy(dAtA[i:], m.Description)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.Description)))
+		i--
+		dAtA[i] = 0x32
+	}
 	if len(m.Creator) > 0 {
 		i -= len(m.Creator)
 		copy(dAtA[i:], m.Creator)
@@ -616,17 +719,27 @@ func (m *ONFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	n2, err2 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.Created, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.Created):])
+	n2, err2 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CreatedAt, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CreatedAt):])
 	if err2 != nil {
 		return 0, err2
 	}
 	i -= n2
 	i = encodeVarintOnft(dAtA, i, uint64(n2))
 	i--
-	dAtA[i] = 0x32
-	if m.TransferEnabled {
+	dAtA[i] = 0x3a
+	if m.Extensible {
 		i--
-		if m.TransferEnabled {
+		if m.Extensible {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.Transferable {
+		i--
+		if m.Transferable {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
@@ -634,15 +747,17 @@ func (m *ONFT) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x28
 	}
-	if m.Type != 0 {
-		i = encodeVarintOnft(dAtA, i, uint64(m.Type))
-		i--
-		dAtA[i] = 0x20
-	}
 	if len(m.Owner) > 0 {
 		i -= len(m.Owner)
 		copy(dAtA[i:], m.Owner)
 		i = encodeVarintOnft(dAtA, i, uint64(len(m.Owner)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Data) > 0 {
+		i -= len(m.Data)
+		copy(dAtA[i:], m.Data)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.Data)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -686,17 +801,17 @@ func (m *Metadata) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Media) > 0 {
-		i -= len(m.Media)
-		copy(dAtA[i:], m.Media)
-		i = encodeVarintOnft(dAtA, i, uint64(len(m.Media)))
+	if len(m.PreviewURI) > 0 {
+		i -= len(m.PreviewURI)
+		copy(dAtA[i:], m.PreviewURI)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.PreviewURI)))
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.Preview) > 0 {
-		i -= len(m.Preview)
-		copy(dAtA[i:], m.Preview)
-		i = encodeVarintOnft(dAtA, i, uint64(len(m.Preview)))
+	if len(m.MediaURI) > 0 {
+		i -= len(m.MediaURI)
+		copy(dAtA[i:], m.MediaURI)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.MediaURI)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -711,6 +826,50 @@ func (m *Metadata) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
 		i = encodeVarintOnft(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Owner) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Owner) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Owner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.IDCollections) > 0 {
+		for iNdEx := len(m.IDCollections) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.IDCollections[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintOnft(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintOnft(dAtA, i, uint64(len(m.Address)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -751,12 +910,12 @@ func (m *IDCollection) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Denom)
+	l = len(m.DenomId)
 	if l > 0 {
 		n += 1 + l + sovOnft(uint64(l))
 	}
-	if len(m.Ids) > 0 {
-		for _, s := range m.Ids {
+	if len(m.OnftIds) > 0 {
+		for _, s := range m.OnftIds {
 			l = len(s)
 			n += 1 + l + sovOnft(uint64(l))
 		}
@@ -790,6 +949,14 @@ func (m *Denom) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovOnft(uint64(l))
 	}
+	l = len(m.Description)
+	if l > 0 {
+		n += 1 + l + sovOnft(uint64(l))
+	}
+	l = len(m.PreviewURI)
+	if l > 0 {
+		n += 1 + l + sovOnft(uint64(l))
+	}
 	return n
 }
 
@@ -805,17 +972,21 @@ func (m *ONFT) Size() (n int) {
 	}
 	l = m.Metadata.Size()
 	n += 1 + l + sovOnft(uint64(l))
+	l = len(m.Data)
+	if l > 0 {
+		n += 1 + l + sovOnft(uint64(l))
+	}
 	l = len(m.Owner)
 	if l > 0 {
 		n += 1 + l + sovOnft(uint64(l))
 	}
-	if m.Type != 0 {
-		n += 1 + sovOnft(uint64(m.Type))
-	}
-	if m.TransferEnabled {
+	if m.Transferable {
 		n += 2
 	}
-	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.Created)
+	if m.Extensible {
+		n += 2
+	}
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CreatedAt)
 	n += 1 + l + sovOnft(uint64(l))
 	return n
 }
@@ -834,13 +1005,32 @@ func (m *Metadata) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovOnft(uint64(l))
 	}
-	l = len(m.Preview)
+	l = len(m.MediaURI)
 	if l > 0 {
 		n += 1 + l + sovOnft(uint64(l))
 	}
-	l = len(m.Media)
+	l = len(m.PreviewURI)
 	if l > 0 {
 		n += 1 + l + sovOnft(uint64(l))
+	}
+	return n
+}
+
+func (m *Owner) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovOnft(uint64(l))
+	}
+	if len(m.IDCollections) > 0 {
+		for _, e := range m.IDCollections {
+			l = e.Size()
+			n += 1 + l + sovOnft(uint64(l))
+		}
 	}
 	return n
 }
@@ -999,7 +1189,7 @@ func (m *IDCollection) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DenomId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1027,11 +1217,11 @@ func (m *IDCollection) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Denom = string(dAtA[iNdEx:postIndex])
+			m.DenomId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Ids", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OnftIds", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1059,7 +1249,7 @@ func (m *IDCollection) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Ids = append(m.Ids, string(dAtA[iNdEx:postIndex]))
+			m.OnftIds = append(m.OnftIds, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1271,6 +1461,70 @@ func (m *Denom) Unmarshal(dAtA []byte) error {
 			}
 			m.Creator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Description", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowOnft
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthOnft
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthOnft
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Description = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreviewURI", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowOnft
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthOnft
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthOnft
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PreviewURI = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipOnft(dAtA[iNdEx:])
@@ -1388,6 +1642,38 @@ func (m *ONFT) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowOnft
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthOnft
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthOnft
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Data = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
 			}
 			var stringLen uint64
@@ -1418,28 +1704,9 @@ func (m *ONFT) Unmarshal(dAtA []byte) error {
 			}
 			m.Owner = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			m.Type = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowOnft
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Type |= AssetType(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		case 5:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TransferEnabled", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Transferable", wireType)
 			}
 			var v int
 			for shift := uint(0); ; shift += 7 {
@@ -1456,10 +1723,30 @@ func (m *ONFT) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-			m.TransferEnabled = bool(v != 0)
+			m.Transferable = bool(v != 0)
 		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Extensible", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowOnft
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Extensible = bool(v != 0)
+		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Created", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CreatedAt", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1486,7 +1773,7 @@ func (m *ONFT) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.Created, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CreatedAt, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1606,7 +1893,7 @@ func (m *Metadata) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Preview", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MediaURI", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1634,11 +1921,11 @@ func (m *Metadata) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Preview = string(dAtA[iNdEx:postIndex])
+			m.MediaURI = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Media", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PreviewURI", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1666,7 +1953,123 @@ func (m *Metadata) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Media = string(dAtA[iNdEx:postIndex])
+			m.PreviewURI = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipOnft(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthOnft
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Owner) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowOnft
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Owner: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Owner: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowOnft
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthOnft
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthOnft
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IDCollections", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowOnft
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthOnft
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthOnft
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IDCollections = append(m.IDCollections, IDCollection{})
+			if err := m.IDCollections[len(m.IDCollections)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

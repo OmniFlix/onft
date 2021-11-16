@@ -17,10 +17,11 @@ var (
 	ErrUnauthorized      = sdkerrors.Register(ModuleName, 9, "unauthorized address")
 	ErrInvalidDenom      = sdkerrors.Register(ModuleName, 10, "invalid denom")
 	ErrInvalidONFTID     = sdkerrors.Register(ModuleName, 11, "invalid ID")
-	ErrInvalidONFTMETA   = sdkerrors.Register(ModuleName, 12, "invalid metadata")
+	ErrInvalidONFTMeta   = sdkerrors.Register(ModuleName, 12, "invalid metadata")
 	ErrInvalidMediaURI   = sdkerrors.Register(ModuleName, 13, "invalid media URI")
 	ErrInvalidPreviewURI = sdkerrors.Register(ModuleName, 14, "invalid preview URI")
 	ErrNotTransferable   = sdkerrors.Register(ModuleName, 15, "onft is not transferable")
 	ErrNotEditable       = sdkerrors.Register(ModuleName, 16, "onft is not editable")
+	ErrInvalidOption     = sdkerrors.Register(ModuleName, 17, "invalid option")
 	// this line is used by starport scaffolding # ibc/errors
 )

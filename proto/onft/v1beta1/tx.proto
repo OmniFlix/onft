@@ -10,6 +10,10 @@ option (gogoproto.goproto_getters_all) = false;
 service Msg {
   rpc CreateDenom(MsgCreateDenom) returns (MsgCreateDenomResponse);
 
+  rpc UpdateDenom(MsgUpdateDenom) returns (MsgUpdateDenomResponse);
+
+  rpc TransferDenom(MsgTransferDenom) returns (MsgTransferDenomResponse);
+
   rpc MintONFT(MsgMintONFT) returns (MsgMintONFTResponse);
 
   rpc EditONFT(MsgEditONFT) returns (MsgEditONFTResponse);
@@ -25,22 +29,53 @@ message MsgCreateDenom {
   string id                = 1;
   string symbol            = 2;
   string name              = 3;
-  string schema            = 4;
-  string sender            = 5 [(gogoproto.moretags) = "yaml:\"sender\""];
+  string description       = 4;
+  string preview_uri       = 5 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
+  string schema            = 6;
+  string sender            = 7;
 }
 
 message MsgCreateDenomResponse {}
 
+message MsgUpdateDenom {
+  option (gogoproto.equal) = true;
+
+  string id                = 1;
+  string name              = 2;
+  string description       = 3;
+  string preview_uri       = 4 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
+  string sender            = 5;
+}
+
+message MsgUpdateDenomResponse {}
+
+message MsgTransferDenom {
+  option (gogoproto.equal) = true;
+
+  string id                = 1;
+  string sender            = 2;
+  string recipient         = 3;
+}
+
+message MsgTransferDenomResponse {}
+
 message MsgMintONFT {
   option (gogoproto.equal) = true;
 
-  string    id             = 1;
-  string    denom          = 2;
-  Metadata  metadata       = 3 [(gogoproto.nullable) = false];
-  AssetType assetType      = 4;
-  bool      transferable   = 5;
-  string    sender         = 6 [(gogoproto.moretags) = "yaml:\"sender\""];
-  string    recipient      = 7 [(gogoproto.moretags) = "yaml:\"recipient\""];
+  string   id              = 1;
+  string   denom_id        = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
+  Metadata metadata        = 3 [(gogoproto.nullable) = false];
+  string   data            = 4;
+  bool     transferable    = 5;
+  bool     extensible      = 6;
+  string   sender          = 7;
+  string   recipient       = 8;
 }
 
 message MsgMintONFTResponse {}
@@ -49,22 +84,24 @@ message MsgTransferONFT {
   option (gogoproto.equal) = true;
 
   string id                = 1;
-  string denom             = 2;
-  string sender            = 3 [(gogoproto.moretags) = "yaml:\"sender\""];
-  string recipient         = 4 [(gogoproto.moretags) = "yaml:\"recipient\""];
+  string denom_id          = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
+  string sender            = 3;
+  string recipient         = 4;
 }
 
 message MsgTransferONFTResponse {}
+
 
 message MsgEditONFT {
   option (gogoproto.equal) = true;
 
   string   id              = 1;
-  string   denom           = 2;
+  string   denom_id        = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
   Metadata metadata        = 3 [(gogoproto.nullable) = false];
-  string   assetType       = 4;
+  string   data            = 4;
   string   transferable    = 5;
-  string   sender          = 6 [(gogoproto.moretags) = "yaml:\"sender\""];
+  string   extensible      = 6;
+  string   sender          = 7;
 }
 
 message MsgEditONFTResponse {}
@@ -73,8 +110,8 @@ message MsgBurnONFT {
   option (gogoproto.equal) = true;
 
   string id                = 1;
-  string denom             = 2;
-  string sender            = 3 [(gogoproto.moretags) = "yaml:\"recipient\""];
+  string denom_id          = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
+  string sender            = 3;
 }
 
 message MsgBurnONFTResponse {}

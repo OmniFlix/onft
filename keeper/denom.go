@@ -21,14 +21,6 @@ func (k Keeper) HasDenomSymbol(ctx sdk.Context, symbol string) bool {
 }
 
 func (k Keeper) SetDenom(ctx sdk.Context, denom types.Denom) error {
-	if k.HasDenomID(ctx, denom.Id) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
-	}
-
-	if k.HasDenomSymbol(ctx, denom.Symbol) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
-	}
-
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&denom)
 	store.Set(types.KeyDenomID(denom.Id), bz)
@@ -62,6 +54,18 @@ func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []types.Denom) {
 	}
 	return denoms
 }
+func (k Keeper) AuthorizeDenomCreator(ctx sdk.Context, id string, creator sdk.AccAddress) (types.Denom, error) {
+	denom, err := k.GetDenom(ctx, id)
+	if err != nil {
+		return types.Denom{}, err
+	}
+
+	if creator.String() != denom.Creator {
+		return types.Denom{}, sdkerrors.Wrap(types.ErrUnauthorized, creator.String())
+	}
+	return denom, nil
+}
+
 func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, sender sdk.AccAddress) bool {
 	denom, err := k.GetDenom(ctx, denomID)
 	if err != nil {
