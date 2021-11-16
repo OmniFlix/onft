@@ -12,6 +12,8 @@ import (
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateDenom{}, "OmniFlix/onft/MsgCreateDenom", nil)
+	cdc.RegisterConcrete(&MsgUpdateDenom{}, "OmniFlix/onft/MsgUpdateDenom", nil)
+	cdc.RegisterConcrete(&MsgTransferDenom{}, "OmniFlix/onft/MsgTransferDenom", nil)
 	cdc.RegisterConcrete(&MsgTransferONFT{}, "OmniFlix/onft/MsgTransferONFT", nil)
 	cdc.RegisterConcrete(&MsgEditONFT{}, "OmniFlix/onft/MsgEditONFT", nil)
 	cdc.RegisterConcrete(&MsgMintONFT{}, "OmniFlix/onft/MsgMintONFT", nil)
@@ -24,6 +26,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgCreateDenom{},
+		&MsgUpdateDenom{},
+		&MsgTransferDenom{},
 		&MsgTransferONFT{},
 		&MsgEditONFT{},
 		&MsgMintONFT{},

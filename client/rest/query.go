@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 
 	"github.com/OmniFlix/onft/types"
@@ -17,27 +19,32 @@ import (
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}/supply", RestParamDenom),
+		fmt.Sprintf("/%s/denoms/{%s}/supply", types.ModuleName, RestParamDenom),
 		querySupply(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/collections/{%s}", RestParamDenom),
+		fmt.Sprintf("/%s/collections/{%s}", types.ModuleName, RestParamDenom),
 		queryCollection(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		"/onft/denoms",
+		fmt.Sprintf("/%s/denoms", types.ModuleName),
 		queryDenoms(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/denoms/{%s}", RestParamDenom),
+		fmt.Sprintf("/%s/denoms/{%s}", types.ModuleName, RestParamDenom),
 		queryDenom(cliCtx, queryRoute),
 	).Methods("GET")
 
 	r.HandleFunc(
-		fmt.Sprintf("/onft/asset/{%s}/{%s}", RestParamDenom, RestParamONFTID),
+		fmt.Sprintf("/%s/owners/{%s}", types.ModuleName, RestParamOwner),
+		queryOwnerONFTs(cliCtx, queryRoute),
+	).Methods("GET")
+
+	r.HandleFunc(
+		fmt.Sprintf("/%s/asset/{%s}/{%s}", types.ModuleName, RestParamDenom, RestParamONFTID),
 		queryONFT(cliCtx, queryRoute),
 	).Methods("GET")
 }
@@ -83,34 +90,90 @@ func querySupply(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 	}
 }
 
-func queryCollection(cliCtx client.Context, queryRoute string) http.HandlerFunc {
+func queryOwnerONFTs(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		denom := mux.Vars(r)[RestParamDenom]
-		if err := types.ValidateDenomID(denom); err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		ownerStr := mux.Vars(r)[RestParamOwner]
+		if len(ownerStr) == 0 {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "owner should not be empty")
 		}
 
-		params := types.NewQueryCollectionParams(denom)
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
+		owner, err := sdk.AccAddressFromBech32(ownerStr)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
+		denomId := r.FormValue(RestParamDenom)
 
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
+		var (
+			qc = types.NewQueryClient(cliCtx)
+		)
 
-		res, height, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryCollection), bz)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		_, page, limit, err := rest.ParseHTTPArgs(r)
+		if rest.CheckBadRequestError(w, err) {
+			return
+		}
+		pageReq := sdkquery.PageRequest{
+			Offset:     uint64((page - 1) * limit),
+			Limit:      uint64(limit),
+			CountTotal: true,
+		}
+
+		onfts, err := qc.OwnerONFTs(
+			context.Background(),
+			&types.QueryOwnerONFTsRequest{
+				Owner:      owner.String(),
+				DenomId:    denomId,
+				Pagination: &pageReq,
+			},
+		)
+		if rest.CheckInternalServerError(w, err) {
 			return
 		}
 
-		cliCtx = cliCtx.WithHeight(height)
-		rest.PostProcessResponse(w, cliCtx, res)
+		rest.PostProcessResponse(w, cliCtx, onfts)
+	}
+}
+
+func queryCollection(cliCtx client.Context, queryRoute string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		denomId := vars[RestParamDenom]
+
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		var (
+			qc = types.NewQueryClient(cliCtx)
+		)
+
+		_, page, limit, err := rest.ParseHTTPArgs(r)
+		if rest.CheckBadRequestError(w, err) {
+			return
+		}
+		pageReq := sdkquery.PageRequest{
+			Offset:     uint64((page - 1) * limit),
+			Limit:      uint64(limit),
+			CountTotal: true,
+		}
+
+		collection, err := qc.Collection(
+			context.Background(),
+			&types.QueryCollectionRequest{
+				DenomId:    denomId,
+				Pagination: &pageReq,
+			},
+		)
+		if rest.CheckInternalServerError(w, err) {
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, collection)
 	}
 }
 
@@ -147,20 +210,39 @@ func queryDenom(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 
 func queryDenoms(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query()
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
+		var (
+			qc = types.NewQueryClient(cliCtx)
+		)
 
-		res, height, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryDenoms), nil)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		_, page, limit, err := rest.ParseHTTPArgs(r)
+		if rest.CheckBadRequestError(w, err) {
+			return
+		}
+		pageReq := sdkquery.PageRequest{
+			Offset: uint64((page - 1) * limit),
+			Limit:  uint64(limit),
+		}
+
+		if query.Get("total_count") == "true" {
+			pageReq.CountTotal = true
+		}
+
+		denoms, err := qc.Denoms(
+			context.Background(),
+			&types.QueryDenomsRequest{
+				Pagination: &pageReq,
+			},
+		)
+		if rest.CheckInternalServerError(w, err) {
 			return
 		}
 
-		cliCtx = cliCtx.WithHeight(height)
-		rest.PostProcessResponse(w, cliCtx, res)
+		rest.PostProcessResponse(w, cliCtx, denoms)
 	}
 }
 

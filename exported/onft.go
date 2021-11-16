@@ -12,8 +12,8 @@ type ONFT interface {
 	GetDescription() string
 	GetMediaURI() string
 	GetPreviewURI() string
-	GetType() string
+	GetData() string
 	IsTransferable() bool
+	IsExtensible() bool
 	GetCreatedTime() time.Time
 }
-

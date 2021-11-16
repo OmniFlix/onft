@@ -19,6 +19,14 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			res, err := msgServer.CreateDenom(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
+		case *types.MsgUpdateDenom:
+			res, err := msgServer.UpdateDenom(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+
+		case *types.MsgTransferDenom:
+			res, err := msgServer.TransferDenom(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+
 		case *types.MsgMintONFT:
 			res, err := msgServer.MintONFT(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

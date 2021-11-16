@@ -25,7 +25,9 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 		case types.QueryDenoms:
 			return queryDenoms(ctx, req, k, legacyQuerierCdc)
 		case types.QueryONFT:
-			return queryNFT(ctx, req, k, legacyQuerierCdc)
+			return queryONFT(ctx, req, k, legacyQuerierCdc)
+		case types.QueryOwner:
+			return queryOwnerONFTs(ctx, req, k, legacyQuerierCdc)
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
 		}
@@ -106,7 +108,7 @@ func queryDenoms(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerier
 	return bz, nil
 }
 
-func queryNFT(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
+func queryONFT(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
 	var params types.QueryONFTParams
 
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
@@ -122,6 +124,23 @@ func queryNFT(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, nft)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+
+	return bz, nil
+}
+
+func queryOwnerONFTs(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
+	var params types.QueryOwnerParams
+
+	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+
+	owner := k.GetOwner(ctx, params.Owner, params.Denom)
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, owner)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

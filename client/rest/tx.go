@@ -22,6 +22,16 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 	).Methods("POST")
 
 	r.HandleFunc(
+		fmt.Sprintf("/onft/denoms/{%s}", RestParamDenom),
+		updateDenomHandlerFn(cliCtx),
+	).Methods("PUT")
+
+	r.HandleFunc(
+		fmt.Sprintf("/onft/denoms/{%s}/transfer", RestParamDenom),
+		transferDenomHandlerFn(cliCtx),
+	).Methods("POST")
+
+	r.HandleFunc(
 		fmt.Sprintf("/onft/onfts/mint"),
 		mintONFTHandlerFn(cliCtx),
 	).Methods("POST")
@@ -54,7 +64,73 @@ func createDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgCreateDenom(req.Symbol, req.Name, req.Schema, req.Sender.String())
+		msg := types.NewMsgCreateDenom(
+			req.Symbol,
+			req.Name,
+			req.Schema,
+			req.Sender.String(),
+			req.Description,
+			req.PreviewURI,
+		)
+		if err := msg.ValidateBasic(); err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
+	}
+}
+
+func updateDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req updateDenomReq
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		vars := mux.Vars(r)
+
+		msg := types.NewMsgUpdateDenom(
+			vars[RestParamDenom],
+			req.Name,
+			req.Description,
+			req.PreviewURI,
+			req.Sender.String(),
+		)
+		if err := msg.ValidateBasic(); err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
+	}
+}
+
+func transferDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req transferDenomReq
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		recipient, err := sdk.AccAddressFromBech32(req.Recipient)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		vars := mux.Vars(r)
+		msg := types.NewMsgTransferDenom(
+			vars[RestParamDenom],
+			req.Sender.String(),
+			recipient.String(),
+		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -86,27 +162,20 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata.Description = req.Description
 		}
 		if len(req.MediaURI) > 0 {
-			metadata.Media = req.MediaURI
+			metadata.MediaURI = req.MediaURI
 		}
 		if len(req.PreviewURI) > 0 {
-			metadata.Preview = req.PreviewURI
-		}
-		var onftType types.AssetType
-		switch strings.ToLower(req.Type) {
-		case "artwork":
-			onftType = types.ARTWORK
-		case "audio":
-			onftType = types.AUDIO
-		case "video":
-			onftType = types.VIDEO
-		default:
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid onft type, valid types are artwork,audio,video")
-			return
+			metadata.PreviewURI = req.PreviewURI
 		}
 		transferable := true
 		transferability := strings.ToLower(req.Transferable)
 		if len(transferability) > 0 && (transferability == "no" || transferability == "false") {
 			transferable = false
+		}
+		extensible := true
+		extensibility := strings.ToLower(req.Extensible)
+		if len(extensibility) > 0 && (extensibility == "no" || extensibility == "false") {
+			extensible = false
 		}
 
 		msg := types.NewMsgMintONFT(
@@ -114,8 +183,9 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Sender.String(),
 			req.Recipient.String(),
 			metadata,
-			onftType,
+			req.Data,
 			transferable,
+			extensible,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -147,29 +217,31 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			metadata.Description = req.Description
 		}
 		if len(req.MediaURI) > 0 {
-			metadata.Media = req.MediaURI
+			metadata.MediaURI = req.MediaURI
 		}
 		if len(req.PreviewURI) > 0 {
-			metadata.Preview = req.PreviewURI
+			metadata.PreviewURI = req.PreviewURI
 		}
-		onftType := strings.ToLower(req.Type)
-		if !(len(onftType) > 0 && (onftType == "artwork" || onftType == "audio" || onftType == "video" ||
-			onftType == types.DoNotModify)) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid onft type, valid types are artwork,audio,video")
-			return
-		}
+
 		transferable := strings.ToLower(req.Transferable)
 		if len(transferable) > 0 && !(transferable == "no" || transferable == "yes" ||
 			transferable == types.DoNotModify) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for transferable flag , valid options are yes,no")
 			return
 		}
+		extensible := strings.ToLower(req.Extensible)
+		if len(extensible) > 0 && !(extensible == "no" || extensible == "yes" ||
+			extensible == types.DoNotModify) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for extensible flag , valid options are yes,no")
+			return
+		}
 		msg := types.NewMsgEditONFT(
 			vars[RestParamONFTID],
 			vars[RestParamDenom],
 			metadata,
-			onftType,
+			req.Data,
 			transferable,
+			extensible,
 			req.Sender.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {
