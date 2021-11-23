@@ -40,7 +40,12 @@ func (k Keeper) CreateDenom(
 	if k.HasDenomSymbol(ctx, symbol) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", symbol)
 	}
-	return k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
+	err := k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
+	if err != nil {
+		return err
+	}
+	k.setDenomOwner(ctx, id, creator)
+	return nil
 }
 
 func (k Keeper) UpdateDenom(ctx sdk.Context, id, name, description, previewURI string, sender sdk.AccAddress) error {
@@ -79,6 +84,7 @@ func (k Keeper) TransferDenomOwner(ctx sdk.Context, id string, curOwner, newOwne
 	if err != nil {
 		return err
 	}
+	k.swapDenomOwner(ctx, id, curOwner, newOwner)
 	return nil
 }
 

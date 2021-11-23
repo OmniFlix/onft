@@ -67,8 +67,13 @@ func MustMarshalONFTID(cdc codec.BinaryCodec, onftID string) []byte {
 	return cdc.MustMarshal(&onftIDWrap)
 }
 
-func MustUnMarshalONFTID(cdc codec.BinaryCodec, value []byte) string {
-	var onftIDWrap gogotypes.StringValue
-	cdc.MustUnmarshal(value, &onftIDWrap)
-	return onftIDWrap.Value
+func MustMarshalDenomID(cdc codec.BinaryCodec, denomID string) []byte {
+	denomIDWrap := gogotypes.StringValue{Value: denomID}
+	return cdc.MustMarshal(&denomIDWrap)
+}
+
+func MustUnMarshalDenomID(cdc codec.BinaryCodec, value []byte) string {
+	var denomIDWrap gogotypes.StringValue
+	cdc.MustUnmarshal(value, &denomIDWrap)
+	return denomIDWrap.Value
 }

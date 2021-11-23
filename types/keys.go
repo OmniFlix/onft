@@ -21,6 +21,7 @@ var (
 	PrefixCollection  = []byte{0x03}
 	PrefixDenom       = []byte{0x04}
 	PrefixDenomSymbol = []byte{0x05}
+	PrefixCreator     = []byte{0x06}
 
 	delimiter = []byte("/")
 )
@@ -89,6 +90,19 @@ func KeyCollection(denomID string) []byte {
 func KeyDenomID(id string) []byte {
 	key := append(PrefixDenom, delimiter...)
 	return append(key, []byte(id)...)
+}
+func KeyDenomCreator(address sdk.AccAddress, denomId string) []byte {
+
+	key := append(PrefixCreator, delimiter...)
+	if address != nil {
+		key = append(key, []byte(address)...)
+		key = append(key, delimiter...)
+	}
+	if address != nil && len(denomId) > 0 {
+		key = append(key, []byte(denomId)...)
+		key = append(key, delimiter...)
+	}
+	return key
 }
 
 func KeyDenomSymbol(symbol string) []byte {

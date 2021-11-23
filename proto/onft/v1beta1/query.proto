@@ -52,6 +52,7 @@ message QueryDenomResponse {
 message QueryDenomsRequest {
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  string                                owner      = 2;
 }
 
 message QueryDenomsResponse {
@@ -76,8 +77,9 @@ message QueryOwnerONFTsRequest {
 }
 
 message QueryOwnerONFTsResponse {
-  Owner                                  owner      = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  string                                 owner       = 1;
+  repeated OwnerONFTCollection           collections = 2 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination  = 3;
 }
 
 message QuerySupplyRequest {
@@ -87,4 +89,9 @@ message QuerySupplyRequest {
 
 message QuerySupplyResponse {
   uint64 amount = 1;
+}
+
+message OwnerONFTCollection {
+  Denom         denom = 1  [(gogoproto.nullable) = false];
+  repeated ONFT onfts = 2 [(gogoproto.nullable) = false];
 }

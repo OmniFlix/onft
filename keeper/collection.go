@@ -13,6 +13,24 @@ import (
 )
 
 func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) error {
+	denom := collection.Denom
+	creator, err := sdk.AccAddressFromBech32(denom.Creator)
+	if err != nil {
+		return err
+	}
+	if err := k.CreateDenom(
+		ctx,
+		denom.Id,
+		denom.Symbol,
+		denom.Name,
+		denom.Schema,
+		creator,
+		denom.Description,
+		denom.PreviewURI,
+	); err != nil {
+		return err
+	}
+
 	for _, onft := range collection.ONFTs {
 		metadata := types.Metadata{
 			Name:        onft.GetName(),
