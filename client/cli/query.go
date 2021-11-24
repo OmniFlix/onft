@@ -176,9 +176,19 @@ $ %s query onft denoms`, version.AppName)),
 			if err != nil {
 				return err
 			}
+			owner, err := cmd.Flags().GetString(FlagOwner)
+			if err != nil {
+				return err
+			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-			resp, err := queryClient.Denoms(context.Background(), &types.QueryDenomsRequest{Pagination: pagination})
+			resp, err := queryClient.Denoms(
+				context.Background(),
+				&types.QueryDenomsRequest{
+					Pagination: pagination,
+					Owner:      owner,
+				},
+			)
 			if err != nil {
 				return err
 			}
@@ -187,6 +197,7 @@ $ %s query onft denoms`, version.AppName)),
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "denoms")
+	cmd.Flags().String(FlagOwner, "", "filter by collection owner address")
 	return cmd
 }
 

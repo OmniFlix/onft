@@ -224,18 +224,24 @@ func queryDenoms(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 			return
 		}
 		pageReq := sdkquery.PageRequest{
-			Offset: uint64((page - 1) * limit),
-			Limit:  uint64(limit),
+			Offset:     uint64((page - 1) * limit),
+			Limit:      uint64(limit),
+			CountTotal: true,
 		}
-
-		if query.Get("total_count") == "true" {
-			pageReq.CountTotal = true
+		var owner sdk.AccAddress
+		if query.Get("owner") != "" {
+			owner, err = sdk.AccAddressFromBech32(query.Get("owner"))
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
 		}
 
 		denoms, err := qc.Denoms(
 			context.Background(),
 			&types.QueryDenomsRequest{
 				Pagination: &pageReq,
+				Owner:      owner.String(),
 			},
 		)
 		if rest.CheckInternalServerError(w, err) {

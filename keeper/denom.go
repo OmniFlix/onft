@@ -54,6 +54,20 @@ func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []types.Denom) {
 	}
 	return denoms
 }
+
+func (k Keeper) GetDenomsByOwner(ctx sdk.Context, owner sdk.AccAddress) (denoms []types.Denom) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.KeyDenomCreator(owner, ""))
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		denomId := types.MustUnMarshalDenomID(k.cdc, iterator.Value())
+		denom, _ := k.GetDenom(ctx, denomId)
+		denoms = append(denoms, denom)
+	}
+	return denoms
+}
+
 func (k Keeper) AuthorizeDenomCreator(ctx sdk.Context, id string, creator sdk.AccAddress) (types.Denom, error) {
 	denom, err := k.GetDenom(ctx, id)
 	if err != nil {
@@ -76,4 +90,21 @@ func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, sender sdk.
 		return true
 	}
 	return false
+}
+
+func (k Keeper) deleteDenomOwner(ctx sdk.Context, denomID string, owner sdk.AccAddress) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyDenomCreator(owner, denomID))
+}
+
+func (k Keeper) setDenomOwner(ctx sdk.Context, denomId string, owner sdk.AccAddress) {
+	store := ctx.KVStore(k.storeKey)
+
+	bz := types.MustMarshalDenomID(k.cdc, denomId)
+	store.Set(types.KeyDenomCreator(owner, denomId), bz)
+}
+
+func (k Keeper) swapDenomOwner(ctx sdk.Context, denomID string, srcOwner, dstOwner sdk.AccAddress) {
+	k.deleteDenomOwner(ctx, denomID, srcOwner)
+	k.setDenomOwner(ctx, denomID, dstOwner)
 }
