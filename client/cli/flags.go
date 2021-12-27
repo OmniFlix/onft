@@ -57,7 +57,7 @@ func init() {
 	FsEditONFT.String(FlagDescription, "[do-not-modify]", "Description of onft")
 	FsEditONFT.String(FlagTransferable, "[do-not-modify]", "transferability of onft")
 	FsEditONFT.String(FlagData, "[do-not-modify]", "custom data of onft")
-	FsEditONFT.String(FlagExtensible, "yes", "extensibility of onft (yes | no)")
+	FsEditONFT.String(FlagExtensible, "[do-not-modify]", "extensibility of onft (yes | no)")
 
 	FsTransferONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
 	FsQuerySupply.String(FlagOwner, "", "The owner of a nft")
