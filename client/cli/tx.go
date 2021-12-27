@@ -102,7 +102,7 @@ func GetCmdMintONFT() *cobra.Command {
 			fmt.Sprintf(`Mint an oNFT.
 Example:
 $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description <onft-descritpion> --media-uri=<uri> --preview-uri=<uri> 
---transferable --extensible --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
+--transferable yes --extensible yes --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
 				version.AppName,
 			),
 		),
@@ -167,14 +167,30 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				return err
 			}
 
-			transferable, err := cmd.Flags().GetBool(FlagTransferable)
+			var transferable bool
+			transferability, err := cmd.Flags().GetString(FlagTransferable)
 			if err != nil {
 				return err
 			}
-
-			extensible, err := cmd.Flags().GetBool(FlagExtensible)
+			transferability = strings.ToLower(transferability)
+			if transferability == "false" || transferability == "no" {
+				transferable = false
+			} else if transferability == "true" || transferability == "yes" {
+				transferable = true
+			} else {
+				return fmt.Errorf("invalid option for transferable flag , valid options are true|false, yes|no")
+			}
+			var extensible bool
+			extensibility, err := cmd.Flags().GetString(FlagExtensible)
 			if err != nil {
 				return err
+			}
+			if extensibility == "false" || extensibility == "no" {
+				extensible = false
+			} else if extensibility == "true" || extensibility == "yes" {
+				extensible = true
+			} else {
+				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
 			}
 
 			msg := types.NewMsgMintONFT(
@@ -206,7 +222,7 @@ func GetCmdEditONFT() *cobra.Command {
 			fmt.Sprintf(`Edit the data of an oNFT.
 Example:
 $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-description> --media-uri=<uri>
---preview-uri=<uri> --type=<onft-type> --transferable=<yes|no> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
+--preview-uri=<uri> --type=<onft-type> --transferable=yes --extensible=yes --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
 				version.AppName,
 			),
 		),
@@ -273,8 +289,7 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 			if err != nil {
 				return err
 			}
-			if !(len(extensible) > 0 && (extensible == "no" || extensible == "yes" ||
-				extensible == types.DoNotModify)) {
+			if !(len(extensible) > 0 && (extensible == "no" || extensible == "yes" || extensible == types.DoNotModify)) {
 				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
 			}
 			msg := types.NewMsgEditONFT(
