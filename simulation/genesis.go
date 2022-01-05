@@ -21,6 +21,7 @@ func genDenoms(r *rand.Rand, accounts []simtypes.Account) []types.Denom {
 			Schema: "",
 			Description: simtypes.RandStringOfLength(r, 10),
 			PreviewURI:  simtypes.RandStringOfLength(r, 10),
+			Creator: accounts[i].Address.String(),
 		}
 	}
 	return denoms
@@ -30,8 +31,8 @@ func genDenoms(r *rand.Rand, accounts []simtypes.Account) []types.Denom {
 func genONFTCollection(r *rand.Rand, denoms []types.Denom, accounts []simtypes.Account) []types.Collection {
 	collections := make([]types.Collection, len(denoms)-1)
 	for i := 0; i < len(denoms)-1; i++ {
-		onfts := make([]types.ONFT, len(accounts)-1)
-		for j := 0; j < len(accounts)-1; j++ {
+		onfts := make([]types.ONFT, len(accounts)/4)
+		for j := 0; j < len(accounts)/4; j++ {
 			owner := accounts[j]
 			onfts[j] = types.ONFT{
 				Id:           RandID(r, "onft", 10),

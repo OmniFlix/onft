@@ -5,10 +5,12 @@ import (
 	"github.com/OmniFlix/onft/types"
 	"github.com/OmniFlix/onft/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+	"strings"
 )
 
 // Simulation operation weights constants
@@ -119,7 +121,44 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+
+		denomName := strings.ToLower(simtypes.RandStringOfLength(r, 10))
+		symbol := simtypes.RandStringOfLength(r, 5)
+		description := strings.ToLower(simtypes.RandStringOfLength(r, 10))
+		previewURI := strings.ToLower(simtypes.RandStringOfLength(r, 10))
+		sender, _ := simtypes.RandomAcc(r, accs)
+
+
+		msg := types.NewMsgCreateDenom(
+			symbol,
+			denomName,
+			"{}",
+			description,
+			previewURI,
+			sender.Address.String(),
+		)
+		account := ak.GetAccount(ctx, sender.Address)
+		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
+		if spendableCoins.Empty() {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateDenom, "unable to create denom"), nil, nil
+		}
+
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgCreateDenom,
+			Context:         ctx,
+			SimAccount:      sender,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
+		}
+
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
 
@@ -130,7 +169,7 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(&types.MsgMintONFT{}, true, "", nil), nil, nil
 	}
 }
 
@@ -141,7 +180,7 @@ func SimulateMsgTransferONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.B
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(&types.MsgTransferONFT{}, true, "", nil), nil, nil
 	}
 }
 
@@ -152,7 +191,7 @@ func SimulateMsgEditNFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankKe
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(&types.MsgEditONFT{}, true, "", nil), nil, nil
 	}
 }
 
@@ -165,7 +204,7 @@ func SimulateMsgBurnONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(&types.MsgBurnONFT{}, true, "", nil), nil, nil
 	}
 }
 
@@ -176,7 +215,7 @@ func SimulateMsgTransferDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 ) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(&types.MsgTransferDenom{}, true, "", nil), nil, nil
 	}
 }
 
@@ -187,7 +226,7 @@ func SimulateMsgUpdateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(nil, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(&types.MsgUpdateDenom{}, true, "", nil), nil, nil
 	}
 }
 
