@@ -1,69 +1,82 @@
 package simulation
 
 import (
+	"encoding/json"
+	"fmt"
 	"math/rand"
+	"strings"
+	"time"
 
-	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"strings"
+
+	"github.com/OmniFlix/onft/types"
 )
 
+const (
+	denomName1 = "denom1"
+	denomName2  = "denom2"
+	denomId1 = "onftdenom1"
+	denomId2 = "onftdenom2"
+)
 
-// genDenoms returns a slice of nft denoms.
-func genDenoms(r *rand.Rand, accounts []simtypes.Account) []types.Denom {
-	denoms := make([]types.Denom, len(accounts)-1)
-	for i := 0; i < len(accounts)-1; i++ {
-		denoms[i] = types.Denom{
-			Id:          RandID(r, "onftdenom",  10),
-			Name:        simtypes.RandStringOfLength(r, 10),
-			Symbol:      simtypes.RandStringOfLength(r, 10),
-			Schema: "",
-			Description: simtypes.RandStringOfLength(r, 10),
-			PreviewURI:  simtypes.RandStringOfLength(r, 10),
-			Creator: accounts[i].Address.String(),
-		}
-	}
-	return denoms
-}
+// RandomizedGenState generates a random GenesisState for nft
+func RandomizedGenState(simState *module.SimulationState) {
+	collections := types.NewCollections(
+		types.NewCollection(
+			types.Denom{
+				Id:      denomId1,
+				Name:    denomName1,
+				Schema:  "{}",
+				Creator: "",
+				Symbol:  "denom1",
+				Description: simtypes.RandStringOfLength(simState.Rand, 45),
+				PreviewURI: simtypes.RandStringOfLength(simState.Rand, 45),
+			},
+			types.ONFTs{},
+		),
+		types.NewCollection(
+			types.Denom{
+				Id:      denomId2,
+				Name:    denomName2,
+				Schema:  "{}",
+				Creator: "",
+				Symbol:  "denom2",
+			},
+			types.ONFTs{}),
+	)
+	for _, acc := range simState.Accounts {
+		// 10% of accounts own an NFT
+		if simState.Rand.Intn(100) < 10 {
+			baseNFT := types.NewONFT(
+				RandID(simState.Rand, "onft", 10), // id
+				RandMetadata(simState.Rand),
+				"{}",
+				true,
+				true,
+				acc.Address,
+				time.Time{},
+			)
 
-// genONFTCollection returns a slice of collection.
-func genONFTCollection(r *rand.Rand, denoms []types.Denom, accounts []simtypes.Account) []types.Collection {
-	collections := make([]types.Collection, len(denoms)-1)
-	for i := 0; i < len(denoms)-1; i++ {
-		onfts := make([]types.ONFT, len(accounts)/4)
-		for j := 0; j < len(accounts)/4; j++ {
-			owner := accounts[j]
-			onfts[j] = types.ONFT{
-				Id:           RandID(r, "onft", 10),
-				Metadata:     RandMetadata(r),
-				Data:         "",
-				Owner:        owner.Address.String(),
-				Transferable: true,
-				Extensible:   true,
-				CreatedAt:    simtypes.RandTimestamp(r),
+			if simState.Rand.Intn(100) < 50 {
+				collections[0].Denom.Creator = baseNFT.Owner
+				collections[0] = collections[0].AddONFT(baseNFT)
+			} else {
+				collections[1].Denom.Creator = baseNFT.Owner
+				collections[1] = collections[1].AddONFT(baseNFT)
 			}
 		}
-		collections[i] = types.Collection{
-			Denom: denoms[i],
-			ONFTs: onfts,
-		}
 	}
-	return collections
-}
 
-// RandomizedGenState generates a random GenesisState for onft
-func RandomizedGenState(simState *module.SimulationState) {
-	var collections []types.Collection
-	denoms := genDenoms(simState.Rand, simState.Accounts)
-	simState.AppParams.GetOrGenerate(
-		simState.Cdc, "onft", &collections, simState.Rand,
-		func(r *rand.Rand) { collections = genONFTCollection(r, denoms, simState.Accounts)},
-	)
-	onftGenesis := &types.GenesisState{
-		Collections: collections,
+	nftGenesis := types.NewGenesisState(collections)
+
+	bz, err := json.MarshalIndent(nftGenesis, "", " ")
+	if err != nil {
+		panic(err)
 	}
-	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(onftGenesis)
+	fmt.Printf("Selected randomly generated %s parameters:\n%s\n", types.ModuleName, bz)
+
+	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(nftGenesis)
 }
 
 func RandID(r *rand.Rand, prefix string, n int) string {
