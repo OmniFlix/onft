@@ -6,7 +6,6 @@ import (
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp/helpers"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
@@ -34,7 +33,7 @@ func WeightedOperations(
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 ) simulation.WeightedOperations {
-	var weightCreateDenom, weightMint, weightEdit, weightTransfer int //, weightBurn, weightUpdateDenom, weightTransferDenom int
+	var weightCreateDenom, weightMint, weightEdit, weightTransfer, weightBurn, weightUpdateDenom, weightTransferDenom int
 
 	appParams.GetOrGenerate(
 		cdc, OpWeightMsgCreateDenom, &weightCreateDenom, nil,
@@ -63,25 +62,24 @@ func WeightedOperations(
 			weightTransfer = 50
 		},
 	)
-	/*
-		appParams.GetOrGenerate(
+	appParams.GetOrGenerate(
 			cdc, OpWeightMsgBurnONFT, &weightBurn, nil,
 			func(_ *rand.Rand) {
 				weightBurn = 10
 			},
-		)
-		appParams.GetOrGenerate(
+	)
+	appParams.GetOrGenerate(
 			cdc, OpWeightMsgTransferDenom, &weightTransferDenom, nil,
 			func(_ *rand.Rand) {
 				weightTransferDenom = 10
 			},
-		)
-		appParams.GetOrGenerate(
+	)
+	appParams.GetOrGenerate(
 			cdc, OpWeightMsgUpdateDenom, &weightUpdateDenom, nil,
 			func(_ *rand.Rand) {
 				weightUpdateDenom = 10
 			},
-		)*/
+	)
 
 	return simulation.WeightedOperations{
 		simulation.NewWeightedOperation(
@@ -100,18 +98,18 @@ func WeightedOperations(
 			weightTransfer,
 			SimulateMsgTransferONFT(k, ak, bk),
 		),
-		/*	simulation.NewWeightedOperation(
+		simulation.NewWeightedOperation(
 				weightBurn,
 				SimulateMsgBurnONFT(k, ak, bk),
-			),
-			simulation.NewWeightedOperation(
-				weightTransferDenom,
-				SimulateMsgTransferDenom(k, ak, bk),
-			),
-			simulation.NewWeightedOperation(
-				weightUpdateDenom,
-				SimulateMsgUpdateDenom(k, ak, bk),
-			),*/
+		),
+		simulation.NewWeightedOperation(
+			weightTransferDenom,
+			SimulateMsgTransferDenom(k, ak, bk),
+		),
+		simulation.NewWeightedOperation(
+			weightUpdateDenom,
+			SimulateMsgUpdateDenom(k, ak, bk),
+		),
 	}
 }
 
@@ -122,12 +120,13 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-
+		denomId := RandID(r, "onftdenom", 10)
 		denomName := strings.ToLower(simtypes.RandStringOfLength(r, 10))
 		symbol := simtypes.RandStringOfLength(r, 5)
 		description := strings.ToLower(simtypes.RandStringOfLength(r, 10))
 		previewURI := strings.ToLower(simtypes.RandStringOfLength(r, 10))
 		sender, _ := simtypes.RandomAcc(r, accs)
+
 
 		msg := types.NewMsgCreateDenom(
 			symbol,
@@ -137,6 +136,11 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 			previewURI,
 			sender.Address.String(),
 		)
+		msg.Id = denomId
+		denom, _ := k.GetDenom(ctx, msg.Id)
+		if denom.Size() != 0 {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateDenom, "denom exist"), nil, nil
+		}
 		account := ak.GetAccount(ctx, sender.Address)
 		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
 		if spendableCoins.Empty() {
@@ -169,7 +173,10 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		denom := getRandomDenom(ctx, k, r)
+		denom, err  := getRandomDenom(ctx, k, r)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMintONFT, err.Error()), nil, err
+		}
 		randomRecipient, _ := simtypes.RandomAcc(r, accs)
 
 		msg := types.NewMsgMintONFT(
@@ -181,40 +188,34 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 			true,
 			true,
 		)
+		onftId := RandID(r, "onft", 10)
+		msg.Id = onftId
 		minter, _ := sdk.AccAddressFromBech32(denom.Creator)
 		account := ak.GetAccount(ctx, minter)
-		spendable := bk.SpendableCoins(ctx, account.GetAddress())
-		fees, err := simtypes.RandomFees(r, ctx, spendable)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMintONFT, err.Error()), nil, err
-		}
+		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
 
-		simAccount, found := simtypes.FindAccount(accs, minter)
+		sender, found := simtypes.FindAccount(accs, minter)
 		if !found {
 			err = fmt.Errorf("account %s not found", msg.Sender)
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMintONFT, err.Error()), nil, err
 		}
 
-		txGen := simappparams.MakeTestEncodingConfig().TxConfig
-		tx, err := helpers.GenTx(
-			txGen,
-			[]sdk.Msg{msg},
-			fees,
-			helpers.DefaultGenTxGas,
-			chainID,
-			[]uint64{account.GetAccountNumber()},
-			[]uint64{account.GetSequence()},
-			simAccount.PrivKey,
-		)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate mock tx"), nil, err
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgMintONFT,
+			Context:         ctx,
+			SimAccount:      sender,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
 		}
 
-		if _, _, err = app.Deliver(txGen.TxEncoder(), tx); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMintONFT, err.Error()), nil, err
-		}
-
-		return simtypes.NewOperationMsg(msg, true, "", nil), nil, nil
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
 
@@ -242,11 +243,7 @@ func SimulateMsgEditNFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankKe
 		)
 
 		account := ak.GetAccount(ctx, ownerAddr)
-		spendable := bk.SpendableCoins(ctx, account.GetAddress())
-		fees, err := simtypes.RandomFees(r, ctx, spendable)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditONFT, err.Error()), nil, err
-		}
+		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
 
 		ownerAccount, found := simtypes.FindAccount(accs, ownerAddr)
 		if !found {
@@ -254,26 +251,22 @@ func SimulateMsgEditNFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankKe
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditONFT, err.Error()), nil, err
 		}
 
-		txGen := simappparams.MakeTestEncodingConfig().TxConfig
-		tx, err := helpers.GenTx(
-			txGen,
-			[]sdk.Msg{msg},
-			fees,
-			helpers.DefaultGenTxGas,
-			chainID,
-			[]uint64{account.GetAccountNumber()},
-			[]uint64{account.GetSequence()},
-			ownerAccount.PrivKey,
-		)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate mock tx"), nil, err
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgEditONFT,
+			Context:         ctx,
+			SimAccount:      ownerAccount,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
 		}
 
-		if _, _, err = app.Deliver(txGen.TxEncoder(), tx); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditONFT, err.Error()), nil, err
-		}
-
-		return simtypes.NewOperationMsg(msg, true, "", nil), nil, nil
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
 
@@ -309,36 +302,28 @@ func SimulateMsgTransferONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.B
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgTransferONFT, err.Error()), nil, err
 		}
 
-		spendable := bk.SpendableCoins(ctx, account.GetAddress())
-		fees, err := simtypes.RandomFees(r, ctx, spendable)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgTransferONFT, err.Error()), nil, err
+		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
+
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgTransferONFT,
+			Context:         ctx,
+			SimAccount:      ownerAccount,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
 		}
 
-		txGen := simappparams.MakeTestEncodingConfig().TxConfig
-		tx, err := helpers.GenTx(
-			txGen,
-			[]sdk.Msg{msg},
-			fees,
-			helpers.DefaultGenTxGas,
-			chainID,
-			[]uint64{account.GetAccountNumber()},
-			[]uint64{account.GetSequence()},
-			ownerAccount.PrivKey,
-		)
-		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate mock tx"), nil, err
-		}
-
-		if _, _, err = app.Deliver(txGen.TxEncoder(), tx); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgTransferONFT, err.Error()), nil, err
-		}
-
-		return simtypes.NewOperationMsg(msg, true, "", nil), nil, nil
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
 
-/*
+
 // SimulateMsgBurnONFT simulates a burn onft transaction
 func SimulateMsgBurnONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper) simtypes.Operation {
 	return func(
@@ -346,7 +331,39 @@ func SimulateMsgBurnONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(&types.MsgBurnONFT{}, true, "", nil), nil, nil
+		ownerAddr, denom, nftID := getRandomNFTFromOwner(ctx, k, r)
+		if ownerAddr.Empty() {
+			err = fmt.Errorf("invalid account")
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgBurnONFT, err.Error()), nil, err
+		}
+
+		msg := types.NewMsgBurnONFT(denom, nftID, ownerAddr.String())
+
+		account := ak.GetAccount(ctx, ownerAddr)
+		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
+
+		ownerAccount, found := simtypes.FindAccount(accs, ownerAddr)
+		if !found {
+			err = fmt.Errorf("account %s not found", msg.Sender)
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgBurnONFT, err.Error()), nil, err
+		}
+
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgBurnONFT,
+			Context:         ctx,
+			SimAccount:      ownerAccount,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
+		}
+
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
 
@@ -357,7 +374,46 @@ func SimulateMsgTransferDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(&types.MsgTransferDenom{}, true, "", nil), nil, nil
+		denom, err  := getRandomDenom(ctx, k, r)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgTransferDenom, err.Error()), nil, err
+		}
+
+		creator, err := sdk.AccAddressFromBech32(denom.Creator)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgTransferDenom, err.Error()), nil, err
+		}
+		account := ak.GetAccount(ctx, creator)
+		ownerAccount, found := simtypes.FindAccount(accs, account.GetAddress())
+		if !found {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgTransferDenom, "creator not found"), nil, nil
+		}
+
+		recipient, _ := simtypes.RandomAcc(r, accs)
+		msg := types.NewMsgTransferDenom(
+			denom.Id,
+			denom.Creator,
+			recipient.Address.String(),
+		)
+
+		spendableCoins := bk.SpendableCoins(ctx, ownerAccount.Address)
+
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgTransferDenom,
+			Context:         ctx,
+			SimAccount:      ownerAccount,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
+		}
+
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
 
@@ -368,10 +424,50 @@ func SimulateMsgUpdateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 	) (
 		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
 	) {
-		return simtypes.NewOperationMsg(&types.MsgUpdateDenom{}, true, "", nil), nil, nil
+		denom, err  := getRandomDenom(ctx, k, r)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUpdateDenom, err.Error()), nil, err
+		}
+
+		creator, err := sdk.AccAddressFromBech32(denom.Creator)
+		if err != nil {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUpdateDenom, err.Error()), nil, err
+		}
+		account := ak.GetAccount(ctx, creator)
+		ownerAccount, found := simtypes.FindAccount(accs, account.GetAddress())
+		if !found {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUpdateDenom, "creator not found"), nil, nil
+		}
+		msg := types.NewMsgUpdateDenom(
+			denom.Id,
+			simtypes.RandStringOfLength(r, 10),
+			simtypes.RandStringOfLength(r, 45),
+			simtypes.RandStringOfLength(r, 45),
+			ownerAccount.Address.String(),
+		)
+
+		spendableCoins := bk.SpendableCoins(ctx, ownerAccount.Address)
+
+
+		txCtx := simulation.OperationInput{
+			R:               r,
+			App:             app,
+			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			Cdc:             nil,
+			Msg:             msg,
+			MsgType:         types.TypeMsgUpdateDenom,
+			Context:         ctx,
+			SimAccount:      ownerAccount,
+			AccountKeeper:   ak,
+			Bankkeeper:      bk,
+			ModuleName:      types.ModuleName,
+			CoinsSpentInMsg: spendableCoins,
+		}
+
+		return simulation.GenAndDeliverTxWithRandFees(txCtx)
 	}
 }
-*/
+
 func getRandomNFTFromOwner(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (address sdk.AccAddress, denomID, tokenID string) {
 	owners := k.GetOwners(ctx)
 
@@ -408,12 +504,12 @@ func getRandomNFTFromOwner(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (addr
 }
 
 
-func getRandomDenom(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) types.Denom {
-	denoms := k.GetDenoms(ctx)
+func getRandomDenom(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (types.Denom, error) {
+	var denoms = []string{denomId1, denomId2}
 	i := r.Intn(len(denoms))
-	return denoms[i]
-}
-
-func genRandomBool(r *rand.Rand) bool {
-	return r.Int()%2 == 0
+	denom, _ := k.GetDenom(ctx, denoms[i])
+	if denom.Size() == 0 {
+		return types.Denom{}, fmt.Errorf("no denoms created")
+	}
+	return denom, nil
 }

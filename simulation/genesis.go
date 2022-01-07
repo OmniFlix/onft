@@ -42,14 +42,15 @@ func RandomizedGenState(simState *module.SimulationState) {
 				Schema:  "{}",
 				Creator: "",
 				Symbol:  "denom2",
+				Description: simtypes.RandStringOfLength(simState.Rand, 45),
+				PreviewURI: simtypes.RandStringOfLength(simState.Rand, 45),
 			},
 			types.ONFTs{}),
 	)
-	for _, acc := range simState.Accounts {
-		// 10% of accounts own an NFT
-		if simState.Rand.Intn(100) < 10 {
-			baseNFT := types.NewONFT(
-				RandID(simState.Rand, "onft", 10), // id
+	for i, acc := range simState.Accounts {
+		if  simState.Rand.Intn(100) < 10 {
+			oNFT := types.NewONFT(
+				RandID(simState.Rand, "onft", 10),
 				RandMetadata(simState.Rand),
 				"{}",
 				true,
@@ -58,12 +59,12 @@ func RandomizedGenState(simState *module.SimulationState) {
 				time.Time{},
 			)
 
-			if simState.Rand.Intn(100) < 50 {
-				collections[0].Denom.Creator = baseNFT.Owner
-				collections[0] = collections[0].AddONFT(baseNFT)
+			if i < 50 {
+				collections[0].Denom.Creator = oNFT.Owner
+				collections[0] = collections[0].AddONFT(oNFT)
 			} else {
-				collections[1].Denom.Creator = baseNFT.Owner
-				collections[1] = collections[1].AddONFT(baseNFT)
+				collections[1].Denom.Creator = oNFT.Owner
+				collections[1] = collections[1].AddONFT(oNFT)
 			}
 		}
 	}
