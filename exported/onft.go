@@ -15,5 +15,6 @@ type ONFT interface {
 	GetData() string
 	IsTransferable() bool
 	IsExtensible() bool
+	IsNSFW() bool
 	GetCreatedTime() time.Time
 }

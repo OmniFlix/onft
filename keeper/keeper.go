@@ -90,7 +90,7 @@ func (k Keeper) TransferDenomOwner(ctx sdk.Context, id string, curOwner, newOwne
 
 func (k Keeper) MintONFT(
 	ctx sdk.Context, denomID, onftID string,
-	metadata types.Metadata, data string, transferable, extensible bool,
+	metadata types.Metadata, data string, transferable, extensible, nsfw bool,
 	sender, recipient sdk.AccAddress) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
@@ -111,6 +111,7 @@ func (k Keeper) MintONFT(
 		extensible,
 		recipient,
 		ctx.BlockHeader().Time,
+		nsfw,
 	))
 	k.setOwner(ctx, denomID, onftID, recipient)
 	k.increaseSupply(ctx, denomID)
@@ -118,7 +119,7 @@ func (k Keeper) MintONFT(
 }
 
 func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types.Metadata,
-	data, transferable, extensible string, owner sdk.AccAddress) error {
+	data, transferable, extensible, nsfw string, owner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
@@ -182,6 +183,27 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types
 				types.ErrInvalidOption,
 				"%s is invalid option for extensible.",
 				extensible,
+			)
+		}
+	}
+	if len(nsfw) > 0 && nsfw != types.DoNotModify {
+		if denom.Creator != onft.Owner {
+			return sdkerrors.Wrapf(
+				types.ErrNotEditable,
+				"onft %s: nsfw can be modified only when creator is the owner of the onft.",
+				onftID,
+			)
+		}
+		switch nsfw := strings.ToLower(nsfw); nsfw {
+		case "yes":
+			onft.Nsfw = true
+		case "no":
+			onft.Nsfw = false
+		default:
+			return sdkerrors.Wrapf(
+				types.ErrInvalidOption,
+				"%s is invalid option for nsfw.",
+				nsfw,
 			)
 		}
 	}

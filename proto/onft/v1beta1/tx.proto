@@ -74,8 +74,9 @@ message MsgMintONFT {
   string   data            = 4;
   bool     transferable    = 5;
   bool     extensible      = 6;
-  string   sender          = 7;
-  string   recipient       = 8;
+  bool     nsfw            = 7;
+  string   sender          = 8;
+  string   recipient       = 9;
 }
 
 message MsgMintONFTResponse {}
@@ -101,7 +102,8 @@ message MsgEditONFT {
   string   data            = 4;
   string   transferable    = 5;
   string   extensible      = 6;
-  string   sender          = 7;
+  string   nsfw            = 7;
+  string   sender          = 8;
 }
 
 message MsgEditONFTResponse {}

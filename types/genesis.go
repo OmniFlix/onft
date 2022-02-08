@@ -23,7 +23,7 @@ func ValidateGenesis(data GenesisState) error {
 				return err
 			}
 
-			if err := ValidateMediaURI(nft.GetMediaURI()); err != nil {
+			if err := ValidateURI(nft.GetMediaURI()); err != nil {
 				return err
 			}
 		}

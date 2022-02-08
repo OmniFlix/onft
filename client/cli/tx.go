@@ -193,6 +193,19 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
 			}
 
+			var nsfw bool
+			nsfwFlag, err := cmd.Flags().GetString(FlagNsfw)
+			if err != nil {
+				return err
+			}
+			if nsfwFlag == "false" || nsfwFlag == "no" {
+				nsfw = false
+			} else if nsfwFlag == "true" || nsfwFlag == "yes" {
+				nsfw = true
+			} else {
+				return fmt.Errorf("invalid option for nsfw flag , valid options are yes|no")
+			}
+
 			msg := types.NewMsgMintONFT(
 				denomId,
 				sender,
@@ -201,6 +214,7 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				data,
 				transferable,
 				extensible,
+				nsfw,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -292,6 +306,13 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 			if !(len(extensible) > 0 && (extensible == "no" || extensible == "yes" || extensible == types.DoNotModify)) {
 				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
 			}
+			nsfw, err := cmd.Flags().GetString(FlagNsfw)
+			if err != nil {
+				return err
+			}
+			if !(len(nsfw) > 0 && (nsfw == "no" || nsfw == "yes" || nsfw == types.DoNotModify)) {
+				return fmt.Errorf("invalid option for nsfw flag , valid options are yes|no")
+			}
 			msg := types.NewMsgEditONFT(
 				onftId,
 				denomId,
@@ -299,6 +320,7 @@ $ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-de
 				data,
 				transferable,
 				extensible,
+				nsfw,
 				clientCtx.GetFromAddress().String(),
 			)
 			if err := msg.ValidateBasic(); err != nil {

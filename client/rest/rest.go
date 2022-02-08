@@ -55,6 +55,7 @@ type mintONFTReq struct {
 	Data         string         `json:"data"`
 	Transferable string         `json:"transferable"`
 	Extensible   string         `json:"extensible"`
+	Nsfw         string         `json:"nsfw"`
 }
 
 type editONFTReq struct {
@@ -67,6 +68,7 @@ type editONFTReq struct {
 	Data         string         `json:"data"`
 	Transferable string         `json:"transferable"`
 	Extensible   string         `json:"extensible"`
+	Nsfw         string         `json:"nsfw"`
 }
 
 type transferONFTReq struct {

@@ -16,6 +16,7 @@ const (
 	FlagOwner        = "owner"
 	FlagDenomID      = "denom-id"
 	FlagSchema       = "schema"
+	FlagNsfw         = "nsfw"
 )
 
 var (
@@ -50,6 +51,7 @@ func init() {
 
 	FsMintONFT.String(FlagTransferable, "yes", "transferability of onft (yes | no)")
 	FsMintONFT.String(FlagExtensible, "yes", "extensisbility of onft (yes | no)")
+	FsMintONFT.String(FlagNsfw, "no", "not safe for work flag for onft (yes | no)")
 
 	FsEditONFT.String(FlagMediaURI, "[do-not-modify]", "Media uri of onft")
 	FsEditONFT.String(FlagPreviewURI, "[do-not-modify]", "Preview uri of onft")
@@ -58,6 +60,7 @@ func init() {
 	FsEditONFT.String(FlagTransferable, "[do-not-modify]", "transferability of onft")
 	FsEditONFT.String(FlagData, "[do-not-modify]", "custom data of onft")
 	FsEditONFT.String(FlagExtensible, "[do-not-modify]", "extensibility of onft (yes | no)")
+	FsEditONFT.String(FlagNsfw, "[do-not-modify]", "nsfw (not safe for work) flag of onft (yes | no)")
 
 	FsTransferONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
 	FsQuerySupply.String(FlagOwner, "", "The owner of a nft")
