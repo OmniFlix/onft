@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/OmniFlix/onft/app/params"
+	"github.com/cosmos/cosmos-sdk/std"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

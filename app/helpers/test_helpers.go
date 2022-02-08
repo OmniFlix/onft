@@ -5,8 +5,6 @@ const (
 	SimAppChainID = "onft-app"
 )
 
-
-
 type EmptyAppOptions struct{}
 
 // Get implements AppOptions

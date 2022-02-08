@@ -45,7 +45,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		logger, db, nil, true, map[int64]bool{},
 		DefaultNodeHome, simapp.FlagPeriodValue, MakeEncodingConfig(),
 		simapp.EmptyAppOptions{}, interBlockCacheOpt(),
-		)
+	)
 
 	// Run randomized simulation:w
 	_, simParams, simErr := simulation.SimulateFromSeed(
@@ -117,6 +117,7 @@ func TestFullAppSimulation(t *testing.T) {
 		simapp.PrintStats(db)
 	}
 }
+
 // fauxMerkleModeOpt returns a BaseApp option to use a dbStoreAdapter instead of
 // an IAVLStore for faster simulation speed.
 func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
