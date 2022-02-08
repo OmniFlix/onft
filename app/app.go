@@ -1,6 +1,7 @@
 package app
 
 import (
+	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	"io"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -77,7 +79,7 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	transfer "github.com/cosmos/ibc-go/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/modules/core"
@@ -154,7 +156,7 @@ var (
 )
 
 var (
-	_ CosmosApp               = (*App)(nil)
+	_ simapp.App              = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 )
 
@@ -211,6 +213,9 @@ type App struct {
 
 	// the module manager
 	mm *module.Manager
+
+	// simulation manager
+	sm *module.SimulationManager
 }
 
 // New returns a reference to an initialized Gaia.
@@ -333,7 +338,7 @@ func New(
 		appCodec,
 		keys[onfttypes.StoreKey],
 	)
-	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper)
+	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
@@ -421,6 +426,26 @@ func New(
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter()))
+
+	// transactions
+	app.sm = module.NewSimulationManager(
+		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
+		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
+		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
+		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		params.NewAppModule(app.ParamsKeeper),
+		evidence.NewAppModule(app.EvidenceKeeper),
+		ibc.NewAppModule(app.IBCKeeper),
+		transferModule,
+		onftModule,
+	)
+
+	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
 	app.MountKVStores(keys)
@@ -570,6 +595,10 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *App) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+}
+
+func (app *App) SimulationManager() *module.SimulationManager {
+	return app.sm
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
