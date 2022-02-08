@@ -186,6 +186,7 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 			"{}",
 			genRandomBool(r),
 			genRandomBool(r),
+			genRandomBool(r),
 		)
 		onftId := RandID(r, "onft", 10)
 		msg.Id = onftId
@@ -236,6 +237,7 @@ func SimulateMsgEditNFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankKe
 			denom,
 			RandMetadata(r),
 			"{}",
+			"[do-not-modify]",
 			"[do-not-modify]",
 			"[do-not-modify]",
 			ownerAddr.String(),

@@ -122,6 +122,7 @@ func (m msgServer) MintONFT(goCtx context.Context,
 		msg.Data,
 		msg.Transferable,
 		msg.Extensible,
+		msg.Nsfw,
 		sender,
 		recipient,
 	); err != nil {
@@ -154,6 +155,7 @@ func (m msgServer) EditONFT(goCtx context.Context,
 		msg.Data,
 		msg.Transferable,
 		msg.Extensible,
+		msg.Nsfw,
 		sender,
 	); err != nil {
 		return nil, err

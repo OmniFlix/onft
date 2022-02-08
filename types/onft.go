@@ -14,7 +14,7 @@ var _ exported.ONFT = ONFT{}
 
 func NewONFT(
 	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
-	createdTime time.Time) ONFT {
+	createdTime time.Time, nsfw bool) ONFT {
 	return ONFT{
 		Id:           id,
 		Metadata:     metadata,
@@ -23,6 +23,7 @@ func NewONFT(
 		Transferable: transferable,
 		Extensible:   extensible,
 		CreatedAt:    createdTime,
+		Nsfw:         nsfw,
 	}
 }
 
@@ -66,6 +67,9 @@ func (onft ONFT) IsExtensible() bool {
 func (onft ONFT) GetCreatedTime() time.Time {
 	return onft.CreatedAt
 }
+func (onft ONFT) IsNSFW() bool {
+	return onft.Nsfw
+}
 
 // ONFT
 
@@ -78,31 +82,17 @@ func NewONFTs(onfts ...exported.ONFT) ONFTs {
 	return onfts
 }
 
-func ValidateONFTID(onftID string) error {
-	onftID = strings.TrimSpace(onftID)
-	if len(onftID) < MinDenomLen || len(onftID) > MaxDenomLen {
+func ValidateONFTID(onftId string) error {
+	onftId = strings.TrimSpace(onftId)
+	if len(onftId) < MinIDLen || len(onftId) > MaxIDLen {
 		return sdkerrors.Wrapf(
 			ErrInvalidONFTID,
-			"invalid onftID %s, only accepts value [%d, %d]", onftID, MinDenomLen, MaxDenomLen)
+			"invalid onftId %s, length must be between [%d, %d]", onftId, MinIDLen, MaxIDLen)
 	}
-	if !IsBeginWithAlpha(onftID) || !IsAlphaNumeric(onftID) {
+	if !IsBeginWithAlpha(onftId) || !IsAlphaNumeric(onftId) {
 		return sdkerrors.Wrapf(
 			ErrInvalidONFTID,
-			"invalid onftID %s, only accepts alphanumeric characters,and begin with an english letter", onftID)
-	}
-	return nil
-}
-
-func ValidateMediaURI(mediaURI string) error {
-	if len(mediaURI) > MaxMediaURILen {
-		return sdkerrors.Wrapf(ErrInvalidMediaURI, "invalid mediaURI %s, only accepts value [0, %d]", mediaURI, MaxMediaURILen)
-	}
-	return nil
-}
-
-func ValidatePreviewURI(previewURI string) error {
-	if len(previewURI) > MaxPreviewURILen {
-		return sdkerrors.Wrapf(ErrInvalidPreviewURI, "invalid previewURI %s, only accepts value [0, %d]", previewURI, MaxPreviewURILen)
+			"invalid onftId %s, only accepts alphanumeric characters and begin with an english letter", onftId)
 	}
 	return nil
 }

@@ -52,7 +52,20 @@ func (msg MsgCreateDenom) ValidateBasic() error {
 	}
 	name := strings.TrimSpace(msg.Name)
 	if len(name) > 0 && !utf8.ValidString(name) {
-		return sdkerrors.Wrap(ErrInvalidDenom, "denom name is invalid")
+		return sdkerrors.Wrap(ErrInvalidName, "denom name is invalid")
+	}
+	if err := ValidateName(name); err != nil {
+		return err
+	}
+	description := strings.TrimSpace(msg.Description)
+	if len(description) > 0 && !utf8.ValidString(description) {
+		return sdkerrors.Wrap(ErrInvalidDescription, "denom description is invalid")
+	}
+	if err := ValidateDescription(description); err != nil {
+		return err
+	}
+	if err := ValidateURI(msg.PreviewURI); err != nil {
+		return err
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
@@ -95,7 +108,20 @@ func (msg MsgUpdateDenom) ValidateBasic() error {
 	}
 	name := msg.Name
 	if len(name) > 0 && !utf8.ValidString(name) {
-		return sdkerrors.Wrap(ErrInvalidDenom, "denom name is invalid")
+		return sdkerrors.Wrap(ErrInvalidName, "denom name is invalid")
+	}
+	if err := ValidateName(name); err != nil {
+		return err
+	}
+	description := strings.TrimSpace(msg.Description)
+	if len(description) > 0 && !utf8.ValidString(description) {
+		return sdkerrors.Wrap(ErrInvalidDescription, "denom description is invalid")
+	}
+	if err := ValidateDescription(description); err != nil {
+		return err
+	}
+	if err := ValidateURI(msg.PreviewURI); err != nil {
+		return err
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
@@ -155,7 +181,8 @@ func (msg MsgTransferDenom) GetSigners() []sdk.AccAddress {
 }
 
 func NewMsgMintONFT(
-	denomId, sender, recipient string, metadata Metadata, data string, transferable, extensible bool) *MsgMintONFT {
+	denomId, sender, recipient string, metadata Metadata, data string,
+	transferable, extensible, nsfw bool) *MsgMintONFT {
 
 	return &MsgMintONFT{
 		Id:           GenUniqueID(IDPrefix),
@@ -164,6 +191,7 @@ func NewMsgMintONFT(
 		Data:         data,
 		Transferable: transferable,
 		Extensible:   extensible,
+		Nsfw:         nsfw,
 		Sender:       sender,
 		Recipient:    recipient,
 	}
@@ -182,12 +210,16 @@ func (msg MsgMintONFT) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address; %s", err)
 	}
-
-	if err := ValidateDenomID(msg.DenomId); err != nil {
+	if err := ValidateName(msg.Metadata.Name); err != nil {
 		return err
 	}
-
-	if err := ValidateMediaURI(msg.Metadata.MediaURI); err != nil {
+	if err := ValidateDescription(msg.Metadata.Description); err != nil {
+		return err
+	}
+	if err := ValidateURI(msg.Metadata.MediaURI); err != nil {
+		return err
+	}
+	if err := ValidateURI(msg.Metadata.PreviewURI); err != nil {
 		return err
 	}
 
@@ -251,7 +283,7 @@ func (msg MsgTransferONFT) GetSigners() []sdk.AccAddress {
 
 func NewMsgEditONFT(
 	id, denomId string, metadata Metadata, data,
-	transferable, extensible, sender string) *MsgEditONFT {
+	transferable, extensible, nsfw, sender string) *MsgEditONFT {
 	return &MsgEditONFT{
 		Id:           id,
 		DenomId:      denomId,
@@ -259,6 +291,7 @@ func NewMsgEditONFT(
 		Data:         data,
 		Transferable: transferable,
 		Extensible:   extensible,
+		Nsfw:         nsfw,
 		Sender:       sender,
 	}
 }
@@ -271,14 +304,19 @@ func (msg MsgEditONFT) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
-
-	if err := ValidateDenomID(msg.DenomId); err != nil {
+	if err := ValidateName(msg.Metadata.Name); err != nil {
+		return err
+	}
+	if err := ValidateDescription(msg.Metadata.Description); err != nil {
+		return err
+	}
+	if err := ValidateURI(msg.Metadata.MediaURI); err != nil {
+		return err
+	}
+	if err := ValidateURI(msg.Metadata.PreviewURI); err != nil {
 		return err
 	}
 
-	if err := ValidateMediaURI(msg.Metadata.MediaURI); err != nil {
-		return err
-	}
 	return ValidateONFTID(msg.Id)
 }
 
@@ -310,10 +348,6 @@ func (msg MsgBurnONFT) Type() string { return TypeMsgBurnONFT }
 func (msg MsgBurnONFT) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
-	}
-
-	if err := ValidateDenomID(msg.DenomId); err != nil {
-		return err
 	}
 	return ValidateONFTID(msg.Id)
 }

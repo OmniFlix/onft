@@ -52,6 +52,7 @@ message ONFT {
     (gogoproto.stdtime)  = true,
     (gogoproto.moretags) = "yaml:\"created_at\""
   ];
+  bool                      nsfw         = 8;
 }
 
 message Metadata {

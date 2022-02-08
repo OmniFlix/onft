@@ -177,6 +177,11 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if len(extensibility) > 0 && (extensibility == "no" || extensibility == "false") {
 			extensible = false
 		}
+		nsfw := false
+		nsfwStr := strings.ToLower(req.Nsfw)
+		if len(nsfwStr) > 0 && (nsfwStr == "yes" || nsfwStr == "true") {
+			nsfw = true
+		}
 
 		msg := types.NewMsgMintONFT(
 			req.Denom,
@@ -186,6 +191,7 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Data,
 			transferable,
 			extensible,
+			nsfw,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -235,6 +241,12 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for extensible flag , valid options are yes,no")
 			return
 		}
+		nsfw := strings.ToLower(req.Nsfw)
+		if len(nsfw) > 0 && !(nsfw == "no" || nsfw == "yes" ||
+			extensible == types.DoNotModify) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for nsfw flag , valid options are yes,no")
+			return
+		}
 		msg := types.NewMsgEditONFT(
 			vars[RestParamONFTID],
 			vars[RestParamDenom],
@@ -242,6 +254,7 @@ func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Data,
 			transferable,
 			extensible,
+			nsfw,
 			req.Sender.String(),
 		)
 		if err := msg.ValidateBasic(); err != nil {

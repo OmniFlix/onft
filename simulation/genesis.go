@@ -57,6 +57,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 				genRandomBool(simState.Rand),
 				acc.Address,
 				time.Time{},
+				genRandomBool(simState.Rand),
 			)
 
 			if i < 50 {
