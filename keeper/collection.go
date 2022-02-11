@@ -47,6 +47,7 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 			onft.IsTransferable(),
 			onft.IsExtensible(),
 			onft.IsNSFW(),
+			onft.RoyaltyShare,
 			creator,
 			onft.GetOwner(),
 		); err != nil {

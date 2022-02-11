@@ -2,8 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -11,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 // NewTxCmd returns the transaction commands for this module
@@ -28,7 +27,6 @@ func NewTxCmd() *cobra.Command {
 		GetCmdUpdateDenom(),
 		GetCmdTransferDenom(),
 		GetCmdMintONFT(),
-		GetCmdEditONFT(),
 		GetCmdTransferONFT(),
 		GetCmdBurnONFT(),
 	)
@@ -101,8 +99,21 @@ func GetCmdMintONFT() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Mint an oNFT.
 Example:
-$ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description <onft-descritpion> --media-uri=<uri> --preview-uri=<uri> 
---transferable yes --extensible yes --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
+$ %s tx onft mint [denom-id] \ 
+	--name <onft-name> \
+	--description <onft-descritpion> \
+	--media-uri=<uri> \
+	--preview-uri=<uri> \
+	--from=<key-name> \
+	--chain-id=<chain-id> \
+	--fees=<fee>
+
+Additional Flags
+    --non-trasferable
+    --inextensible
+    --nsfw
+    --royalty-share="0.05"
+`,
 				version.AppName,
 			),
 		),
@@ -166,44 +177,40 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 			if err != nil {
 				return err
 			}
-
-			var transferable bool
-			transferability, err := cmd.Flags().GetString(FlagTransferable)
+			transferable := true
+			nonTransferable, err := cmd.Flags().GetBool(FlagNonTransferable)
 			if err != nil {
 				return err
 			}
-			transferability = strings.ToLower(transferability)
-			if transferability == "false" || transferability == "no" {
+			if nonTransferable {
 				transferable = false
-			} else if transferability == "true" || transferability == "yes" {
-				transferable = true
-			} else {
-				return fmt.Errorf("invalid option for transferable flag , valid options are true|false, yes|no")
 			}
-			var extensible bool
-			extensibility, err := cmd.Flags().GetString(FlagExtensible)
+			extensible := true
+			inExtensible, err := cmd.Flags().GetBool(FlagInExtensible)
 			if err != nil {
 				return err
 			}
-			if extensibility == "false" || extensibility == "no" {
+			if inExtensible {
 				extensible = false
-			} else if extensibility == "true" || extensibility == "yes" {
-				extensible = true
-			} else {
-				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
 			}
-
-			var nsfw bool
-			nsfwFlag, err := cmd.Flags().GetString(FlagNsfw)
+			nsfw := false
+			nsfwFlag, err := cmd.Flags().GetBool(FlagNsfw)
 			if err != nil {
 				return err
 			}
-			if nsfwFlag == "false" || nsfwFlag == "no" {
-				nsfw = false
-			} else if nsfwFlag == "true" || nsfwFlag == "yes" {
+			if nsfwFlag {
 				nsfw = true
-			} else {
-				return fmt.Errorf("invalid option for nsfw flag , valid options are yes|no")
+			}
+			royaltyShareStr, err := cmd.Flags().GetString(FlagRoyaltyShare)
+			if err != nil {
+				return err
+			}
+			royaltyShare := sdk.NewDec(0)
+			if len(royaltyShareStr) > 0 {
+				royaltyShare, err = sdk.NewDecFromStr(royaltyShareStr)
+				if err != nil {
+					return err
+				}
 			}
 
 			msg := types.NewMsgMintONFT(
@@ -215,6 +222,7 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 				transferable,
 				extensible,
 				nsfw,
+				royaltyShare,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -224,112 +232,6 @@ $ %s tx onft mint [denom-id] --type <onft-type> --name <onft-name> --description
 	}
 	cmd.Flags().AddFlagSet(FsMintONFT)
 	_ = cmd.MarkFlagRequired(FlagMediaURI)
-	flags.AddTxFlagsToCmd(cmd)
-
-	return cmd
-}
-
-func GetCmdEditONFT() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "edit [denom-id] [onft-id]",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`Edit the data of an oNFT.
-Example:
-$ %s tx onft edit [denom-id] [onft-id] --name=<onft-name> --description=<onft-description> --media-uri=<uri>
---preview-uri=<uri> --type=<onft-type> --transferable=yes --extensible=yes --from=<key-name> --chain-id=<chain-id> --fees=<fee>`,
-				version.AppName,
-			),
-		),
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
-			onftId := strings.ToLower(strings.TrimSpace(args[1]))
-
-			onftMetadata := types.Metadata{}
-			onftName, err := cmd.Flags().GetString(FlagName)
-			if err != nil {
-				return err
-			}
-			onftName = strings.TrimSpace(onftName)
-
-			onftDescription, err := cmd.Flags().GetString(FlagDescription)
-			if err != nil {
-				return err
-			}
-			onftDescription = strings.TrimSpace(onftDescription)
-
-			onftMediaURI, err := cmd.Flags().GetString(FlagMediaURI)
-			if err != nil {
-				return err
-			}
-			onftMediaURI = strings.TrimSpace(onftMediaURI)
-
-			onftPreviewURI, err := cmd.Flags().GetString(FlagPreviewURI)
-			if err != nil {
-				return err
-			}
-			onftPreviewURI = strings.TrimSpace(onftPreviewURI)
-
-			if len(onftName) > 0 {
-				onftMetadata.Name = onftName
-			}
-			if len(onftDescription) > 0 {
-				onftMetadata.Description = onftDescription
-			}
-			if len(onftMediaURI) > 0 {
-				onftMetadata.MediaURI = onftMediaURI
-			}
-			if len(onftPreviewURI) > 0 {
-				onftMetadata.PreviewURI = onftPreviewURI
-			}
-			data, err := cmd.Flags().GetString(FlagData)
-			if err != nil {
-				return err
-			}
-
-			transferable, err := cmd.Flags().GetString(FlagTransferable)
-			if err != nil {
-				return err
-			}
-			if !(len(transferable) > 0 && (transferable == "no" || transferable == "yes" ||
-				transferable == types.DoNotModify)) {
-				return fmt.Errorf("invalid option for transferable flag , valid options are yes | no")
-			}
-			extensible, err := cmd.Flags().GetString(FlagExtensible)
-			if err != nil {
-				return err
-			}
-			if !(len(extensible) > 0 && (extensible == "no" || extensible == "yes" || extensible == types.DoNotModify)) {
-				return fmt.Errorf("invalid option for extensible flag , valid options are yes|no")
-			}
-			nsfw, err := cmd.Flags().GetString(FlagNsfw)
-			if err != nil {
-				return err
-			}
-			if !(len(nsfw) > 0 && (nsfw == "no" || nsfw == "yes" || nsfw == types.DoNotModify)) {
-				return fmt.Errorf("invalid option for nsfw flag , valid options are yes|no")
-			}
-			msg := types.NewMsgEditONFT(
-				onftId,
-				denomId,
-				onftMetadata,
-				data,
-				transferable,
-				extensible,
-				nsfw,
-				clientCtx.GetFromAddress().String(),
-			)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-	cmd.Flags().AddFlagSet(FsEditONFT)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

@@ -14,7 +14,7 @@ var _ exported.ONFT = ONFT{}
 
 func NewONFT(
 	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
-	createdTime time.Time, nsfw bool) ONFT {
+	createdTime time.Time, nsfw bool, royaltyShare sdk.Dec) ONFT {
 	return ONFT{
 		Id:           id,
 		Metadata:     metadata,
@@ -24,6 +24,7 @@ func NewONFT(
 		Extensible:   extensible,
 		CreatedAt:    createdTime,
 		Nsfw:         nsfw,
+		RoyaltyShare: royaltyShare,
 	}
 }
 
@@ -69,6 +70,10 @@ func (onft ONFT) GetCreatedTime() time.Time {
 }
 func (onft ONFT) IsNSFW() bool {
 	return onft.Nsfw
+}
+
+func (onft ONFT) GetRoyaltyShare() sdk.Dec {
+	return onft.RoyaltyShare
 }
 
 // ONFT

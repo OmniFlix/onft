@@ -17,4 +17,5 @@ type ONFT interface {
 	IsExtensible() bool
 	IsNSFW() bool
 	GetCreatedTime() time.Time
+	GetRoyaltyShare() sdk.Dec
 }

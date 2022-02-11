@@ -3,6 +3,7 @@ package simulation
 import (
 	"encoding/json"
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"math/rand"
 	"strings"
 	"time"
@@ -58,6 +59,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 				acc.Address,
 				time.Time{},
 				genRandomBool(simState.Rand),
+				RandRoyaltyShare(simState.Rand),
 			)
 
 			if i < 50 {
@@ -93,4 +95,8 @@ func RandMetadata(r *rand.Rand) types.Metadata {
 		PreviewURI:  simtypes.RandStringOfLength(r, 45),
 		MediaURI:    simtypes.RandStringOfLength(r, 45),
 	}
+}
+
+func RandRoyaltyShare(r *rand.Rand) sdk.Dec {
+	return simtypes.RandomDecAmount(r, sdk.NewDecWithPrec(999999999999999999, 18))
 }

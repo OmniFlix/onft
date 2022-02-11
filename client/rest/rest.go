@@ -53,22 +53,10 @@ type mintONFTReq struct {
 	MediaURI     string         `json:"media_uri"`
 	PreviewURI   string         `json:"preview_uri"`
 	Data         string         `json:"data"`
-	Transferable string         `json:"transferable"`
-	Extensible   string         `json:"extensible"`
-	Nsfw         string         `json:"nsfw"`
-}
-
-type editONFTReq struct {
-	BaseReq      rest.BaseReq   `json:"base_req"`
-	Sender       sdk.AccAddress `json:"sender"`
-	Name         string         `json:"name"`
-	Description  string         `json:"description"`
-	MediaURI     string         `json:"media_uri"`
-	PreviewURI   string         `json:"preview_uri"`
-	Data         string         `json:"data"`
-	Transferable string         `json:"transferable"`
-	Extensible   string         `json:"extensible"`
-	Nsfw         string         `json:"nsfw"`
+	Transferable bool           `json:"transferable"`
+	Extensible   bool           `json:"extensible"`
+	Nsfw         bool           `json:"nsfw"`
+	RoyaltyShare sdk.Dec        `json:"royalty_share"`
 }
 
 type transferONFTReq struct {

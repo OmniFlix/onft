@@ -31,10 +31,6 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			res, err := msgServer.MintONFT(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
-		case *types.MsgEditONFT:
-			res, err := msgServer.EditONFT(sdk.WrapSDKContext(ctx), msg)
-			return sdk.WrapServiceResult(ctx, res, err)
-
 		case *types.MsgTransferONFT:
 			res, err := msgServer.TransferONFT(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
