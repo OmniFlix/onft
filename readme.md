@@ -70,6 +70,10 @@ The code for this module is initially taken from the [irismod/nft](https://githu
       - **preview-uri**: preview uri of the nft (url)
       - **data**: additional nft properties (json string)
       - **recipient**: recipient of the nft (optional, default: minter of the nft)
+      - **non-transferable**:  to mint non-transferable nft (optional, default: false)
+      - **inextensible** : to mint inextensible nft (optional, default false)
+      - **nsfw**: not safe for work flag for the nft (optional, default: false)  
+      - **royalty-share**: royalty share for nft (optional, default: 0.00)
       
     Example:
     ```bash
@@ -84,6 +88,25 @@ The code for this module is initially taken from the [irismod/nft](https://githu
      --fees=<fee>
      --from=<key-name>
       ```
+    ```bash
+    onftd  tx onft mint <denom-id>
+    --name="NFT name" 
+    --description="NFT description" 
+    --media-uri="https://ipfs.io/ipfs/...." 
+    --preview-uri="https://ipfs.io/ipfs/...." 
+    --data="" 
+    --recipient="" 
+    --non-transferable 
+    --inextensible 
+    --nsfw 
+    --chain-id=<chain-id>
+    --fees=<fee>
+    --from=<key-name>
+      ```
+    For Royalty share
+    ```bash
+    --royalty-share="0.05" # 5% 
+    ```
   - #### Transfer NFT
     Usage
     ```bash
