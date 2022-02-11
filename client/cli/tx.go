@@ -110,14 +110,9 @@ $ %s tx onft mint [denom-id] \
 
 Additional Flags
     --non-trasferable
-    --non-extensible
+    --inextensible
     --nsfw
-    --royalty.enable
-    --royalty.share="0.05"
-    --royalty.receiver="account-address"
-    --royalty.endtime="2023-02-10T10:40:53.436Z"
-    --split.enable
-    --split.shares="addr:percentage,addr:percentage"
+    --royalty-share="0.05"
 `,
 				version.AppName,
 			),
