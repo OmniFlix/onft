@@ -2,10 +2,8 @@ package rest
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/gorilla/mux"
+	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -35,11 +33,6 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {
 		fmt.Sprintf("/onft/onfts/mint"),
 		mintONFTHandlerFn(cliCtx),
 	).Methods("POST")
-
-	r.HandleFunc(
-		fmt.Sprintf("/onft/onfts/{%s}/{%s}", RestParamDenom, RestParamONFTID),
-		editONFTHandlerFn(cliCtx),
-	).Methods("PUT")
 
 	r.HandleFunc(
 		fmt.Sprintf("/onft/onfts/{%s}/{%s}/transfer", RestParamDenom, RestParamONFTID),
@@ -167,21 +160,6 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if len(req.PreviewURI) > 0 {
 			metadata.PreviewURI = req.PreviewURI
 		}
-		transferable := true
-		transferability := strings.ToLower(req.Transferable)
-		if len(transferability) > 0 && (transferability == "no" || transferability == "false") {
-			transferable = false
-		}
-		extensible := true
-		extensibility := strings.ToLower(req.Extensible)
-		if len(extensibility) > 0 && (extensibility == "no" || extensibility == "false") {
-			extensible = false
-		}
-		nsfw := false
-		nsfwStr := strings.ToLower(req.Nsfw)
-		if len(nsfwStr) > 0 && (nsfwStr == "yes" || nsfwStr == "true") {
-			nsfw = true
-		}
 
 		msg := types.NewMsgMintONFT(
 			req.Denom,
@@ -189,73 +167,10 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Recipient.String(),
 			metadata,
 			req.Data,
-			transferable,
-			extensible,
-			nsfw,
-		)
-		if err := msg.ValidateBasic(); err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
-	}
-}
-
-func editONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var req editONFTReq
-		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
-			return
-		}
-		baseReq := req.BaseReq.Sanitize()
-		if !baseReq.ValidateBasic(w) {
-			return
-		}
-
-		vars := mux.Vars(r)
-
-		metadata := types.Metadata{}
-		if len(req.Name) > 0 {
-			metadata.Name = req.Name
-		}
-		if len(req.Description) > 0 {
-			metadata.Description = req.Description
-		}
-		if len(req.MediaURI) > 0 {
-			metadata.MediaURI = req.MediaURI
-		}
-		if len(req.PreviewURI) > 0 {
-			metadata.PreviewURI = req.PreviewURI
-		}
-
-		transferable := strings.ToLower(req.Transferable)
-		if len(transferable) > 0 && !(transferable == "no" || transferable == "yes" ||
-			transferable == types.DoNotModify) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for transferable flag , valid options are yes,no")
-			return
-		}
-		extensible := strings.ToLower(req.Extensible)
-		if len(extensible) > 0 && !(extensible == "no" || extensible == "yes" ||
-			extensible == types.DoNotModify) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for extensible flag , valid options are yes,no")
-			return
-		}
-		nsfw := strings.ToLower(req.Nsfw)
-		if len(nsfw) > 0 && !(nsfw == "no" || nsfw == "yes" ||
-			extensible == types.DoNotModify) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "invalid option for nsfw flag , valid options are yes,no")
-			return
-		}
-		msg := types.NewMsgEditONFT(
-			vars[RestParamONFTID],
-			vars[RestParamDenom],
-			metadata,
-			req.Data,
-			transferable,
-			extensible,
-			nsfw,
-			req.Sender.String(),
+			req.Transferable,
+			req.Extensible,
+			req.Nsfw,
+			req.RoyaltyShare,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

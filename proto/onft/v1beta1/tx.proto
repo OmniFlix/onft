@@ -16,8 +16,6 @@ service Msg {
 
   rpc MintONFT(MsgMintONFT) returns (MsgMintONFTResponse);
 
-  rpc EditONFT(MsgEditONFT) returns (MsgEditONFTResponse);
-
   rpc TransferONFT(MsgTransferONFT) returns (MsgTransferONFTResponse);
 
   rpc BurnONFT(MsgBurnONFT) returns (MsgBurnONFTResponse);
@@ -75,8 +73,13 @@ message MsgMintONFT {
   bool     transferable    = 5;
   bool     extensible      = 6;
   bool     nsfw            = 7;
-  string   sender          = 8;
-  string   recipient       = 9;
+  string   royalty_share   = 8 [
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"royalty_share\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
+  string   sender          = 9;
+  string   recipient       = 10;
 }
 
 message MsgMintONFTResponse {}
@@ -91,22 +94,6 @@ message MsgTransferONFT {
 }
 
 message MsgTransferONFTResponse {}
-
-
-message MsgEditONFT {
-  option (gogoproto.equal) = true;
-
-  string   id              = 1;
-  string   denom_id        = 2 [(gogoproto.moretags) = "yaml:\"denom_id\""];
-  Metadata metadata        = 3 [(gogoproto.nullable) = false];
-  string   data            = 4;
-  string   transferable    = 5;
-  string   extensible      = 6;
-  string   nsfw            = 7;
-  string   sender          = 8;
-}
-
-message MsgEditONFTResponse {}
 
 message MsgBurnONFT {
   option (gogoproto.equal) = true;
