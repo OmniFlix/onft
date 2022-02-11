@@ -11,18 +11,18 @@ const (
 	TypeMsgCreateDenom   = "create_denom"
 	TypeMsgUpdateDenom   = "update_denom"
 	TypeMsgTransferDenom = "transfer_denom"
-	TypeMsgMintONFT      = "mint_onft"
-	TypeMsgEditONFT      = "edit_onft"
-	TypeMsgTransferONFT  = "transfer_onft"
-	TypeMsgBurnONFT      = "burn_onft"
+
+	TypeMsgMintONFT     = "mint_onft"
+	TypeMsgTransferONFT = "transfer_onft"
+	TypeMsgBurnONFT     = "burn_onft"
 )
 
 var (
 	_ sdk.Msg = &MsgCreateDenom{}
 	_ sdk.Msg = &MsgUpdateDenom{}
 	_ sdk.Msg = &MsgTransferDenom{}
+
 	_ sdk.Msg = &MsgMintONFT{}
-	_ sdk.Msg = &MsgEditONFT{}
 	_ sdk.Msg = &MsgTransferONFT{}
 	_ sdk.Msg = &MsgBurnONFT{}
 )
@@ -182,7 +182,7 @@ func (msg MsgTransferDenom) GetSigners() []sdk.AccAddress {
 
 func NewMsgMintONFT(
 	denomId, sender, recipient string, metadata Metadata, data string,
-	transferable, extensible, nsfw bool) *MsgMintONFT {
+	transferable, extensible, nsfw bool, royaltyShare sdk.Dec) *MsgMintONFT {
 
 	return &MsgMintONFT{
 		Id:           GenUniqueID(IDPrefix),
@@ -192,6 +192,7 @@ func NewMsgMintONFT(
 		Transferable: transferable,
 		Extensible:   extensible,
 		Nsfw:         nsfw,
+		RoyaltyShare: royaltyShare,
 		Sender:       sender,
 		Recipient:    recipient,
 	}
@@ -221,6 +222,9 @@ func (msg MsgMintONFT) ValidateBasic() error {
 	}
 	if err := ValidateURI(msg.Metadata.PreviewURI); err != nil {
 		return err
+	}
+	if msg.RoyaltyShare.IsNegative() || msg.RoyaltyShare.GTE(sdk.NewDec(1)) {
+		return sdkerrors.Wrapf(ErrInvalidPercentage, "invalid royalty share percentage decimal value; %d, must be positive and less than 1", msg.RoyaltyShare)
 	}
 
 	return ValidateONFTID(msg.Id)
@@ -274,58 +278,6 @@ func (msg MsgTransferONFT) GetSignBytes() []byte {
 }
 
 func (msg MsgTransferONFT) GetSigners() []sdk.AccAddress {
-	from, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{from}
-}
-
-func NewMsgEditONFT(
-	id, denomId string, metadata Metadata, data,
-	transferable, extensible, nsfw, sender string) *MsgEditONFT {
-	return &MsgEditONFT{
-		Id:           id,
-		DenomId:      denomId,
-		Metadata:     metadata,
-		Data:         data,
-		Transferable: transferable,
-		Extensible:   extensible,
-		Nsfw:         nsfw,
-		Sender:       sender,
-	}
-}
-
-func (msg MsgEditONFT) Route() string { return RouterKey }
-
-func (msg MsgEditONFT) Type() string { return TypeMsgEditONFT }
-
-func (msg MsgEditONFT) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
-	}
-	if err := ValidateName(msg.Metadata.Name); err != nil {
-		return err
-	}
-	if err := ValidateDescription(msg.Metadata.Description); err != nil {
-		return err
-	}
-	if err := ValidateURI(msg.Metadata.MediaURI); err != nil {
-		return err
-	}
-	if err := ValidateURI(msg.Metadata.PreviewURI); err != nil {
-		return err
-	}
-
-	return ValidateONFTID(msg.Id)
-}
-
-func (msg MsgEditONFT) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(&msg)
-	return sdk.MustSortJSON(bz)
-}
-
-func (msg MsgEditONFT) GetSigners() []sdk.AccAddress {
 	from, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		panic(err)

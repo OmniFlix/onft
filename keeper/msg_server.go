@@ -123,6 +123,7 @@ func (m msgServer) MintONFT(goCtx context.Context,
 		msg.Transferable,
 		msg.Extensible,
 		msg.Nsfw,
+		msg.RoyaltyShare,
 		sender,
 		recipient,
 	); err != nil {
@@ -139,36 +140,6 @@ func (m msgServer) MintONFT(goCtx context.Context,
 	)
 
 	return &types.MsgMintONFTResponse{}, nil
-}
-
-func (m msgServer) EditONFT(goCtx context.Context,
-	msg *types.MsgEditONFT) (*types.MsgEditONFTResponse, error) {
-
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.EditONFT(ctx, msg.DenomId, msg.Id,
-		msg.Metadata,
-		msg.Data,
-		msg.Transferable,
-		msg.Extensible,
-		msg.Nsfw,
-		sender,
-	); err != nil {
-		return nil, err
-	}
-
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventEditONFT{
-			Id:      msg.Id,
-			DenomId: msg.DenomId,
-			Owner:   msg.Sender,
-		},
-	)
-	return &types.MsgEditONFTResponse{}, nil
 }
 
 func (m msgServer) TransferONFT(goCtx context.Context,

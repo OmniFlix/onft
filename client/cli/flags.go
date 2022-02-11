@@ -5,18 +5,19 @@ import (
 )
 
 const (
-	FlagName         = "name"
-	FlagDescription  = "description"
-	FlagMediaURI     = "media-uri"
-	FlagPreviewURI   = "preview-uri"
-	FlagData         = "data"
-	FlagTransferable = "transferable"
-	FlagExtensible   = "extensible"
-	FlagRecipient    = "recipient"
-	FlagOwner        = "owner"
-	FlagDenomID      = "denom-id"
-	FlagSchema       = "schema"
-	FlagNsfw         = "nsfw"
+	FlagName            = "name"
+	FlagDescription     = "description"
+	FlagMediaURI        = "media-uri"
+	FlagPreviewURI      = "preview-uri"
+	FlagData            = "data"
+	FlagNonTransferable = "non-transferable"
+	FlagInExtensible    = "inextensible"
+	FlagRecipient       = "recipient"
+	FlagOwner           = "owner"
+	FlagDenomID         = "denom-id"
+	FlagSchema          = "schema"
+	FlagNsfw            = "nsfw"
+	FlagRoyaltyShare    = "royalty-share"
 )
 
 var (
@@ -24,7 +25,6 @@ var (
 	FsUpdateDenom   = flag.NewFlagSet("", flag.ContinueOnError)
 	FsTransferDenom = flag.NewFlagSet("", flag.ContinueOnError)
 	FsMintONFT      = flag.NewFlagSet("", flag.ContinueOnError)
-	FsEditONFT      = flag.NewFlagSet("", flag.ContinueOnError)
 	FsTransferONFT  = flag.NewFlagSet("", flag.ContinueOnError)
 	FsQuerySupply   = flag.NewFlagSet("", flag.ContinueOnError)
 	FsQueryOwner    = flag.NewFlagSet("", flag.ContinueOnError)
@@ -48,19 +48,10 @@ func init() {
 	FsMintONFT.String(FlagName, "", "Name of onft")
 	FsMintONFT.String(FlagDescription, "", "Description of onft")
 	FsMintONFT.String(FlagData, "", "custom data of onft")
-
-	FsMintONFT.String(FlagTransferable, "yes", "transferability of onft (yes | no)")
-	FsMintONFT.String(FlagExtensible, "yes", "extensisbility of onft (yes | no)")
-	FsMintONFT.String(FlagNsfw, "no", "not safe for work flag for onft (yes | no)")
-
-	FsEditONFT.String(FlagMediaURI, "[do-not-modify]", "Media uri of onft")
-	FsEditONFT.String(FlagPreviewURI, "[do-not-modify]", "Preview uri of onft")
-	FsEditONFT.String(FlagName, "[do-not-modify]", "Name of nft")
-	FsEditONFT.String(FlagDescription, "[do-not-modify]", "Description of onft")
-	FsEditONFT.String(FlagTransferable, "[do-not-modify]", "transferability of onft")
-	FsEditONFT.String(FlagData, "[do-not-modify]", "custom data of onft")
-	FsEditONFT.String(FlagExtensible, "[do-not-modify]", "extensibility of onft (yes | no)")
-	FsEditONFT.String(FlagNsfw, "[do-not-modify]", "nsfw (not safe for work) flag of onft (yes | no)")
+	FsMintONFT.Bool(FlagNonTransferable, false, "To mint non-transferable onft")
+	FsMintONFT.Bool(FlagInExtensible, false, "To mint non-extensisble onft")
+	FsMintONFT.Bool(FlagNsfw, false, "not safe for work flag for onft")
+	FsMintONFT.String(FlagRoyaltyShare, "", "Royalty share value decimal value between 0 and 1")
 
 	FsTransferONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
 	FsQuerySupply.String(FlagOwner, "", "The owner of a nft")

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -91,7 +90,7 @@ func (k Keeper) TransferDenomOwner(ctx sdk.Context, id string, curOwner, newOwne
 func (k Keeper) MintONFT(
 	ctx sdk.Context, denomID, onftID string,
 	metadata types.Metadata, data string, transferable, extensible, nsfw bool,
-	sender, recipient sdk.AccAddress) error {
+	royaltyShare sdk.Dec, sender, recipient sdk.AccAddress) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
@@ -112,18 +111,18 @@ func (k Keeper) MintONFT(
 		recipient,
 		ctx.BlockHeader().Time,
 		nsfw,
+		royaltyShare,
 	))
 	k.setOwner(ctx, denomID, onftID, recipient)
 	k.increaseSupply(ctx, denomID)
 	return nil
 }
 
-func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types.Metadata,
-	data, transferable, extensible, nsfw string, owner sdk.AccAddress) error {
+func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, owner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
-	denom, err := k.GetDenom(ctx, denomID)
+	_, err := k.GetDenom(ctx, denomID)
 	if err != nil {
 		return err
 	}
@@ -131,81 +130,6 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, metadata types
 	onft, err := k.Authorize(ctx, denomID, onftID, owner)
 	if err != nil {
 		return err
-	}
-
-	if metadata.Name != types.DoNotModify {
-		onft.Metadata.Name = metadata.Name
-	}
-	if metadata.Description != types.DoNotModify {
-		onft.Metadata.Description = metadata.Description
-	}
-	if metadata.PreviewURI != types.DoNotModify {
-		onft.Metadata.PreviewURI = metadata.PreviewURI
-	}
-	if metadata.MediaURI != types.DoNotModify {
-		onft.Metadata.MediaURI = metadata.MediaURI
-	}
-	if data != types.DoNotModify {
-		onft.Data = data
-	}
-	if transferable != types.DoNotModify {
-		if denom.Creator != onft.Owner {
-			return sdkerrors.Wrapf(
-				types.ErrNotEditable,
-				"onft %s: transferability can be modified only when creator is the owner of onft.",
-				onftID,
-			)
-		}
-		switch transferable := strings.ToLower(transferable); transferable {
-		case "yes":
-			onft.Transferable = true
-		case "no":
-			onft.Transferable = false
-		default:
-			onft.Transferable = true
-		}
-	}
-	if len(extensible) > 0 && extensible != types.DoNotModify {
-		if denom.Creator != onft.Owner {
-			return sdkerrors.Wrapf(
-				types.ErrNotEditable,
-				"onft %s: extensibility can be modified only when creator is the owner of the onft.",
-				onftID,
-			)
-		}
-		switch extensible := strings.ToLower(extensible); extensible {
-		case "yes":
-			onft.Extensible = true
-		case "no":
-			onft.Extensible = false
-		default:
-			return sdkerrors.Wrapf(
-				types.ErrInvalidOption,
-				"%s is invalid option for extensible.",
-				extensible,
-			)
-		}
-	}
-	if len(nsfw) > 0 && nsfw != types.DoNotModify {
-		if denom.Creator != onft.Owner {
-			return sdkerrors.Wrapf(
-				types.ErrNotEditable,
-				"onft %s: nsfw can be modified only when creator is the owner of the onft.",
-				onftID,
-			)
-		}
-		switch nsfw := strings.ToLower(nsfw); nsfw {
-		case "yes":
-			onft.Nsfw = true
-		case "no":
-			onft.Nsfw = false
-		default:
-			return sdkerrors.Wrapf(
-				types.ErrInvalidOption,
-				"%s is invalid option for nsfw.",
-				nsfw,
-			)
-		}
 	}
 
 	k.setONFT(ctx, denomID, onft)

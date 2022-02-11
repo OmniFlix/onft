@@ -91,10 +91,6 @@ func WeightedOperations(
 			SimulateMsgMintONFT(k, ak, bk),
 		),
 		simulation.NewWeightedOperation(
-			weightEdit,
-			SimulateMsgEditNFT(k, ak, bk),
-		),
-		simulation.NewWeightedOperation(
 			weightTransfer,
 			SimulateMsgTransferONFT(k, ak, bk),
 		),
@@ -187,6 +183,7 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 			genRandomBool(r),
 			genRandomBool(r),
 			genRandomBool(r),
+			RandRoyaltyShare(r),
 		)
 		onftId := RandID(r, "onft", 10)
 		msg.Id = onftId
@@ -209,58 +206,6 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 			MsgType:         types.TypeMsgMintONFT,
 			Context:         ctx,
 			SimAccount:      sender,
-			AccountKeeper:   ak,
-			Bankkeeper:      bk,
-			ModuleName:      types.ModuleName,
-			CoinsSpentInMsg: spendableCoins,
-		}
-
-		return simulation.GenAndDeliverTxWithRandFees(txCtx)
-	}
-}
-
-// SimulateMsgEditNFT simulates the edit of an NFT
-func SimulateMsgEditNFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper) simtypes.Operation {
-	return func(
-		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (
-		opMsg simtypes.OperationMsg, fOps []simtypes.FutureOperation, err error,
-	) {
-		ownerAddr, denom, nftID := getRandomNFTFromOwner(ctx, k, r)
-		if ownerAddr.Empty() {
-			err = fmt.Errorf("account invalid")
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditONFT, err.Error()), nil, err
-		}
-
-		msg := types.NewMsgEditONFT(
-			nftID,
-			denom,
-			RandMetadata(r),
-			"{}",
-			"[do-not-modify]",
-			"[do-not-modify]",
-			"[do-not-modify]",
-			ownerAddr.String(),
-		)
-
-		account := ak.GetAccount(ctx, ownerAddr)
-		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
-
-		ownerAccount, found := simtypes.FindAccount(accs, ownerAddr)
-		if !found {
-			err = fmt.Errorf("account %s not found", ownerAddr)
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgEditONFT, err.Error()), nil, err
-		}
-
-		txCtx := simulation.OperationInput{
-			R:               r,
-			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
-			Cdc:             nil,
-			Msg:             msg,
-			MsgType:         types.TypeMsgEditONFT,
-			Context:         ctx,
-			SimAccount:      ownerAccount,
 			AccountKeeper:   ak,
 			Bankkeeper:      bk,
 			ModuleName:      types.ModuleName,

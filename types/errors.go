@@ -26,5 +26,6 @@ var (
 	ErrInvalidName        = sdkerrors.Register(ModuleName, 18, "invalid name")
 	ErrInvalidDescription = sdkerrors.Register(ModuleName, 19, "invalid description")
 	ErrInvalidURI         = sdkerrors.Register(ModuleName, 20, "invalid URI")
+	ErrInvalidPercentage  = sdkerrors.Register(ModuleName, 21, "invalid percentage")
 	// this line is used by starport scaffolding # ibc/errors
 )
