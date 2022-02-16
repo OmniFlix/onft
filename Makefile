@@ -57,12 +57,14 @@ lint:
 	@go mod verify
 
 start-test-chain:
-	rm -rf ~/.onft/config/*
+	rm  ~/.onft/config/genesis.json
+	rm -rf  ~/.onft/config/gentx
 	onftd unsafe-reset-all
 	onftd init onft-node  --chain-id "onft-test-1"
 	onftd keys add validator
-	onftd add-genesis-account `onftd keys show validator -a` 100000000stake
-	onftd gentx validator 1000000stake --moniker "validator-1" --chain-id "onft-test-1"
+	onftd add-genesis-account `onftd keys show validator -a` 100000000uflix
+	onftd gentx validator 1000000uflix --moniker "validator-1" --chain-id "onft-test-1"
+	sed -i "s/\"stake\"/\"uflix\"/g" ~/.onft//config/genesis.json
 	onftd collect-gentxs
 	onftd validate-genesis
 	onftd start

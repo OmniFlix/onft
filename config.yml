@@ -1,14 +1,14 @@
 accounts:
   - name: alice
-    coins: ["100000000stake"]
+    coins: ["100000000uflix"]
   - name: bob
-    coins: ["100000000stake"]
+    coins: ["100000000uflix"]
 validator:
   name: alice
-  staked: "10000000stake"
+  staked: "10000000uflix"
 client:
   openapi:
     path: "docs/static/openapi.yml"
 faucet:
   name: bob
-  coins: ["100000stake"]
+  coins: ["100000uflix"]
