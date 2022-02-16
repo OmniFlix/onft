@@ -56,7 +56,7 @@ type mintONFTReq struct {
 	Transferable bool           `json:"transferable"`
 	Extensible   bool           `json:"extensible"`
 	Nsfw         bool           `json:"nsfw"`
-	RoyaltyShare sdk.Dec        `json:"royalty_share"`
+	RoyaltyShare string         `json:"royalty_share"`
 }
 
 type transferONFTReq struct {

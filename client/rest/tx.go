@@ -160,6 +160,15 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 		if len(req.PreviewURI) > 0 {
 			metadata.PreviewURI = req.PreviewURI
 		}
+		royaltyShare := sdk.NewDec(0)
+		if len(req.RoyaltyShare) > 0 {
+			var err error
+			royaltyShare, err = sdk.NewDecFromStr(req.RoyaltyShare)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
 
 		msg := types.NewMsgMintONFT(
 			req.Denom,
@@ -170,7 +179,7 @@ func mintONFTHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Transferable,
 			req.Extensible,
 			req.Nsfw,
-			req.RoyaltyShare,
+			royaltyShare,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
