@@ -3,7 +3,7 @@ package OmniFlix.onft.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "onft/v1beta1/onft.proto";
-
+import "onft/v1beta1/params.proto";
 option go_package = "github.com/OmniFlix/onft/types";
 
 // GenesisState defines the nft module's genesis state.
