@@ -60,7 +60,7 @@ func validateDenomCreationFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if fee.IsZero() || fee.IsNegative() || fee.IsValid() {
+	if !fee.IsValid() || fee.IsZero() {
 		return sdkerrors.Wrapf(ErrInvalidDenomCreationFee, "invalid fee amount %s, only accepts positive amounts", fee.String())
 	}
 	return nil
