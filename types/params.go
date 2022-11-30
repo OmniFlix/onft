@@ -9,7 +9,7 @@ import (
 
 // Default period for closing bids for an auction
 var (
-	DefaultDenomCreationFee = sdk.Coins{sdk.NewInt64Coin("uflix", 100_000_000)} // 100FLIX
+	DefaultDenomCreationFee = sdk.NewInt64Coin("uflix", 100_000_000) // 100FLIX
 )
 
 // Parameter keys
@@ -24,7 +24,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewONFTParams(denomCreationFee sdk.Coins) Params {
+func NewONFTParams(denomCreationFee sdk.Coin) Params {
 	return Params{
 		DenomCreationFee: denomCreationFee,
 	}
@@ -55,14 +55,13 @@ func (p Params) ValidateBasic() error {
 // ValidateDenomCreationFee performs validation of denom creation fee
 
 func validateDenomCreationFee(i interface{}) error {
-	fee, ok := i.(sdk.Coins)
+	fee, ok := i.(sdk.Coin)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-	for _, coin := range fee {
-		if coin.IsZero() || coin.IsNegative() || coin.IsValid() {
-			return sdkerrors.Wrapf(ErrInvalidDenomCreationFee, "invalid fee amount %s, only accepts positive amounts", coin.String())
-		}
+
+	if fee.IsZero() || fee.IsNegative() || fee.IsValid() {
+		return sdkerrors.Wrapf(ErrInvalidDenomCreationFee, "invalid fee amount %s, only accepts positive amounts", fee.String())
 	}
 	return nil
 }
