@@ -28,6 +28,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQuerySupply(),
 		GetCmdQueryONFT(),
 		GetCmdQueryOwner(),
+		GetCmdQueryParams(),
 	)
 
 	return queryCmd
@@ -267,5 +268,31 @@ $ %s query onft asset <denom> <onft-id>`, version.AppName)),
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 
+	return cmd
+}
+
+// GetCmdQueryParams implements the query params command.
+func GetCmdQueryParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Args:  cobra.NoArgs,
+		Short: "Query oNFT params",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.Params(cmd.Context(), &types.QueryParamsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

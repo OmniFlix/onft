@@ -64,6 +64,7 @@ func createDenomHandlerFn(cliCtx client.Context) http.HandlerFunc {
 			req.Description,
 			req.PreviewURI,
 			req.Sender.String(),
+			req.CreationFee,
 		)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

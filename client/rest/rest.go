@@ -27,6 +27,7 @@ type createDenomReq struct {
 	Schema      string         `json:"schema"`
 	Description string         `json:"description"`
 	PreviewURI  string         `json:"preview_uri"`
+	CreationFee sdk.Coin       `json:"creation_fee"`
 }
 
 type updateDenomReq struct {

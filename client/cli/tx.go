@@ -41,7 +41,7 @@ func GetCmdCreateDenom() *cobra.Command {
 			fmt.Sprintf(`Create a new denom.
 Example:
 $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<description> --preview-uri=<preview-uri> 
---chain-id=<chain-id> --from=<key-name> --fees=<fee>`,
+--creation-fee <collection-creation-fee> --chain-id=<chain-id> --from=<key-name> --fees=<fee>`,
 				version.AppName,
 			),
 		),
@@ -72,6 +72,14 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<desc
 			if err != nil {
 				return err
 			}
+			creationFeeStr, err := cmd.Flags().GetString(FlagCreationFee)
+			if err != nil {
+				return err
+			}
+			creationFee, err := sdk.ParseCoinNormalized(creationFeeStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse creation fee: %s", creationFeeStr)
+			}
 
 			msg := types.NewMsgCreateDenom(symbol,
 				denomName,
@@ -79,6 +87,7 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<desc
 				description,
 				previewURI,
 				clientCtx.GetFromAddress().String(),
+				creationFee,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -88,6 +97,7 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<desc
 	}
 	cmd.Flags().AddFlagSet(FsCreateDenom)
 	_ = cmd.MarkFlagRequired(FlagName)
+	_ = cmd.MarkFlagRequired(FlagCreationFee)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
