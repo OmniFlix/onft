@@ -178,3 +178,12 @@ func (k Keeper) OwnerONFTs(c context.Context, request *types.QueryOwnerONFTsRequ
 		Pagination:  pagination,
 	}, nil
 }
+
+// Params queries params of oNFT module
+func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	var params types.Params
+	k.paramSpace.GetParamSet(ctx, &params)
+
+	return &types.QueryParamsResponse{Params: params}, nil
+}

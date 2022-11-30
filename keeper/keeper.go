@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -15,6 +16,11 @@ import (
 type Keeper struct {
 	storeKey sdk.StoreKey
 	cdc      codec.BinaryCodec
+
+	accountKeeper      types.AccountKeeper
+	bankKeeper         types.BankKeeper
+	distributionKeeper types.DistributionKeeper
+	paramSpace         paramstypes.Subspace
 }
 
 func NewKeeper(cdc codec.BinaryCodec, storeKey sdk.StoreKey) Keeper {
@@ -30,7 +36,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) CreateDenom(
 	ctx sdk.Context, id, symbol, name, schema string,
-	creator sdk.AccAddress, description, previewUri string) error {
+	creator sdk.AccAddress, description, previewUri string, fee sdk.Coin) error {
 
 	if k.HasDenomID(ctx, id) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", id)
@@ -39,7 +45,16 @@ func (k Keeper) CreateDenom(
 	if k.HasDenomSymbol(ctx, symbol) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", symbol)
 	}
-	err := k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
+
+	err := k.distributionKeeper.FundCommunityPool(
+		ctx,
+		sdk.NewCoins(fee),
+		creator,
+	)
+	if err != nil {
+		return err
+	}
+	err = k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
 	if err != nil {
 		return err
 	}
