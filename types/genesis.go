@@ -59,5 +59,8 @@ func ValidateGenesis(data GenesisState) error {
 			}
 		}
 	}
+	if err := data.Params.ValidateBasic(); err != nil {
+		return err
+	}
 	return nil
 }
