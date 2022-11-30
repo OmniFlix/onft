@@ -27,7 +27,7 @@ var (
 	_ sdk.Msg = &MsgBurnONFT{}
 )
 
-func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender string) *MsgCreateDenom {
+func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender string, fee sdk.Coin) *MsgCreateDenom {
 	return &MsgCreateDenom{
 		Sender:      sender,
 		Id:          GenUniqueID(DenomPrefix),
@@ -36,6 +36,7 @@ func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender str
 		Schema:      schema,
 		Description: description,
 		PreviewURI:  previewUri,
+		CreationFee: fee,
 	}
 }
 
@@ -65,6 +66,9 @@ func (msg MsgCreateDenom) ValidateBasic() error {
 		return err
 	}
 	if err := ValidateURI(msg.PreviewURI); err != nil {
+		return err
+	}
+	if err := ValidateCreationFee(msg.CreationFee); err != nil {
 		return err
 	}
 

@@ -63,3 +63,10 @@ func ValidateURI(uri string) error {
 	}
 	return nil
 }
+
+func ValidateCreationFee(fee sdk.Coin) error {
+	if !fee.IsValid() || fee.IsNil() {
+		return sdkerrors.Wrapf(ErrInvalidURI, "invalid creation fee %s, fee must be positive", fee.String())
+	}
+	return nil
+}

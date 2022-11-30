@@ -28,5 +28,8 @@ var (
 	ErrInvalidURI              = sdkerrors.Register(ModuleName, 20, "invalid URI")
 	ErrInvalidPercentage       = sdkerrors.Register(ModuleName, 21, "invalid percentage")
 	ErrInvalidDenomCreationFee = sdkerrors.Register(ModuleName, 22, "invalid denom creation fee")
+	ErrInvalidFeeDenom         = sdkerrors.Register(ModuleName, 23, "invalid creation fee denom")
+	ErrNotEnoughFeeAmount      = sdkerrors.Register(ModuleName, 24, "invalid creation fee amount")
+	
 	// this line is used by starport scaffolding # ibc/errors
 )
