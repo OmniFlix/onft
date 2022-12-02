@@ -72,21 +72,24 @@ func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) 
 
 type AppModule struct {
 	AppModuleBasic
-	keeper        keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	keeper             keeper.Keeper
+	accountKeeper      types.AccountKeeper
+	bankKeeper         types.BankKeeper
+	distributionKeeper types.DistributionKeeper
 }
 
 func (am AppModule) RegisterQueryService(server grpc.Server) {
 	types.RegisterQueryServer(server, am.keeper)
 }
 
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, accountKeeper types.AccountKeeper, bankKeeper types.BankKeeper) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, accountKeeper types.AccountKeeper,
+	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{cdc: cdc},
-		keeper:         keeper,
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
+		AppModuleBasic:     AppModuleBasic{cdc: cdc},
+		keeper:             keeper,
+		accountKeeper:      accountKeeper,
+		bankKeeper:         bankKeeper,
+		distributionKeeper: distrKeeper,
 	}
 }
 

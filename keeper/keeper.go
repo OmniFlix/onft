@@ -23,10 +23,31 @@ type Keeper struct {
 	paramSpace         paramstypes.Subspace
 }
 
-func NewKeeper(cdc codec.BinaryCodec, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(
+	cdc codec.BinaryCodec,
+	storeKey sdk.StoreKey,
+	accountKeeper types.AccountKeeper,
+	bankKeeper types.BankKeeper,
+	distrKeeper types.DistributionKeeper,
+	paramSpace paramstypes.Subspace,
+) Keeper {
+	// ensure oNFT module account is set
+	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
+
+	// set KeyTable if it has not already been set
+	if !paramSpace.HasKeyTable() {
+		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
+	}
+
 	return Keeper{
-		storeKey: storeKey,
-		cdc:      cdc,
+		storeKey:           storeKey,
+		cdc:                cdc,
+		accountKeeper:      accountKeeper,
+		bankKeeper:         bankKeeper,
+		distributionKeeper: distrKeeper,
+		paramSpace:         paramSpace,
 	}
 }
 

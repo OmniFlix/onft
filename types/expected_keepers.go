@@ -8,6 +8,8 @@ import (
 // AccountKeeper defines the expected account keeper for query account
 type AccountKeeper interface {
 	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
+	GetModuleAccount(ctx sdk.Context, name string) authtypes.ModuleAccountI
+	GetModuleAddress(module string) sdk.AccAddress
 }
 
 // BankKeeper defines the expected interface needed to retrieve account balances.

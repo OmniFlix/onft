@@ -382,12 +382,17 @@ func New(
 	app.ONFTKeeper = onftkeeper.NewKeeper(
 		appCodec,
 		keys[onfttypes.StoreKey],
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.DistrKeeper,
+		app.GetSubspace(onfttypes.ModuleName),
 	)
 	onftModule := onft.NewAppModule(
 		appCodec,
 		app.ONFTKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.DistrKeeper,
 	)
 
 	// Create static IBC router, add transfer route, then set and seal it
