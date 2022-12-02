@@ -1,11 +1,101 @@
 # oNFT
 
-**oNFT** - OmniFlix NFT Module
+The `oNFT` module is a part of the OmniFlix Network and enables the classification and tokenization of assets.
 
-The code for this module is utilized from the [irismod/nft](https://github.com/irismod/nft) repository and modified according the requirements for oNFT.
+- Assets can be classified under `denoms` (aka `collections` across various ecosystems)
+- Tokenize media assets by minting NFTs
 
+The module supports the following capabilities for classification and tokenization:
 
-## CLI Commands
+- Creation of collections (denoms)
+- Minting of NFTs
+- Transferring of NFTs
+- Burning of NFTs
+
+Various queries are available to get details about denoms/collections, NFTs, and related metadata including but not limited to ownership. Click here to try them out by interacting with the chain.
+
+The module utilizes the [irismod/nft](https://github.com/irismod/nft) repository and has been modified to meet the requirements of the OmniFlix Network. It can be used through the CLI with various commands and flags to perform the desired actions.
+
+## 1) Tokenize a Media Asset i.e. create/mint an oNFT
+
+To create an oNFT, you will need to use the "onftd tx onft mint" command with the following flags:
+
+denom-id: the ID of the collection in which you want to mint the NFT
+name: the name of the NFT
+description: a description of the NFT
+media-uri: the IPFS URI of the NFT
+preview-uri: the preview URI of the NFT
+data: any additional properties for the NFT (optional)
+recipient: the recipient of the NFT (optional, default is the minter of the NFT)
+non-transferable: flag to mint a non-transferable NFT (optional, default is false)
+inextensible: flag to mint an inextensible NFT (optional, default is false)
+nsfw: flag to mark the NFT as not safe for work (optional, default is false)
+royalty-share: the royalty share for the NFT (optional, default is 0.00)
+
+Example:
+
+```
+onftd tx onft mint <denom-id>
+--name="NFT name"
+--description="NFT description"
+--media-uri="https://ipfs.io/ipfs/...."
+--preview-uri="https://ipfs.io/ipfs/...."
+--data=""
+--recipient=""
+--non-transferable
+--inextensible
+--nsfw
+--chain-id=<chain-id>
+--fees=<fee>
+--from=<key-name>
+```
+
+For a royalty share of 5%:
+
+```
+--royalty-share="0.05" # 5%
+```
+
+## 2) Transfer an oNFT
+
+To transfer an oNFT, you will need to use the "onftd tx onft transfer" command with the following flags:
+
+recipient: the recipient's account address
+denom-id: the ID of the collection in which the NFT is located
+onft-id: the ID of the NFT to be transferred
+chain-id: the ID of the blockchain where the transaction will be made (required)
+fees: the transaction fees (required)
+from: the name of the key to sign the transaction with (required)
+
+Example:
+
+```
+onftd tx onft transfer <recipient> <denom-id> <onft-id>
+--chain-id=<chain-id>
+--fees=<fee>
+--from=<key-name>
+```
+
+## 3) Burn an oNFT
+
+To burn an oNFT, you will need to use the "onftd tx onft burn" command with the following flags:
+
+denom-id: the ID of the collection in which the NFT is located
+onft-id: the ID of the NFT to be burned
+chain-id: the ID of the blockchain where the transaction will be made (required)
+fees: the transaction fees (required)
+from: the name of the key to sign the transaction with (required)
+
+Example:
+
+```
+onftd tx onft burn <denom-id> <onft-id>
+--chain-id=<chain-id>
+--fees=<fee>
+--from=<key-name>
+```
+
+# All CLI Commands
 
 ### Queries
   - #### Get List of denoms (collections)
