@@ -5,9 +5,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func NewGenesisState(collections []Collection) *GenesisState {
+func NewGenesisState(collections []Collection, params Params) *GenesisState {
 	return &GenesisState{
 		Collections: collections,
+		Params:      params,
 	}
 }
 
