@@ -16,7 +16,7 @@ Various queries are available to get details about denoms/collections, NFTs, and
 
 The module utilizes the [irismod/nft](https://github.com/irismod/nft) repository and has been modified to meet the requirements of the OmniFlix Network. It can be used through the CLI with various commands and flags to perform the desired actions.
 
-## 1) Tokenize a Media Asset i.e. create/mint an oNFT
+## 1) Mint an oNFT
 
 To create an oNFT, you will need to use the "onftd tx onft mint" command with the following flags:
 
