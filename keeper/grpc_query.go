@@ -2,8 +2,7 @@ package keeper
 
 import (
 	"context"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	"github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/cosmos/cosmos-sdk/x/nft"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"strings"
@@ -29,7 +28,7 @@ func (k Keeper) Supply(c context.Context, request *types.QuerySupplyRequest) (*t
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid owner address %s", request.Owner)
 		}
-		supply = k.GetTotalSupplyOfOwner(ctx, denom, owner)
+		supply = k.GetBalance(ctx, denom, owner)
 	}
 	return &types.QuerySupplyResponse{
 		Amount: supply,
@@ -53,70 +52,64 @@ func (k Keeper) Denom(c context.Context, request *types.QueryDenomRequest) (*typ
 	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
 
-	denomObject, err := k.GetDenom(ctx, denom)
+	denomObject, err := k.GetDenomInfo(ctx, denom)
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryDenomResponse{
-		Denom: &denomObject,
+		Denom: denomObject,
 	}, nil
 }
 
 func (k Keeper) Denoms(c context.Context, request *types.QueryDenomsRequest) (*types.QueryDenomsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	var (
-		denoms     []types.Denom
-		pagination *query.PageResponse
-		err        error
-	)
-	store := ctx.KVStore(k.storeKey)
+	result, err := k.nk.Classes(c, &nft.QueryClassesRequest{
+		Pagination: shapePageRequest(request.Pagination),
+	})
 
+	if err != nil {
+		return nil, err
+	}
+	var denoms []types.Denom
 	if request.Owner != "" {
 		owner, err := sdk.AccAddressFromBech32(request.Owner)
 		if err != nil {
 			return nil, err
 		}
-		denomStore := prefix.NewStore(store, types.KeyDenomCreator(owner, ""))
-		pagination, err = query.Paginate(denomStore, request.Pagination, func(key []byte, value []byte) error {
-			denomId := types.MustUnMarshalDenomID(k.cdc, value)
-			denom, _ := k.GetDenom(ctx, denomId)
-			denoms = append(denoms, denom)
-			return nil
-		})
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
+		for _, class := range result.Classes {
+			denom, err := k.GetDenomInfo(ctx, class.Id)
+			if err != nil {
+				return nil, err
+			}
+			if denom.Creator == owner.String() {
+				denoms = append(denoms, *denom)
+			}
 		}
-
 	} else {
-		denomStore := prefix.NewStore(store, types.KeyDenomID(""))
-		pagination, err = query.Paginate(denomStore, request.Pagination, func(key []byte, value []byte) error {
-			var denom types.Denom
-			k.cdc.MustUnmarshal(value, &denom)
-			denoms = append(denoms, denom)
-			return nil
-		})
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
+		for _, class := range result.Classes {
+			denom, err := k.GetDenomInfo(ctx, class.Id)
+			if err != nil {
+				return nil, err
+			}
+			denoms = append(denoms, *denom)
 		}
 	}
 	return &types.QueryDenomsResponse{
 		Denoms:     denoms,
-		Pagination: pagination,
+		Pagination: result.Pagination,
 	}, nil
 }
 
 func (k Keeper) ONFT(c context.Context, request *types.QueryONFTRequest) (*types.QueryONFTResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
-	onftID := strings.ToLower(strings.TrimSpace(request.Id))
 	ctx := sdk.UnwrapSDKContext(c)
 
-	nft, err := k.GetONFT(ctx, denom, onftID)
+	_nft, err := k.GetONFT(ctx, request.DenomId, request.Id)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid ONFT %s from collection %s", request.Id, request.DenomId)
 	}
 
-	oNFT, ok := nft.(types.ONFT)
+	oNFT, ok := _nft.(types.ONFT)
 	if !ok {
 		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid type ONFT %s from collection %s", request.Id, request.DenomId)
 	}
@@ -126,55 +119,42 @@ func (k Keeper) ONFT(c context.Context, request *types.QueryONFTRequest) (*types
 	}, nil
 }
 func (k Keeper) OwnerONFTs(c context.Context, request *types.QueryOwnerONFTsRequest) (*types.QueryOwnerONFTsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+	r := &nft.QueryNFTsRequest{
+		ClassId:    request.DenomId,
+		Owner:      request.Owner,
+		Pagination: shapePageRequest(request.Pagination),
+	}
 
-	address, err := sdk.AccAddressFromBech32(request.Owner)
+	result, err := k.nk.NFTs(c, r)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid owner address %s", request.Owner)
+		return nil, err
 	}
 
-	owner := types.Owner{
-		Address:       address.String(),
-		IDCollections: types.IDCollections{},
+	var denomMap = make(map[string][]string)
+	var denoms []string
+	for _, _nft := range result.Nfts {
+		if denomMap[_nft.ClassId] == nil {
+			denomMap[_nft.ClassId] = []string{}
+			denoms = append(denoms, _nft.ClassId)
+		}
+		denomMap[_nft.ClassId] = append(denomMap[_nft.ClassId], _nft.Id)
 	}
-	var ownerCollections []types.OwnerONFTCollection
-	idsMap := make(map[string][]string)
-	store := ctx.KVStore(k.storeKey)
-	onftStore := prefix.NewStore(store, types.KeyOwner(address, request.DenomId, ""))
-	pagination, err := query.Paginate(onftStore, request.Pagination, func(key []byte, value []byte) error {
-		denomId := request.DenomId
-		onftId := string(key)
-		if len(denomId) == 0 {
-			denomId, onftId, _ = types.SplitKeyDenom(key)
-		}
-		if ids, ok := idsMap[denomId]; ok {
-			idsMap[denomId] = append(ids, onftId)
-		} else {
-			idsMap[denomId] = []string{onftId}
-			owner.IDCollections = append(
-				owner.IDCollections,
-				types.IDCollection{DenomId: denomId},
-			)
-		}
-		return nil
-	})
-	for i := 0; i < len(owner.IDCollections); i++ {
-		owner.IDCollections[i].OnftIds = idsMap[owner.IDCollections[i].DenomId]
-		denom, _ := k.GetDenom(ctx, owner.IDCollections[i].DenomId)
-		var onfts []types.ONFT
-		for _, onftid := range owner.IDCollections[i].OnftIds {
-			onft, _ := k.GetONFT(ctx, denom.Id, onftid)
-			onfts = append(onfts, onft.(types.ONFT))
-		}
-		ownerCollection := types.OwnerONFTCollection{
-			Denom: denom,
-			Onfts: onfts,
-		}
-		ownerCollections = append(ownerCollections, ownerCollection)
+
+	var idc []types.IDCollection
+	for _, denomID := range denoms {
+		idc = append(idc, types.IDCollection{
+			DenomId: denomID,
+			OnftIds: denomMap[denomID],
+		})
 	}
-	return &types.QueryOwnerONFTsResponse{
-		Owner:       address.String(),
-		Collections: ownerCollections,
-		Pagination:  pagination,
-	}, nil
+
+	response := &types.QueryOwnerONFTsResponse{
+		Owner: &types.Owner{
+			Address:       request.Owner,
+			IDCollections: idc,
+		},
+		Pagination: result.Pagination,
+	}
+
+	return response, nil
 }

@@ -35,6 +35,9 @@ message Denom {
     (gogoproto.moretags)   = "yaml:\"preview_uri\"",
     (gogoproto.customname) = "PreviewURI"
   ];
+  string uri               = 8;
+  string uri_hash          = 9;
+  string data              = 10;
 }
 
 message DenomMetadata {

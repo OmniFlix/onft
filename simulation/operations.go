@@ -132,7 +132,7 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 			sender.Address.String(),
 		)
 		msg.Id = denomId
-		denom, _ := k.GetDenom(ctx, msg.Id)
+		denom, _ := k.GetDenomInfo(ctx, msg.Id)
 		if denom.Size() != 0 {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateDenom, "denom exist"), nil, nil
 		}
@@ -460,11 +460,11 @@ func getRandomNFTFromOwner(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (addr
 func getRandomDenom(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (types.Denom, error) {
 	var denoms = []string{denomId1, denomId2}
 	i := r.Intn(len(denoms))
-	denom, _ := k.GetDenom(ctx, denoms[i])
+	denom, _ := k.GetDenomInfo(ctx, denoms[i])
 	if denom.Size() == 0 {
 		return types.Denom{}, fmt.Errorf("no denoms created")
 	}
-	return denom, nil
+	return *denom, nil
 }
 
 func genRandomBool(r *rand.Rand) bool {

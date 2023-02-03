@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	"strings"
 	"time"
 
@@ -79,6 +80,18 @@ func (onft ONFT) GetRoyaltyShare() sdk.Dec {
 // ONFT
 
 type ONFTs []exported.ONFT
+
+func UnmarshalNFTMetadata(cdc codec.Codec, bz []byte) (ONFTMetadata, error) {
+	var nftMetadata ONFTMetadata
+	if len(bz) == 0 {
+		return nftMetadata, nil
+	}
+
+	if err := cdc.Unmarshal(bz, &nftMetadata); err != nil {
+		return nftMetadata, err
+	}
+	return nftMetadata, nil
+}
 
 func NewONFTs(onfts ...exported.ONFT) ONFTs {
 	if len(onfts) == 0 {

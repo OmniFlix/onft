@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/gogo/protobuf/proto"
 	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/OmniFlix/onft/exported"
@@ -34,6 +35,12 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 
 	registry.RegisterImplementations((*exported.ONFT)(nil),
 		&ONFT{},
+	)
+
+	registry.RegisterImplementations(
+		(*proto.Message)(nil),
+		&DenomMetadata{},
+		&ONFTMetadata{},
 	)
 }
 

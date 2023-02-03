@@ -49,7 +49,7 @@ func querySupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerier
 	case params.Owner.Empty() && len(denom) > 0:
 		supply = k.GetTotalSupply(ctx, denom)
 	default:
-		supply = k.GetTotalSupplyOfOwner(ctx, denom, params.Owner)
+		supply = k.GetBalance(ctx, denom, params.Owner)
 	}
 
 	bz := make([]byte, 8)
@@ -87,7 +87,7 @@ func queryDenom(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierC
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	denom, err := k.GetDenom(ctx, params.ID)
+	denom, err := k.GetDenomInfo(ctx, params.ID)
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, denom)
 	if err != nil {
@@ -98,7 +98,10 @@ func queryDenom(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierC
 }
 
 func queryDenoms(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
-	denoms := k.GetDenoms(ctx)
+	denoms, err := k.GetDenoms(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, denoms)
 	if err != nil {

@@ -19,7 +19,11 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) {
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return types.NewGenesisState(k.GetCollections(ctx))
+	state, err := k.GetCollections(ctx)
+	if err != nil {
+		panic(err.Error())
+	}
+	return types.NewGenesisState(state)
 }
 
 func DefaultGenesisState() *types.GenesisState {

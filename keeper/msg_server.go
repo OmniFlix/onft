@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/OmniFlix/onft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -18,6 +19,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
+// CreateDenom TODO: Update CreateDenom Msg
 func (m msgServer) CreateDenom(goCtx context.Context,
 	msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
 
@@ -27,7 +29,7 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.CreateDenom(ctx,
+	if err := m.Keeper.SaveDenom(ctx,
 		msg.Id,
 		msg.Symbol,
 		msg.Name,
@@ -35,6 +37,9 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 		sender,
 		msg.Description,
 		msg.PreviewURI,
+		"",
+		"",
+		"",
 	); err != nil {
 		return nil, err
 	}
@@ -52,26 +57,27 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 }
 
 func (m msgServer) UpdateDenom(goCtx context.Context, msg *types.MsgUpdateDenom) (*types.MsgUpdateDenomResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	_ = sdk.UnwrapSDKContext(goCtx)
 
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
+	// TODO: update denom functionality
+	/*
+		err = m.Keeper.UpdateDenom(ctx, msg.Id, msg.Name, msg.Description, msg.PreviewURI, sender)
+		if err != nil {
+			return nil, err
+		}
 
-	err = m.Keeper.UpdateDenom(ctx, msg.Id, msg.Name, msg.Description, msg.PreviewURI, sender)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventUpdateDenom{
-			Id:      msg.Id,
-			Name:    msg.Name,
-			Creator: msg.Sender,
-		},
-	)
-
+		ctx.EventManager().EmitTypedEvent(
+			&types.EventUpdateDenom{
+				Id:      msg.Id,
+				Name:    msg.Name,
+				Creator: msg.Sender,
+			},
+		)
+	*/
 	return &types.MsgUpdateDenomResponse{}, nil
 }
 
@@ -104,27 +110,39 @@ func (m msgServer) TransferDenom(goCtx context.Context, msg *types.MsgTransferDe
 
 func (m msgServer) MintONFT(goCtx context.Context,
 	msg *types.MsgMintONFT) (*types.MsgMintONFTResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-
+	if !m.Keeper.HasPermissionToMint(ctx, msg.DenomId, sender) {
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"%s is not allowed to mint nft under denom %s",
+			sender.String(),
+			msg.DenomId,
+		)
+	}
 	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.MintONFT(ctx,
+	// TODO: check mint conditions
+	if err := m.Keeper.SaveNFT(ctx,
 		msg.DenomId,
 		msg.Id,
-		msg.Metadata,
+		msg.Metadata.Name,
+		msg.Metadata.Description,
+		msg.Metadata.MediaURI,
+		msg.Metadata.PreviewURI,
 		msg.Data,
+		ctx.BlockTime(),
 		msg.Transferable,
 		msg.Extensible,
 		msg.Nsfw,
 		msg.RoyaltyShare,
-		sender,
 		recipient,
 	); err != nil {
 		return nil, err
