@@ -38,13 +38,55 @@ func (k Keeper) Supply(c context.Context, request *types.QuerySupplyRequest) (*t
 func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequest) (*types.QueryCollectionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	collection, pagination, err := k.GetPaginateCollection(ctx, request, request.DenomId)
+	denom, err := k.GetDenomInfo(ctx, request.DenomId)
 	if err != nil {
 		return nil, err
 	}
+
+	r := &nft.QueryNFTsRequest{
+		ClassId:    request.DenomId,
+		Pagination: shapePageRequest(request.Pagination),
+	}
+
+	result, err := k.nk.NFTs(c, r)
+	if err != nil {
+		return nil, err
+	}
+	var onfts []types.ONFT
+	for _, _nft := range result.Nfts {
+		owner := k.nk.GetOwner(ctx, request.DenomId, _nft.Id)
+
+		nftMetadata, err := types.UnmarshalNFTMetadata(k.cdc, _nft.Data.GetValue())
+		if err != nil {
+			return nil, err
+		}
+
+		onfts = append(onfts, types.ONFT{
+			Id: _nft.Id,
+			Metadata: types.Metadata{
+				Name:        nftMetadata.Name,
+				Description: nftMetadata.Description,
+				MediaURI:    _nft.Uri,
+				UriHash:     _nft.UriHash,
+				PreviewURI:  nftMetadata.PreviewURI,
+			},
+			Owner:        owner.String(),
+			Data:         nftMetadata.Data,
+			Transferable: nftMetadata.Transferable,
+			Extensible:   nftMetadata.Extensible,
+			CreatedAt:    nftMetadata.CreatedAt,
+			Nsfw:         nftMetadata.Nsfw,
+			RoyaltyShare: nftMetadata.RoyaltyShare,
+		})
+	}
+
+	collection := &types.Collection{
+		Denom: *denom,
+		ONFTs: onfts,
+	}
 	return &types.QueryCollectionResponse{
-		Collection: &collection,
-		Pagination: pagination,
+		Collection: collection,
+		Pagination: result.Pagination,
 	}, nil
 }
 
