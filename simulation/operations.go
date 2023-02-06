@@ -128,7 +128,10 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 			denomName,
 			"{}",
 			description,
+			"",
+			"",
 			previewURI,
+			"{}",
 			sender.Address.String(),
 		)
 		msg.Id = denomId

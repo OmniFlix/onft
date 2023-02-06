@@ -40,6 +40,7 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 			onft.GetName(),
 			onft.GetDescription(),
 			onft.GetMediaURI(),
+			onft.GetURIHash(),
 			onft.GetPreviewURI(),
 			onft.GetData(),
 			onft.GetCreatedTime(),

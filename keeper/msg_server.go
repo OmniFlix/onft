@@ -37,9 +37,9 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 		sender,
 		msg.Description,
 		msg.PreviewURI,
-		"",
-		"",
-		"",
+		msg.Uri,
+		msg.UriHash,
+		msg.Data,
 	); err != nil {
 		return nil, err
 	}
@@ -129,13 +129,19 @@ func (m msgServer) MintONFT(goCtx context.Context,
 		return nil, err
 	}
 
-	// TODO: check mint conditions
+	if m.Keeper.HasONFT(ctx, msg.DenomId, msg.Id) {
+		return nil, sdkerrors.Wrapf(
+			types.ErrONFTAlreadyExists,
+			"ONFT %s already exists in collection %s", msg.Id, msg.DenomId)
+	}
+
 	if err := m.Keeper.SaveNFT(ctx,
 		msg.DenomId,
 		msg.Id,
 		msg.Metadata.Name,
 		msg.Metadata.Description,
 		msg.Metadata.MediaURI,
+		msg.Metadata.UriHash,
 		msg.Metadata.PreviewURI,
 		msg.Data,
 		ctx.BlockTime(),

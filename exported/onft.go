@@ -18,4 +18,5 @@ type ONFT interface {
 	IsNSFW() bool
 	GetCreatedTime() time.Time
 	GetRoyaltyShare() sdk.Dec
+	GetURIHash() string
 }

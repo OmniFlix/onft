@@ -17,6 +17,7 @@ func (k Keeper) SaveNFT(
 	name,
 	description,
 	mediaURI,
+	uriHash,
 	previewURI,
 	nftData string,
 	createdAt time.Time,
@@ -45,7 +46,7 @@ func (k Keeper) SaveNFT(
 		ClassId: denomID,
 		Id:      nftID,
 		Uri:     mediaURI,
-		UriHash: "",
+		UriHash: uriHash,
 		Data:    data,
 	}, receiver)
 }

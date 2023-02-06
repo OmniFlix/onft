@@ -18,6 +18,8 @@ const (
 	FlagSchema          = "schema"
 	FlagNsfw            = "nsfw"
 	FlagRoyaltyShare    = "royalty-share"
+	FlagURI             = "uri"
+	FlagURIHash         = "uri-hash"
 )
 
 var (
@@ -35,6 +37,9 @@ func init() {
 	FsCreateDenom.String(FlagName, "", "Name of the denom")
 	FsCreateDenom.String(FlagDescription, "", "Description for denom")
 	FsCreateDenom.String(FlagPreviewURI, "", "Preview image uri for denom")
+	FsCreateDenom.String(FlagURI, "", "uri for denom")
+	FsCreateDenom.String(FlagURIHash, "", "uri hash for denom")
+	FsCreateDenom.String(FlagData, "", "json data of the denom")
 
 	FsUpdateDenom.String(FlagName, "[do-not-modify]", "Name of the denom")
 	FsUpdateDenom.String(FlagDescription, "[do-not-modify]", "Description for denom")

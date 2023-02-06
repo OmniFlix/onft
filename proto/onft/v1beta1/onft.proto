@@ -84,6 +84,7 @@ message Metadata {
     (gogoproto.moretags)   = "yaml:\"preview_uri\"",
     (gogoproto.customname) = "PreviewURI"
   ];
+  string uri_hash   = 5;
 }
 
 message ONFTMetadata {

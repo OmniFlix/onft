@@ -72,7 +72,9 @@ func (onft ONFT) GetCreatedTime() time.Time {
 func (onft ONFT) IsNSFW() bool {
 	return onft.Nsfw
 }
-
+func (onft ONFT) GetURIHash() string {
+	return onft.Metadata.UriHash
+}
 func (onft ONFT) GetRoyaltyShare() sdk.Dec {
 	return onft.RoyaltyShare
 }

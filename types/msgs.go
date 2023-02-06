@@ -5,6 +5,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/tidwall/gjson"
 )
 
 const (
@@ -27,7 +29,7 @@ var (
 	_ sdk.Msg = &MsgBurnONFT{}
 )
 
-func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender string) *MsgCreateDenom {
+func NewMsgCreateDenom(symbol, name, schema, description, uri, uriHash, previewUri, data, sender string) *MsgCreateDenom {
 	return &MsgCreateDenom{
 		Sender:      sender,
 		Id:          GenUniqueID(DenomPrefix),
@@ -36,6 +38,9 @@ func NewMsgCreateDenom(symbol, name, schema, description, previewUri, sender str
 		Schema:      schema,
 		Description: description,
 		PreviewURI:  previewUri,
+		Uri:         uri,
+		UriHash:     uriHash,
+		Data:        data,
 	}
 }
 
@@ -66,6 +71,9 @@ func (msg MsgCreateDenom) ValidateBasic() error {
 	}
 	if err := ValidateURI(msg.PreviewURI); err != nil {
 		return err
+	}
+	if len(msg.Data) != 0 && !gjson.Valid(msg.Data) {
+		return sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, "invalid data, must be a JSON string or empty")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {

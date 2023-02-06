@@ -34,6 +34,9 @@ message MsgCreateDenom {
   ];
   string schema            = 6;
   string sender            = 7;
+  string uri = 8;
+  string uri_hash = 9;
+  string data = 10;
 }
 
 message MsgCreateDenomResponse {}

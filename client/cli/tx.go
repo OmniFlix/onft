@@ -40,7 +40,8 @@ func GetCmdCreateDenom() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Create a new denom.
 Example:
-$ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<description> --preview-uri=<preview-uri> 
+$ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<description>
+--uri=<uri> --uri-hash=<uri hash> --preview-uri=<preview-uri> 
 --chain-id=<chain-id> --from=<key-name> --fees=<fee>`,
 				version.AppName,
 			),
@@ -68,7 +69,20 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<desc
 				return err
 			}
 
+			URI, err := cmd.Flags().GetString(FlagURI)
+			if err != nil {
+				return err
+			}
+
+			URIHash, err := cmd.Flags().GetString(FlagURIHash)
+			if err != nil {
+				return err
+			}
 			previewURI, err := cmd.Flags().GetString(FlagPreviewURI)
+			if err != nil {
+				return err
+			}
+			data, err := cmd.Flags().GetString(FlagData)
 			if err != nil {
 				return err
 			}
@@ -77,7 +91,10 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<desc
 				denomName,
 				schema,
 				description,
+				URI,
+				URIHash,
 				previewURI,
+				data,
 				clientCtx.GetFromAddress().String(),
 			)
 			if err := msg.ValidateBasic(); err != nil {
