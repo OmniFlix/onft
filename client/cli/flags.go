@@ -57,6 +57,7 @@ func init() {
 	FsMintONFT.Bool(FlagInExtensible, false, "To mint non-extensisble onft")
 	FsMintONFT.Bool(FlagNsfw, false, "not safe for work flag for onft")
 	FsMintONFT.String(FlagRoyaltyShare, "", "Royalty share value decimal value between 0 and 1")
+	FsMintONFT.String(FlagURIHash, "", "uri hash for the nft")
 
 	FsTransferONFT.String(FlagRecipient, "", "Receiver of the onft. default value is sender address of transaction")
 	FsQuerySupply.String(FlagOwner, "", "The owner of a nft")

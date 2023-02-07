@@ -46,6 +46,7 @@ message DenomMetadata {
   string description = 3;
   string preview_uri = 4;
   string data = 5;
+  string uri_hash = 6;
 }
 
 //ASSET or ONFT
@@ -108,6 +109,7 @@ message ONFTMetadata {
     (gogoproto.moretags)   = "yaml:\"royalty_share\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
   ];
+  string uri_hash = 10;
 }
 
 message Owner {

@@ -87,7 +87,8 @@ $ %s tx onft create [symbol] --name=<name> --schema=<schema> --description=<desc
 				return err
 			}
 
-			msg := types.NewMsgCreateDenom(symbol,
+			msg := types.NewMsgCreateDenom(
+				symbol,
 				denomName,
 				schema,
 				description,
@@ -121,6 +122,7 @@ $ %s tx onft mint [denom-id] \
 	--description <onft-descritpion> \
 	--media-uri=<uri> \
 	--preview-uri=<uri> \
+    --uri-hash=<uri-hash> \
 	--from=<key-name> \
 	--chain-id=<chain-id> \
 	--fees=<fee>
@@ -173,6 +175,11 @@ Additional Flags
 				return err
 			}
 
+			onftURIHash, err := cmd.Flags().GetString(FlagURIHash)
+			if err != nil {
+				return err
+			}
+
 			onftPreviewURI, err := cmd.Flags().GetString(FlagPreviewURI)
 			if err != nil {
 				return err
@@ -189,6 +196,9 @@ Additional Flags
 			}
 			if len(onftPreviewURI) > 0 {
 				onftMetadata.PreviewURI = onftPreviewURI
+			}
+			if len(onftURIHash) > 0 {
+				onftMetadata.UriHash = onftURIHash
 			}
 			data, err := cmd.Flags().GetString(FlagData)
 			if err != nil {

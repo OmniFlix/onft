@@ -19,7 +19,6 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-// CreateDenom TODO: Update CreateDenom Msg
 func (m msgServer) CreateDenom(goCtx context.Context,
 	msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
 

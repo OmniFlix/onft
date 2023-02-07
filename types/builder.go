@@ -1,3 +1,5 @@
+// code reference: https://github.com/irisnet/irismod/blob/main/modules/nft/types/builder.go
+
 package types
 
 import (

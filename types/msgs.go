@@ -29,7 +29,9 @@ var (
 	_ sdk.Msg = &MsgBurnONFT{}
 )
 
-func NewMsgCreateDenom(symbol, name, schema, description, uri, uriHash, previewUri, data, sender string) *MsgCreateDenom {
+func NewMsgCreateDenom(
+	symbol,
+	name, schema, description, uri, uriHash, previewUri, data, sender string) *MsgCreateDenom {
 	return &MsgCreateDenom{
 		Sender:      sender,
 		Id:          GenUniqueID(DenomPrefix),
