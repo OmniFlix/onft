@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -28,8 +29,10 @@ var (
 	ClassKeySchema       = fmt.Sprintf("%s%s", Namespace, "schema")
 	ClassKeyPreviewURI   = fmt.Sprintf("%s%s", Namespace, "preview_uri")
 	TokenKeyName         = fmt.Sprintf("%s%s", Namespace, "name")
+	TokenKeyDescription  = fmt.Sprintf("%s%s", Namespace, "description")
 	TokenKeyURIhash      = fmt.Sprintf("%s%s", Namespace, "uri_hash")
 	TokenKeyPreviewURI   = fmt.Sprintf("%s%s", Namespace, "preview_uri")
+	TokenKeyCreatedAt    = fmt.Sprintf("%s%s", Namespace, "created_at")
 	TokenKeyTransferable = fmt.Sprintf("%s%s", Namespace, "transferable")
 	TokenKeyExtensible   = fmt.Sprintf("%s%s", Namespace, "extensible")
 	TokenKeyNSFW         = fmt.Sprintf("%s%s", Namespace, "nsfw")
@@ -67,7 +70,7 @@ func (cb ClassBuilder) BuildMetadata(class nft.Class) (string, error) {
 
 	metadata, ok := message.(*DenomMetadata)
 	if !ok {
-		return "", errors.New("unsupport classMetadata")
+		return "", errors.New("unsupported classMetadata")
 	}
 
 	kvals := make(map[string]interface{})
@@ -94,6 +97,7 @@ func (cb ClassBuilder) BuildMetadata(class nft.Class) (string, error) {
 	kvals[ClassKeyURIhash] = MediaField{Value: class.UriHash}
 	kvals[ClassKeyCreator] = MediaField{Value: hexCreator}
 	kvals[ClassKeySchema] = MediaField{Value: metadata.Schema}
+	kvals[ClassKeyPreviewURI] = MediaField{Value: metadata.PreviewUri}
 	data, err := json.Marshal(kvals)
 	if err != nil {
 		return "", err
@@ -148,21 +152,28 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 			}
 		}
 	}
+	if v, ok := dataMap[ClassKeyDescription]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
+				description = vStr
+				delete(dataMap, ClassKeyDescription)
+			}
+		}
+	}
+	if v, ok := dataMap[ClassKeyPreviewURI]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
+				previewURI = vStr
+				delete(dataMap, ClassKeyPreviewURI)
+			}
+		}
+	}
 
 	if v, ok := dataMap[ClassKeySymbol]; ok {
 		if vMap, ok := v.(map[string]interface{}); ok {
 			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
 				symbol = vStr
 				delete(dataMap, ClassKeySymbol)
-			}
-		}
-	}
-
-	if v, ok := dataMap[ClassKeyDescription]; ok {
-		if vMap, ok := v.(map[string]interface{}); ok {
-			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
-				description = vStr
-				delete(dataMap, ClassKeyDescription)
 			}
 		}
 	}
@@ -208,9 +219,11 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 	}
 
 	any, err := codectypes.NewAnyWithValue(&DenomMetadata{
-		Creator: creator,
-		Schema:  schema,
-		Data:    data,
+		Creator:     creator,
+		PreviewUri:  previewURI,
+		Description: description,
+		Schema:      schema,
+		Data:        data,
 	})
 	if err != nil {
 		return nft.Class{}, err
@@ -290,14 +303,80 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 	}
 
 	var (
-		name    string
-		uriHash string
+		name         string
+		description  string
+		previewURI   string
+		transferable = true
+		extensible   = true
+		nsfw         = false
+		createdAt    time.Time
+		royaltyShare sdk.Dec
+		uriHash      string
 	)
 	if v, ok := dataMap[TokenKeyName]; ok {
 		if vMap, ok := v.(map[string]interface{}); ok {
 			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
 				name = vStr
 				delete(dataMap, TokenKeyName)
+			}
+		}
+	}
+	if v, ok := dataMap[TokenKeyDescription]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
+				description = vStr
+				delete(dataMap, TokenKeyDescription)
+			}
+		}
+	}
+	if v, ok := dataMap[TokenKeyPreviewURI]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
+				previewURI = vStr
+				delete(dataMap, TokenKeyPreviewURI)
+			}
+		}
+	}
+	if v, ok := dataMap[TokenKeyCreatedAt]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vStr, ok := vMap[KeyMediaFieldValue].(time.Time); ok {
+				createdAt = vStr
+				delete(dataMap, TokenKeyCreatedAt)
+			}
+		}
+	}
+	if v, ok := dataMap[TokenKeyTransferable]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vBool, ok := vMap[KeyMediaFieldValue].(bool); ok {
+				transferable = vBool
+				delete(dataMap, TokenKeyTransferable)
+			}
+		}
+	}
+
+	if v, ok := dataMap[TokenKeyExtensible]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vBool, ok := vMap[KeyMediaFieldValue].(bool); ok {
+				extensible = vBool
+				delete(dataMap, TokenKeyExtensible)
+			}
+		}
+	}
+
+	if v, ok := dataMap[TokenKeyNSFW]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vBool, ok := vMap[KeyMediaFieldValue].(bool); ok {
+				nsfw = vBool
+				delete(dataMap, TokenKeyNSFW)
+			}
+		}
+	}
+
+	if v, ok := dataMap[TokenKeyRoyaltyShare]; ok {
+		if vMap, ok := v.(map[string]interface{}); ok {
+			if vDec, ok := vMap[KeyMediaFieldValue].(sdk.Dec); ok {
+				royaltyShare = vDec
+				delete(dataMap, TokenKeyRoyaltyShare)
 			}
 		}
 	}
@@ -321,8 +400,15 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 	}
 
 	metadata, err := codectypes.NewAnyWithValue(&ONFTMetadata{
-		Name: name,
-		Data: data,
+		Name:         name,
+		Description:  description,
+		PreviewURI:   previewURI,
+		Data:         data,
+		Transferable: transferable,
+		Extensible:   extensible,
+		Nsfw:         nsfw,
+		CreatedAt:    createdAt,
+		RoyaltyShare: royaltyShare,
 	})
 	if err != nil {
 		return nft.NFT{}, err
