@@ -318,8 +318,8 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 		transferable = true
 		extensible   = true
 		nsfw         = false
-		createdAt    time.Time
-		royaltyShare sdk.Dec
+		createdAt    string
+		royaltyShare string
 		uriHash      string
 	)
 	if v, ok := dataMap[TokenKeyName]; ok {
@@ -348,7 +348,7 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 	}
 	if v, ok := dataMap[TokenKeyCreatedAt]; ok {
 		if vMap, ok := v.(map[string]interface{}); ok {
-			if vStr, ok := vMap[KeyMediaFieldValue].(time.Time); ok {
+			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
 				createdAt = vStr
 				delete(dataMap, TokenKeyCreatedAt)
 			}
@@ -383,7 +383,7 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 
 	if v, ok := dataMap[TokenKeyRoyaltyShare]; ok {
 		if vMap, ok := v.(map[string]interface{}); ok {
-			if vDec, ok := vMap[KeyMediaFieldValue].(sdk.Dec); ok {
+			if vDec, ok := vMap[KeyMediaFieldValue].(string); ok {
 				royaltyShare = vDec
 				delete(dataMap, TokenKeyRoyaltyShare)
 			}
@@ -407,6 +407,8 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 		}
 		data = string(dataBz)
 	}
+	createdTime, _ := time.Parse(createdAt, time.RFC3339)
+	royalty, _ := sdk.NewDecFromStr(royaltyShare)
 
 	metadata, err := codectypes.NewAnyWithValue(&ONFTMetadata{
 		Name:         name,
@@ -416,8 +418,8 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 		Transferable: transferable,
 		Extensible:   extensible,
 		Nsfw:         nsfw,
-		CreatedAt:    createdAt,
-		RoyaltyShare: royaltyShare,
+		CreatedAt:    createdTime,
+		RoyaltyShare: royalty,
 	})
 	if err != nil {
 		return nft.NFT{}, err

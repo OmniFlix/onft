@@ -72,6 +72,7 @@ func (k Keeper) TransferDenomOwner(
 		Schema:     denom.Schema,
 		PreviewUri: denom.PreviewURI,
 		Data:       denom.Data,
+		UriHash:    denom.UriHash,
 	}
 	data, err := codectypes.NewAnyWithValue(denomMetadata)
 	if err != nil {
