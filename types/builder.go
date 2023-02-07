@@ -249,9 +249,9 @@ func NewTokenBuilder(cdc codec.Codec) TokenBuilder {
 }
 
 // BuildMetadata encode nft into the metadata format defined by ics721
-func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
+func (tb TokenBuilder) BuildMetadata(_nft nft.NFT) (string, error) {
 	var message proto.Message
-	if err := tb.cdc.UnpackAny(token.Data, &message); err != nil {
+	if err := tb.cdc.UnpackAny(_nft.Data, &message); err != nil {
 		return "", err
 	}
 
@@ -262,7 +262,7 @@ func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
 	kvals := make(map[string]interface{})
 	if len(nftMetadata.Data) > 0 {
 		err := json.Unmarshal([]byte(nftMetadata.Data), &kvals)
-		if err != nil && IsIBCDenom(token.ClassId) {
+		if err != nil && IsIBCDenom(_nft.ClassId) {
 			//when nftMetadata is not a legal json, there is no need to parse the data
 			return base64.RawStdEncoding.EncodeToString([]byte(nftMetadata.Data)), nil
 		}
@@ -272,7 +272,14 @@ func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
 		}
 	}
 	kvals[TokenKeyName] = MediaField{Value: nftMetadata.Name}
-	kvals[TokenKeyURIhash] = MediaField{Value: token.UriHash}
+	kvals[TokenKeyDescription] = MediaField{Value: nftMetadata.Description}
+	kvals[TokenKeyPreviewURI] = MediaField{Value: nftMetadata.PreviewURI}
+	kvals[TokenKeyTransferable] = MediaField{Value: nftMetadata.Transferable}
+	kvals[TokenKeyExtensible] = MediaField{Value: nftMetadata.Extensible}
+	kvals[TokenKeyNSFW] = MediaField{Value: nftMetadata.Nsfw}
+	kvals[TokenKeyCreatedAt] = MediaField{Value: nftMetadata.CreatedAt}
+	kvals[TokenKeyRoyaltyShare] = MediaField{Value: nftMetadata.RoyaltyShare}
+	kvals[TokenKeyURIhash] = MediaField{Value: _nft.UriHash}
 	data, err := json.Marshal(kvals)
 	if err != nil {
 		return "", err
