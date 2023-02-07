@@ -12,7 +12,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/nft"
-	proto "github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 )
 
 const (
@@ -124,7 +124,7 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 
 	dataMap := make(map[string]interface{})
 	if err := json.Unmarshal(classDataBz, &dataMap); err != nil {
-		any, err := codectypes.NewAnyWithValue(&DenomMetadata{
+		denomMetadata, err := codectypes.NewAnyWithValue(&DenomMetadata{
 			Creator:     creator,
 			Schema:      schema,
 			Description: description,
@@ -141,7 +141,7 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 			Symbol:      symbol,
 			Description: description,
 			UriHash:     uriHash,
-			Data:        any,
+			Data:        denomMetadata,
 		}, nil
 	}
 	if v, ok := dataMap[ClassKeyName]; ok {
@@ -218,7 +218,7 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 		data = string(dataBz)
 	}
 
-	any, err := codectypes.NewAnyWithValue(&DenomMetadata{
+	denomMetadata, err := codectypes.NewAnyWithValue(&DenomMetadata{
 		Creator:     creator,
 		PreviewUri:  previewURI,
 		Description: description,
@@ -236,7 +236,7 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 		Symbol:      symbol,
 		Description: description,
 		UriHash:     uriHash,
-		Data:        any,
+		Data:        denomMetadata,
 	}, nil
 }
 
@@ -255,7 +255,7 @@ func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
 
 	nftMetadata, ok := message.(*ONFTMetadata)
 	if !ok {
-		return "", errors.New("unsupport classMetadata")
+		return "", errors.New("unsupported classMetadata")
 	}
 	kvals := make(map[string]interface{})
 	if len(nftMetadata.Data) > 0 {
