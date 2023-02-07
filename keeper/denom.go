@@ -161,6 +161,6 @@ func (k Keeper) GetDenomInfo(ctx sdk.Context, denomID string) (*types.Denom, err
 		Description: class.Description,
 		PreviewURI:  denomMetadata.PreviewUri,
 		Uri:         class.Uri,
-		UriHash:     denomMetadata.UriHash,
+		UriHash:     class.UriHash,
 	}, nil
 }
