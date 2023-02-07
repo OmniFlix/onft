@@ -226,6 +226,7 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 		Description: description,
 		Schema:      schema,
 		Data:        data,
+		UriHash:     uriHash,
 	})
 	if err != nil {
 		return nft.Class{}, err
@@ -407,7 +408,7 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 		}
 		data = string(dataBz)
 	}
-	createdTime, _ := time.Parse(createdAt, time.RFC3339)
+	createdTime, _ := time.Parse(time.RFC3339, createdAt)
 	royalty, _ := sdk.NewDecFromStr(royaltyShare)
 
 	metadata, err := codectypes.NewAnyWithValue(&ONFTMetadata{
