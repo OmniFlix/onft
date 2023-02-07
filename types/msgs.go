@@ -113,9 +113,6 @@ func (msg MsgUpdateDenom) Route() string { return RouterKey }
 func (msg MsgUpdateDenom) Type() string { return TypeMsgUpdateDenom }
 
 func (msg MsgUpdateDenom) ValidateBasic() error {
-	if err := ValidateDenomID(msg.Id); err != nil {
-		return err
-	}
 	name := msg.Name
 	if len(name) > 0 && !utf8.ValidString(name) {
 		return sdkerrors.Wrap(ErrInvalidName, "denom name is invalid")
@@ -268,9 +265,6 @@ func (msg MsgTransferONFT) Route() string { return RouterKey }
 func (msg MsgTransferONFT) Type() string { return TypeMsgTransferONFT }
 
 func (msg MsgTransferONFT) ValidateBasic() error {
-	if err := ValidateDenomID(msg.DenomId); err != nil {
-		return err
-	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)

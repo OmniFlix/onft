@@ -3,21 +3,8 @@ package types
 import (
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
-
-func NewDenom(id, symbol, name, schema string, creator sdk.AccAddress, description, previewURI string) Denom {
-	return Denom{
-		Id:          id,
-		Symbol:      symbol,
-		Name:        name,
-		Schema:      schema,
-		Creator:     creator.String(),
-		Description: description,
-		PreviewURI:  previewURI,
-	}
-}
 
 func ValidateDenomID(denomID string) error {
 	denomID = strings.TrimSpace(denomID)
