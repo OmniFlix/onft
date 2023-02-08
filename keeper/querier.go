@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"encoding/binary"
-	"strings"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -26,8 +24,6 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 			return queryDenoms(ctx, req, k, legacyQuerierCdc)
 		case types.QueryONFT:
 			return queryONFT(ctx, req, k, legacyQuerierCdc)
-		case types.QueryOwner:
-			return queryOwnerONFTs(ctx, req, k, legacyQuerierCdc)
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
 		}
@@ -42,7 +38,7 @@ func querySupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerier
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	denom := strings.ToLower(strings.TrimSpace(params.Denom))
+	denom := params.Denom
 
 	var supply uint64
 	switch {
@@ -65,7 +61,7 @@ func queryCollection(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQue
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	denom := strings.ToLower(strings.TrimSpace(params.Denom))
+	denom := params.Denom
 	collection, err := k.GetCollection(ctx, denom)
 	if err != nil {
 		return nil, err
@@ -119,31 +115,14 @@ func queryONFT(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCd
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	denom := strings.ToLower(strings.TrimSpace(params.Denom))
-	tokenID := strings.ToLower(strings.TrimSpace(params.ONFTID))
+	denom := params.Denom
+	tokenID := params.ONFTID
 	nft, err := k.GetONFT(ctx, denom, tokenID)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid oNFT %s from collection %s", params.ONFTID, params.Denom)
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, nft)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
-	}
-
-	return bz, nil
-}
-
-func queryOwnerONFTs(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
-	var params types.QueryOwnerParams
-
-	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
-	}
-
-	owner := k.GetOwner(ctx, params.Owner, params.Denom)
-	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, owner)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

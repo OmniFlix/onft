@@ -3,7 +3,6 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/tidwall/gjson"
@@ -57,18 +56,12 @@ func (msg MsgCreateDenom) ValidateBasic() error {
 	if err := ValidateDenomSymbol(msg.Symbol); err != nil {
 		return err
 	}
-	name := strings.TrimSpace(msg.Name)
-	if len(name) > 0 && !utf8.ValidString(name) {
-		return sdkerrors.Wrap(ErrInvalidName, "denom name is invalid")
-	}
-	if err := ValidateName(name); err != nil {
+
+	if err := ValidateName(msg.Name); err != nil {
 		return err
 	}
-	description := strings.TrimSpace(msg.Description)
-	if len(description) > 0 && !utf8.ValidString(description) {
-		return sdkerrors.Wrap(ErrInvalidDescription, "denom description is invalid")
-	}
-	if err := ValidateDescription(description); err != nil {
+
+	if err := ValidateDescription(msg.Description); err != nil {
 		return err
 	}
 	if err := ValidateURI(msg.PreviewURI); err != nil {
@@ -120,7 +113,7 @@ func (msg MsgUpdateDenom) ValidateBasic() error {
 	if err := ValidateName(name); err != nil {
 		return err
 	}
-	description := strings.TrimSpace(msg.Description)
+	description := msg.Description
 	if len(description) > 0 && !utf8.ValidString(description) {
 		return sdkerrors.Wrap(ErrInvalidDescription, "denom description is invalid")
 	}
@@ -253,8 +246,8 @@ func (msg MsgMintONFT) GetSigners() []sdk.AccAddress {
 func NewMsgTransferONFT(id, denomId, sender, recipient string) *MsgTransferONFT {
 
 	return &MsgTransferONFT{
-		Id:        strings.ToLower(strings.TrimSpace(id)),
-		DenomId:   strings.TrimSpace(denomId),
+		Id:        id,
+		DenomId:   denomId,
 		Sender:    sender,
 		Recipient: recipient,
 	}
@@ -273,7 +266,7 @@ func (msg MsgTransferONFT) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Recipient); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address; %s", err)
 	}
-	return ValidateONFTID(msg.Id)
+	return nil
 }
 
 func (msg MsgTransferONFT) GetSignBytes() []byte {
@@ -305,7 +298,7 @@ func (msg MsgBurnONFT) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
-	return ValidateONFTID(msg.Id)
+	return nil
 }
 
 func (msg MsgBurnONFT) GetSignBytes() []byte {

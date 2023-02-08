@@ -61,11 +61,9 @@ $ %s query onft supply [denom-id]`, version.AppName)),
 				}
 			}
 
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
-
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Supply(context.Background(), &types.QuerySupplyRequest{
-				DenomId: denomId,
+				DenomId: args[0],
 				Owner:   owner.String(),
 			})
 			if err != nil {
@@ -216,14 +214,13 @@ $ %s query onft denom <denom-id>`, version.AppName)),
 				return err
 			}
 
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
-			if err := types.ValidateDenomID(denomId); err != nil {
+			if err := types.ValidateDenomID(args[0]); err != nil {
 				return err
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Denom(context.Background(), &types.QueryDenomRequest{
-				DenomId: denomId,
+				DenomId: args[0],
 			})
 			if err != nil {
 				return err

@@ -281,7 +281,7 @@ $ %s tx onft update-denom [denom-id] --name=<onft-name> --description=<onft-desc
 			if err != nil {
 				return err
 			}
-			denomId := strings.TrimSpace(args[0])
+			denomId := args[0]
 
 			denomName, err := cmd.Flags().GetString(FlagName)
 			if err != nil {
@@ -380,8 +380,8 @@ $ %s tx onft transfer [recipient] [denom-id] [onft-id] --from=<key-name> --chain
 				return err
 			}
 
-			denomId := strings.ToLower(strings.TrimSpace(args[1]))
-			onftId := strings.ToLower(strings.TrimSpace(args[2]))
+			denomId := args[1]
+			onftId := args[2]
 
 			msg := types.NewMsgTransferONFT(
 				onftId,
@@ -417,8 +417,8 @@ $ %s tx onft burn [denom-id] [onft-id] --from=<key-name> --chain-id=<chain-id> -
 			if err != nil {
 				return err
 			}
-			denomId := strings.ToLower(strings.TrimSpace(args[0]))
-			onftId := strings.ToLower(strings.TrimSpace(args[1]))
+			denomId := args[0]
+			onftId := args[1]
 
 			msg := types.NewMsgBurnONFT(denomId, onftId, clientCtx.GetFromAddress().String())
 			if err := msg.ValidateBasic(); err != nil {

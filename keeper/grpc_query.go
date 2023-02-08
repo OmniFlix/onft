@@ -2,13 +2,11 @@ package keeper
 
 import (
 	"context"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/nft"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/OmniFlix/onft/types"
 )
@@ -16,7 +14,7 @@ import (
 var _ types.QueryServer = Keeper{}
 
 func (k Keeper) Supply(c context.Context, request *types.QuerySupplyRequest) (*types.QuerySupplyResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
+	denom := request.DenomId
 	ctx := sdk.UnwrapSDKContext(c)
 
 	var supply uint64
@@ -91,10 +89,9 @@ func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequ
 }
 
 func (k Keeper) Denom(c context.Context, request *types.QueryDenomRequest) (*types.QueryDenomResponse, error) {
-	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
 
-	denomObject, err := k.GetDenomInfo(ctx, denom)
+	denomObject, err := k.GetDenomInfo(ctx, request.DenomId)
 	if err != nil {
 		return nil, err
 	}

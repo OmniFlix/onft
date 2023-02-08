@@ -2,13 +2,10 @@ package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	"strings"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/OmniFlix/onft/exported"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ exported.ONFT = ONFT{}
@@ -93,26 +90,4 @@ func UnmarshalNFTMetadata(cdc codec.Codec, bz []byte) (ONFTMetadata, error) {
 		return nftMetadata, err
 	}
 	return nftMetadata, nil
-}
-
-func NewONFTs(onfts ...exported.ONFT) ONFTs {
-	if len(onfts) == 0 {
-		return ONFTs{}
-	}
-	return onfts
-}
-
-func ValidateONFTID(onftId string) error {
-	onftId = strings.TrimSpace(onftId)
-	if len(onftId) < MinIDLen || len(onftId) > MaxIDLen {
-		return sdkerrors.Wrapf(
-			ErrInvalidONFTID,
-			"invalid onftId %s, length must be between [%d, %d]", onftId, MinIDLen, MaxIDLen)
-	}
-	if !IsBeginWithAlpha(onftId) || !IsAlphaNumeric(onftId) {
-		return sdkerrors.Wrapf(
-			ErrInvalidONFTID,
-			"invalid onftId %s, only accepts alphanumeric characters and begin with an english letter", onftId)
-	}
-	return nil
 }
