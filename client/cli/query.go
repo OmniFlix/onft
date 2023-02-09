@@ -214,10 +214,6 @@ $ %s query onft denom <denom-id>`, version.AppName)),
 				return err
 			}
 
-			if err := types.ValidateDenomID(args[0]); err != nil {
-				return err
-			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 			resp, err := queryClient.Denom(context.Background(), &types.QueryDenomRequest{
 				DenomId: args[0],
