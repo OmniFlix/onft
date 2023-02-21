@@ -88,10 +88,78 @@ func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequ
 	}, nil
 }
 
+func (k Keeper) IBCCollection(c context.Context, request *types.QueryIBCCollectionRequest) (*types.QueryCollectionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	denom, err := k.GetDenomInfo(ctx, "ibc/"+request.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	r := &nft.QueryNFTsRequest{
+		ClassId:    denom.Id,
+		Pagination: shapePageRequest(request.Pagination),
+	}
+
+	result, err := k.nk.NFTs(c, r)
+	if err != nil {
+		return nil, err
+	}
+	var onfts []types.ONFT
+	for _, _nft := range result.Nfts {
+		owner := k.nk.GetOwner(ctx, denom.Id, _nft.Id)
+
+		nftMetadata, err := types.UnmarshalNFTMetadata(k.cdc, _nft.Data.GetValue())
+		if err != nil {
+			return nil, err
+		}
+
+		onfts = append(onfts, types.ONFT{
+			Id: _nft.Id,
+			Metadata: types.Metadata{
+				Name:        nftMetadata.Name,
+				Description: nftMetadata.Description,
+				MediaURI:    _nft.Uri,
+				UriHash:     _nft.UriHash,
+				PreviewURI:  nftMetadata.PreviewURI,
+			},
+			Owner:        owner.String(),
+			Data:         nftMetadata.Data,
+			Transferable: nftMetadata.Transferable,
+			Extensible:   nftMetadata.Extensible,
+			CreatedAt:    nftMetadata.CreatedAt,
+			Nsfw:         nftMetadata.Nsfw,
+			RoyaltyShare: nftMetadata.RoyaltyShare,
+		})
+	}
+
+	collection := &types.Collection{
+		Denom: *denom,
+		ONFTs: onfts,
+	}
+	return &types.QueryCollectionResponse{
+		Collection: collection,
+		Pagination: result.Pagination,
+	}, nil
+}
+
 func (k Keeper) Denom(c context.Context, request *types.QueryDenomRequest) (*types.QueryDenomResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
 	denomObject, err := k.GetDenomInfo(ctx, request.DenomId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDenomResponse{
+		Denom: denomObject,
+	}, nil
+}
+
+func (k Keeper) IBCDenom(c context.Context, request *types.QueryIBCDenomRequest) (*types.QueryDenomResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	denomObject, err := k.GetDenomInfo(ctx, "ibc/"+request.Hash)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +184,7 @@ func (k Keeper) Denoms(c context.Context, request *types.QueryDenomsRequest) (*t
 		if err != nil {
 			return nil, err
 		}
-		for _, class := range result.Classes {
+		for _, class := range k.nk.GetClasses(ctx) {
 			denom, err := k.GetDenomInfo(ctx, class.Id)
 			if err != nil {
 				return nil, err
