@@ -298,7 +298,9 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 	dataMap := make(map[string]interface{})
 	if err := json.Unmarshal(tokenDataBz, &dataMap); err != nil {
 		metadata, err := codectypes.NewAnyWithValue(&ONFTMetadata{
-			Data: string(tokenDataBz),
+			Data:         string(tokenDataBz),
+			Transferable: true,
+			Extensible:   true,
 		})
 		if err != nil {
 			return nft.NFT{}, err
