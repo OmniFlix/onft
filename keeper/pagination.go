@@ -23,6 +23,9 @@ func shapePageRequest(req *query.PageRequest) *query.PageRequest {
 	if req.Limit > 0 && req.Limit <= paginationMaxLimit {
 		res.Limit = req.Limit
 	}
+	if req.CountTotal {
+		res.CountTotal = true
+	}
 
 	return res
 }
