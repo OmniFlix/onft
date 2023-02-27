@@ -193,6 +193,7 @@ func (k Keeper) Denoms(c context.Context, request *types.QueryDenomsRequest) (*t
 				denoms = append(denoms, *denom)
 			}
 		}
+		result.Pagination.Total = uint64(len(denoms))
 	} else {
 		for _, class := range result.Classes {
 			denom, err := k.GetDenomInfo(ctx, class.Id)
