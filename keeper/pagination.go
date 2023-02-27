@@ -17,11 +17,15 @@ func shapePageRequest(req *query.PageRequest) *query.PageRequest {
 	if req == nil {
 		return res
 	}
-
-	res.Key = req.Key
+	if req.Key != nil {
+		res.Key = req.Key
+	}
 	res.Reverse = req.Reverse
 	if req.Limit > 0 && req.Limit <= paginationMaxLimit {
 		res.Limit = req.Limit
+	}
+	if req.Offset > 0 {
+		res.Offset = req.Offset
 	}
 	if req.CountTotal {
 		res.CountTotal = true
