@@ -15,6 +15,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/OmniFlix/onft/client/cli"
+	"github.com/OmniFlix/onft/client/rest"
 	"github.com/OmniFlix/onft/keeper"
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -105,7 +106,7 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 }
 
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-
+	rest.RegisterHandlers(clientCtx, rtr, types.RouterKey)
 }
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {

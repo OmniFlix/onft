@@ -1,7 +1,6 @@
 package app
 
 import (
-	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -181,7 +180,7 @@ func AppStateRandomizedFn(
 		Rand:         r,
 		GenState:     genesisState,
 		Accounts:     accs,
-		InitialStake: math.NewInt(initialStake),
+		InitialStake: initialStake,
 		NumBonded:    numInitiallyBonded,
 		GenTimestamp: genesisTimestamp,
 	}

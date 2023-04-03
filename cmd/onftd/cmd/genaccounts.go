@@ -62,7 +62,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				}
 
 				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf, cdc)
+				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
 				if err != nil {
 					return err
 				}
@@ -72,10 +72,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 					return fmt.Errorf("failed to get address from Keybase: %w", err)
 				}
 
-				addr, err = info.GetAddress()
-				if err != nil {
-					return fmt.Errorf("failed to get address from Keybase: %w", err)
-				}
+				addr = info.GetAddress()
 			}
 
 			vestingStart, err := cmd.Flags().GetInt64(flagVestingStart)
