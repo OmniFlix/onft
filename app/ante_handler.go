@@ -1,12 +1,11 @@
 package app
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	ibcante "github.com/cosmos/ibc-go/v5/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
+	channelkeeper "github.com/cosmos/ibc-go/v2/modules/core/04-channel/keeper"
+	ibcante "github.com/cosmos/ibc-go/v2/modules/core/ante"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -14,8 +13,7 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCKeeper *ibckeeper.Keeper
-	Codec     codec.BinaryCodec
+	IBCChannelKeeper channelkeeper.Keeper
 }
 
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
@@ -35,19 +33,20 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
-		ante.NewSetUpContextDecorator(),
+		ante.NewRejectExtensionOptionsDecorator(),
+		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
-		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
+		ibcante.NewAnteDecorator(options.IBCChannelKeeper),
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
