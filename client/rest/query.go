@@ -47,6 +47,11 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router, queryRoute string
 		fmt.Sprintf("/%s/asset/{%s}/{%s}", types.ModuleName, RestParamDenom, RestParamONFTID),
 		queryONFT(cliCtx, queryRoute),
 	).Methods("GET")
+
+	r.HandleFunc(
+		fmt.Sprintf("/%s/parameters", types.ModuleName),
+		queryParams(cliCtx, queryRoute),
+	).Methods("GET")
 }
 
 func querySupply(cliCtx client.Context, queryRoute string) http.HandlerFunc {
@@ -287,5 +292,27 @@ func queryONFT(cliCtx client.Context, queryRoute string) http.HandlerFunc {
 
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func queryParams(cliCtx client.Context, queryRoute string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+		var (
+			qc = types.NewQueryClient(cliCtx)
+		)
+
+		params, err := qc.Params(
+			context.Background(),
+			&types.QueryParamsRequest{},
+		)
+		if rest.CheckInternalServerError(w, err) {
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, params)
 	}
 }

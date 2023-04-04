@@ -18,18 +18,19 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 	if err != nil {
 		return err
 	}
-	if err := k.CreateDenom(
-		ctx,
-		denom.Id,
-		denom.Symbol,
-		denom.Name,
-		denom.Schema,
-		creator,
-		denom.Description,
-		denom.PreviewURI,
-	); err != nil {
+	if k.HasDenomID(ctx, denom.Id) {
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
+	}
+
+	if k.HasDenomSymbol(ctx, denom.Symbol) {
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
+	}
+	err = k.SetDenom(ctx, types.NewDenom(denom.Id, denom.Symbol, denom.Name, denom.Schema,
+		creator, denom.Description, denom.PreviewURI))
+	if err != nil {
 		return err
 	}
+	k.setDenomOwner(ctx, denom.Id, creator)
 
 	for _, onft := range collection.ONFTs {
 		metadata := types.Metadata{

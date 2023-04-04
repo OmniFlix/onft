@@ -16,12 +16,13 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) {
 			panic(err)
 		}
 	}
+	k.SetParams(ctx, data.Params)
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return types.NewGenesisState(k.GetCollections(ctx))
+	return types.NewGenesisState(k.GetCollections(ctx), k.GetParams(ctx))
 }
 
 func DefaultGenesisState() *types.GenesisState {
-	return types.NewGenesisState([]types.Collection{})
+	return types.NewGenesisState([]types.Collection{}, types.DefaultParams())
 }

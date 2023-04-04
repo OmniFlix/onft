@@ -72,7 +72,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 		}
 	}
 
-	nftGenesis := types.NewGenesisState(collections)
+	nftGenesis := types.NewGenesisState(collections, types.DefaultParams())
 
 	bz, err := json.MarshalIndent(nftGenesis, "", " ")
 	if err != nil {

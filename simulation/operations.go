@@ -122,6 +122,7 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 		description := strings.ToLower(simtypes.RandStringOfLength(r, 10))
 		previewURI := strings.ToLower(simtypes.RandStringOfLength(r, 10))
 		sender, _ := simtypes.RandomAcc(r, accs)
+		creationFee := sdk.Coin{Denom: "uflix", Amount: sdk.NewInt(100_000_000)}
 
 		msg := types.NewMsgCreateDenom(
 			symbol,
@@ -130,6 +131,7 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 			description,
 			previewURI,
 			sender.Address.String(),
+			creationFee,
 		)
 		msg.Id = denomId
 		denom, _ := k.GetDenom(ctx, msg.Id)

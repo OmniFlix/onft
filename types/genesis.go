@@ -5,9 +5,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func NewGenesisState(collections []Collection) *GenesisState {
+func NewGenesisState(collections []Collection, params Params) *GenesisState {
 	return &GenesisState{
 		Collections: collections,
+		Params:      params,
 	}
 }
 
@@ -58,6 +59,9 @@ func ValidateGenesis(data GenesisState) error {
 				return err
 			}
 		}
+	}
+	if err := data.Params.ValidateBasic(); err != nil {
+		return err
 	}
 	return nil
 }

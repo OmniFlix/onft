@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/OmniFlix/onft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -27,6 +28,20 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	denomCreationFee := m.Keeper.GetDenomCreationFee(ctx)
+	if !msg.CreationFee.Equal(denomCreationFee) {
+		if msg.CreationFee.Denom != denomCreationFee.Denom {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidFeeDenom, "invalid creation fee denom %s",
+				msg.CreationFee.Denom)
+		}
+		if msg.CreationFee.Amount.LT(denomCreationFee.Amount) {
+			return nil, sdkerrors.Wrapf(types.ErrNotEnoughFeeAmount,
+				"%s fee is not enough, to create %s fee is required", msg.CreationFee.String(), denomCreationFee.String())
+		}
+		return nil, sdkerrors.Wrapf(types.ErrInvalidDenomCreationFee,
+			"given fee (%s) not matched with  denom creation fee. %s required to create onft denom",
+			msg.CreationFee.String(), denomCreationFee.String())
+	}
 	if err := m.Keeper.CreateDenom(ctx,
 		msg.Id,
 		msg.Symbol,
@@ -35,6 +50,7 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 		sender,
 		msg.Description,
 		msg.PreviewURI,
+		msg.CreationFee,
 	); err != nil {
 		return nil, err
 	}
