@@ -135,6 +135,7 @@ onftd tx onft burn <denom-id> <onft-id>
       - **description**: description for the denom
       - **preview-uri**: display picture url for denom
       - **schema**: json schema for additional properties
+      - **creation-fee**: denom creation-fee to create denom
       
     Example:
     ```bash
@@ -143,6 +144,7 @@ onftd tx onft burn <denom-id> <onft-id>
      --description=<description>
      --preview-uri=<preview-uri>
      --schema=<schema>
+     --creation-fee=<creation-fee>
      --chain-id=<chain-id>
      --fees=<fee>
      --from=<key-name>
