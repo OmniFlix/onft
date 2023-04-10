@@ -16,7 +16,33 @@ Various queries are available to get details about denoms/collections, NFTs, and
 
 The module utilizes the [irismod/nft](https://github.com/irismod/nft) repository and has been modified to meet the requirements of the OmniFlix Network. It can be used through the CLI with various commands and flags to perform the desired actions.
 
-## 1) Mint an oNFT
+## 1) Create Denom (Collection)
+To create an oNFT denom, you will need to use the "onftd tx onft create" command with the following args and flags:
+
+args:
+symbol: denom symbol
+
+flags:
+name : name of denom/collection 
+description: description for the denom
+preview-uri: display picture url for denom
+schema: json schema for additional properties
+creation-fee: denom creation-fee to create denom
+
+Example:
+```
+    onftd tx onft create <symbol> \
+     --name=<name> \
+     --description=<description> \
+     --preview-uri=<preview-uri> \
+     --schema=<schema> \
+     --creation-fee=<creation-fee> \
+     --chain-id=<chain-id> \
+     --fees=<fee> \
+     --from=<key-name>
+```
+  
+## 2) Mint an oNFT
 
 To create an oNFT, you will need to use the "onftd tx onft mint" command with the following flags:
 
@@ -56,7 +82,7 @@ For a royalty share of 5%:
 --royalty-share="0.05" # 5%
 ```
 
-## 2) Transfer an oNFT
+## 3) Transfer an oNFT
 
 To transfer an oNFT, you will need to use the "onftd tx onft transfer" command with the following flags:
 
@@ -76,7 +102,7 @@ onftd tx onft transfer <recipient> <denom-id> <onft-id>
 --from=<key-name>
 ```
 
-## 3) Burn an oNFT
+## 4) Burn an oNFT
 
 To burn an oNFT, you will need to use the "onftd tx onft burn" command with the following flags:
 
@@ -121,108 +147,4 @@ onftd tx onft burn <denom-id> <onft-id>
   - #### Get All NFTs owned by an address
     ```bash
     onftd query onft owner <account-address>
-    ```
-    
-### Transactions
-  - #### Create Denom / Collection
-    Usage
-    ```bash
-    onftd tx onft create [symbol] [flags] 
-    ```
-    
-    Flags:
-      - **name** : name of denom/collection
-      - **description**: description for the denom
-      - **preview-uri**: display picture url for denom
-      - **schema**: json schema for additional properties
-      - **creation-fee**: denom creation-fee to create denom
-      
-    Example:
-    ```bash
-    onftd tx onft create <symbol>  
-     --name=<name>
-     --description=<description>
-     --preview-uri=<preview-uri>
-     --schema=<schema>
-     --creation-fee=<creation-fee>
-     --chain-id=<chain-id>
-     --fees=<fee>
-     --from=<key-name>
-    ```
-  - #### Mint NFT
-    Usage
-    ```bash
-    onftd tx onft mint [denom-id] [flags]
-    ```
-    
-    Flags:
-      - **name** : name of denom/collection (string)
-      - **description**: description of the denom (string)
-      - **media-uri**: ipfs uri of the nft (url)
-      - **preview-uri**: preview uri of the nft (url)
-      - **data**: additional nft properties (json string)
-      - **recipient**: recipient of the nft (optional, default: minter of the nft)
-      - **non-transferable**:  to mint non-transferable nft (optional, default: false)
-      - **inextensible** : to mint inextensible nft (optional, default false)
-      - **nsfw**: not safe for work flag for the nft (optional, default: false)  
-      - **royalty-share**: royalty share for nft (optional, default: 0.00)
-      
-    Example:
-    ```bash
-    onftd  tx onft mint <denom-id>
-     --name=<name>
-     --description=<description>
-     --media-uri=<preview-uri>
-     --preview-uri=<preview-uri>
-     --data=<additional nft data json string>
-     --recipient=<recipient-account-address>
-     --chain-id=<chain-id>
-     --fees=<fee>
-     --from=<key-name>
-      ```
-    ```bash
-    onftd  tx onft mint <denom-id>
-    --name="NFT name" 
-    --description="NFT description" 
-    --media-uri="https://ipfs.io/ipfs/...." 
-    --preview-uri="https://ipfs.io/ipfs/...." 
-    --data="" 
-    --recipient="" 
-    --non-transferable 
-    --inextensible 
-    --nsfw 
-    --chain-id=<chain-id>
-    --fees=<fee>
-    --from=<key-name>
-      ```
-    For Royalty share
-    ```bash
-    --royalty-share="0.05" # 5% 
-    ```
-  - #### Transfer NFT
-    Usage
-    ```bash
-    onftd tx onft transfer [recipient] [denom-id] [onft-id] [flags]
-    ```
-    
-    Example:
-    ```bash
-    onftd  tx onft transfer <recipient> <denom-id> <nft-id>
-     --chain-id=<chain-id>
-     --fees=<fee>
-     --from=<key-name>
-    ```
-
-  - #### Burn NFT
-    Usage
-    ```bash
-    onftd tx onft burn [denom-id] [onft-id] [flags]
-    ```
-    
-    Example:
-    ```bash
-    onftd  tx onft burn <denom-id> <nft-id>
-     --chain-id=<chain-id>
-     --fees=<fee>
-     --from=<key-name>
     ```
