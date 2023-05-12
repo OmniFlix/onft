@@ -19,8 +19,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (m msgServer) CreateDenom(goCtx context.Context,
-	msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
+func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
 
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -35,12 +34,19 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 				msg.CreationFee.Denom)
 		}
 		if msg.CreationFee.Amount.LT(denomCreationFee.Amount) {
-			return nil, sdkerrors.Wrapf(types.ErrNotEnoughFeeAmount,
-				"%s fee is not enough, to create %s fee is required", msg.CreationFee.String(), denomCreationFee.String())
+			return nil, sdkerrors.Wrapf(
+				types.ErrNotEnoughFeeAmount,
+				"%s fee is not enough, to create %s fee is required",
+				msg.CreationFee.String(),
+				denomCreationFee.String(),
+			)
 		}
-		return nil, sdkerrors.Wrapf(types.ErrInvalidDenomCreationFee,
+		return nil, sdkerrors.Wrapf(
+			types.ErrInvalidDenomCreationFee,
 			"given fee (%s) not matched with  denom creation fee. %s required to create onft denom",
-			msg.CreationFee.String(), denomCreationFee.String())
+			msg.CreationFee.String(),
+			denomCreationFee.String(),
+		)
 	}
 	if err := m.Keeper.CreateDenom(ctx,
 		msg.Id,
@@ -54,15 +60,6 @@ func (m msgServer) CreateDenom(goCtx context.Context,
 	); err != nil {
 		return nil, err
 	}
-
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventCreateDenom{
-			Id:      msg.Id,
-			Symbol:  msg.Symbol,
-			Name:    msg.Name,
-			Creator: msg.Sender,
-		},
-	)
 
 	return &types.MsgCreateDenomResponse{}, nil
 }
@@ -79,14 +76,6 @@ func (m msgServer) UpdateDenom(goCtx context.Context, msg *types.MsgUpdateDenom)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventUpdateDenom{
-			Id:      msg.Id,
-			Name:    msg.Name,
-			Creator: msg.Sender,
-		},
-	)
 
 	return &types.MsgUpdateDenomResponse{}, nil
 }
@@ -107,19 +96,11 @@ func (m msgServer) TransferDenom(goCtx context.Context, msg *types.MsgTransferDe
 	if err != nil {
 		return nil, err
 	}
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventTransferDenom{
-			Id:        msg.Id,
-			Sender:    msg.Sender,
-			Recipient: msg.Recipient,
-		},
-	)
 
 	return &types.MsgTransferDenomResponse{}, nil
 }
 
-func (m msgServer) MintONFT(goCtx context.Context,
-	msg *types.MsgMintONFT) (*types.MsgMintONFTResponse, error) {
+func (m msgServer) MintONFT(goCtx context.Context, msg *types.MsgMintONFT) (*types.MsgMintONFTResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -146,15 +127,6 @@ func (m msgServer) MintONFT(goCtx context.Context,
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventMintONFT{
-			Id:      msg.Id,
-			DenomId: msg.DenomId,
-			URI:     msg.Metadata.MediaURI,
-			Owner:   msg.Recipient,
-		},
-	)
-
 	return &types.MsgMintONFTResponse{}, nil
 }
 
@@ -179,15 +151,6 @@ func (m msgServer) TransferONFT(goCtx context.Context,
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventTransferONFT{
-			Id:        msg.Id,
-			DenomId:   msg.DenomId,
-			Sender:    msg.Sender,
-			Recipient: msg.Recipient,
-		},
-	)
-
 	return &types.MsgTransferONFTResponse{}, nil
 }
 
@@ -203,14 +166,6 @@ func (m msgServer) BurnONFT(goCtx context.Context,
 	if err := m.Keeper.BurnONFT(ctx, msg.DenomId, msg.Id, sender); err != nil {
 		return nil, err
 	}
-
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventBurnONFT{
-			Id:      msg.Id,
-			DenomId: msg.DenomId,
-			Owner:   msg.Sender,
-		},
-	)
 
 	return &types.MsgBurnONFTResponse{}, nil
 }

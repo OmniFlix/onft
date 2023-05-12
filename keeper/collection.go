@@ -25,11 +25,16 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 	if k.HasDenomSymbol(ctx, denom.Symbol) {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
 	}
-	err = k.SetDenom(ctx, types.NewDenom(denom.Id, denom.Symbol, denom.Name, denom.Schema,
-		creator, denom.Description, denom.PreviewURI))
-	if err != nil {
-		return err
-	}
+	k.SetDenom(ctx, types.NewDenom(
+		denom.Id,
+		denom.Symbol,
+		denom.Name,
+		denom.Schema,
+		creator,
+		denom.Description,
+		denom.PreviewURI,
+	))
+
 	k.setDenomOwner(ctx, denom.Id, creator)
 
 	for _, onft := range collection.ONFTs {
