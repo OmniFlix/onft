@@ -67,7 +67,7 @@ func (k Keeper) emitTransferONFTEvent(ctx sdk.Context, nftId, denomId, sender, r
 func (k Keeper) emitBurnONFTEvent(ctx sdk.Context, nftId, denomId, owner string) {
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			onfttypes.EventTypeTransferONFT,
+			onfttypes.EventTypeBurnONFT,
 			sdk.NewAttribute(onfttypes.AttributeKeyNFTID, nftId),
 			sdk.NewAttribute(onfttypes.AttributeKeyDenomID, denomId),
 			sdk.NewAttribute(onfttypes.AttributeKeyOwner, owner),
