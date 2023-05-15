@@ -75,11 +75,12 @@ func (k Keeper) CreateDenom(
 	if err != nil {
 		return err
 	}
-	err = k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
-	if err != nil {
-		return err
-	}
+	// create denom
+	k.SetDenom(ctx, types.NewDenom(id, symbol, name, schema, creator, description, previewUri))
+	// index denom with creator
 	k.setDenomOwner(ctx, id, creator)
+	// emit events
+	k.emitCreateONFTDenomEvent(ctx, id, symbol, name, creator.String())
 	return nil
 }
 
@@ -100,7 +101,9 @@ func (k Keeper) UpdateDenom(ctx sdk.Context, id, name, description, previewURI s
 	if len(previewURI) > 0 && previewURI != types.DoNotModify {
 		denom.PreviewURI = previewURI
 	}
-	return k.SetDenom(ctx, denom)
+	k.SetDenom(ctx, denom)
+	k.emitUpdateONFTDenomEvent(ctx, denom.Id, denom.Symbol, denom.Name, denom.Creator)
+	return nil
 }
 
 func (k Keeper) TransferDenomOwner(ctx sdk.Context, id string, curOwner, newOwner sdk.AccAddress) error {
@@ -108,25 +111,31 @@ func (k Keeper) TransferDenomOwner(ctx sdk.Context, id string, curOwner, newOwne
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom ID %s not exists", id)
 	}
-
-	if curOwner.String() != denom.Creator {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "unauthorized address %s", curOwner.String())
+	// bech32 encode is expensive
+	curOwnerAddr := curOwner.String()
+	newOwnerAddr := newOwner.String()
+	if curOwnerAddr != denom.Creator {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "unauthorized address %s", curOwnerAddr)
 	}
-
-	denom.Creator = newOwner.String()
-
-	err = k.SetDenom(ctx, denom)
-	if err != nil {
-		return err
-	}
+	denom.Creator = newOwnerAddr
+	// update denom
+	k.SetDenom(ctx, denom)
+	// update denom owner index
 	k.swapDenomOwner(ctx, id, curOwner, newOwner)
+	// emit events
+	k.emitTransferONFTDenomEvent(ctx, denom.Id, denom.Symbol, curOwnerAddr, newOwnerAddr)
 	return nil
 }
 
 func (k Keeper) MintONFT(
-	ctx sdk.Context, denomID, onftID string,
-	metadata types.Metadata, data string, transferable, extensible, nsfw bool,
-	royaltyShare sdk.Dec, sender, recipient sdk.AccAddress) error {
+	ctx sdk.Context,
+	denomID, onftID string,
+	metadata types.Metadata,
+	data string,
+	transferable, extensible, nsfw bool,
+	royaltyShare sdk.Dec,
+	sender, recipient sdk.AccAddress,
+) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
 		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
@@ -137,7 +146,7 @@ func (k Keeper) MintONFT(
 	if k.HasONFT(ctx, denomID, onftID) {
 		return sdkerrors.Wrapf(types.ErrONFTAlreadyExists, "ONFT %s already exists in collection %s", onftID, denomID)
 	}
-
+	// create nft
 	k.setONFT(ctx, denomID, types.NewONFT(
 		onftID,
 		metadata,
@@ -149,8 +158,12 @@ func (k Keeper) MintONFT(
 		nsfw,
 		royaltyShare,
 	))
+	// index nft with owner
 	k.setOwner(ctx, denomID, onftID, recipient)
+	// increase collection supply count
 	k.increaseSupply(ctx, denomID)
+	// emit events
+	k.emitMintONFTEvent(ctx, onftID, denomID, metadata.MediaURI, recipient.String())
 	return nil
 }
 
@@ -184,11 +197,15 @@ func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOw
 	if !onft.IsTransferable() {
 		return sdkerrors.Wrap(types.ErrNotTransferable, onft.GetID())
 	}
-
-	onft.Owner = dstOwner.String()
-
+	// modify owner
+	dstOwnerAddr := dstOwner.String()
+	onft.Owner = dstOwnerAddr
+	// update onft
 	k.setONFT(ctx, denomID, onft)
+	// update nft owner index
 	k.swapOwner(ctx, denomID, onftID, srcOwner, dstOwner)
+	// emit events
+	k.emitTransferONFTEvent(ctx, onft.Id, denomID, srcOwner.String(), dstOwnerAddr)
 	return nil
 }
 
@@ -204,8 +221,13 @@ func (k Keeper) BurnONFT(ctx sdk.Context,
 		return err
 	}
 
+	// delete oNFT
 	k.deleteONFT(ctx, denomID, onft)
+	// delete nft owner index
 	k.deleteOwner(ctx, denomID, onftID, owner)
+	// update nft supply count
 	k.decreaseSupply(ctx, denomID)
+	// emit events
+	k.emitBurnONFTEvent(ctx, onftID, denomID, onft.Owner)
 	return nil
 }

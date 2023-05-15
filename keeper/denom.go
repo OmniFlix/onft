@@ -20,14 +20,13 @@ func (k Keeper) HasDenomSymbol(ctx sdk.Context, symbol string) bool {
 	return store.Has(types.KeyDenomSymbol(symbol))
 }
 
-func (k Keeper) SetDenom(ctx sdk.Context, denom types.Denom) error {
+func (k Keeper) SetDenom(ctx sdk.Context, denom types.Denom) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&denom)
 	store.Set(types.KeyDenomID(denom.Id), bz)
 	if len(denom.Symbol) > 0 {
 		store.Set(types.KeyDenomSymbol(denom.Symbol), []byte(denom.Id))
 	}
-	return nil
 }
 
 func (k Keeper) GetDenom(ctx sdk.Context, id string) (denom types.Denom, err error) {

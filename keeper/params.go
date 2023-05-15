@@ -16,7 +16,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramSpace.SetParamSet(ctx, &params)
 }
 
-// GetDenomCreationFee returns the current adenom creation fee coins list and amounts.
+// GetDenomCreationFee returns the current denom creation fee coins list and amounts.
 func (k Keeper) GetDenomCreationFee(ctx sdk.Context) (feeCoin sdk.Coin) {
 	k.paramSpace.Get(ctx, types.ParamStoreKeyDenomCreationFee, &feeCoin)
 	return feeCoin
