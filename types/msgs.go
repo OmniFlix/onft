@@ -221,7 +221,7 @@ func (msg MsgMintONFT) ValidateBasic() error {
 	if err := ValidateDescription(msg.Metadata.Description); err != nil {
 		return err
 	}
-	if err := ValidateURI(msg.Metadata.MediaURI); err != nil {
+	if err := ValidateMediaURI(msg.Metadata.MediaURI); err != nil {
 		return err
 	}
 	if err := ValidateURI(msg.Metadata.PreviewURI); err != nil {
