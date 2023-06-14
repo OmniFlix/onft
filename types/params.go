@@ -30,7 +30,7 @@ func NewONFTParams(denomCreationFee sdk.Coin) Params {
 	}
 }
 
-// DefaultParams returns default marketplace parameters
+// DefaultParams returns default onft parameters
 func DefaultParams() Params {
 	return NewONFTParams(
 		DefaultDenomCreationFee,
@@ -44,7 +44,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	}
 }
 
-// ValidateBasic performs basic validation on marketplace parameters.
+// ValidateBasic performs basic validation on onft parameters.
 func (p Params) ValidateBasic() error {
 	if err := validateDenomCreationFee(p.DenomCreationFee); err != nil {
 		return err
