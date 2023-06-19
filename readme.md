@@ -1,9 +1,101 @@
-# oNFT
+# oNFT - OmniFlix Non-Fungible Token
 
 The `oNFT` module is a part of the OmniFlix Network and enables the classification and tokenization of assets.
 
 - Assets can be classified under `denoms` (aka `collections` across various ecosystems)
 - Tokenize media assets by minting NFTs
+
+`Note:` This module used the [irismod/nft](https://github.com/irismod/nft) repository for initial development and has been modified to meet the requirements of the OmniFlix Network.
+### Denom / Collection
+A denom is a collection of NFTs. It is a unique identifier for a collection of NFTs.
+
+```protobuf
+message Denom {
+  option (gogoproto.equal) = true;
+
+  string id                = 1;
+  string symbol            = 2;
+  string name              = 3;
+  string schema            = 4;
+  string creator           = 5;
+  string description       = 6;
+  string preview_uri       = 7 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
+}
+```
+## oNFT
+oNFT is a non-fungible token that represents a unique asset
+
+```protobuf
+message ONFT {
+  option (gogoproto.equal)                = true;
+
+  string                    id            = 1;
+  Metadata                  metadata      = 2 [(gogoproto.nullable) = false];
+  string                    data          = 3;
+  string                    owner         = 4;
+  bool                      transferable  = 5;
+  bool                      extensible    = 6;
+  google.protobuf.Timestamp created_at    = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime)  = true,
+    (gogoproto.moretags) = "yaml:\"created_at\""
+  ];
+  bool                      nsfw          = 8;
+  string                    royalty_share = 9 [
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"royalty_share\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
+}
+
+message Metadata {
+  option (gogoproto.equal) = true;
+
+  string name              = 1 [(gogoproto.moretags) = "yaml:\"name\""];
+  string description       = 2 [(gogoproto.moretags) = "yaml:\"description\""];
+  string media_uri         = 3 [
+    (gogoproto.moretags)   = "yaml:\"media_uri\"",
+    (gogoproto.customname) = "MediaURI"
+  ];
+  string preview_uri       = 4 [
+    (gogoproto.moretags)   = "yaml:\"preview_uri\"",
+    (gogoproto.customname) = "PreviewURI"
+  ];
+}
+```
+### State
+The state of the module is expressed by following fields
+1. `Collection`: an object contains denom & list of NFTs
+2. `Params`: an object contains the parameters of the module
+
+
+```protobuf
+message GenesisState {
+  repeated Collection collections = 1 [(gogoproto.nullable) = false];
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+message Collection {
+  option (gogoproto.equal) = true;
+
+  Denom         denom      = 1 [(gogoproto.nullable) = false];
+  repeated ONFT onfts      = 2 [(gogoproto.customname) = "ONFTs", (gogoproto.nullable) = false];
+}
+
+// module params
+message Params {
+  cosmos.base.v1beta1.Coin     denom_creation_fee = 1 [
+    (gogoproto.moretags) = "yaml:\"denom_creation_fee\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.nullable) = false
+  ];
+}
+```
+
+
 
 The module supports the following capabilities for classification and tokenization:
 
@@ -14,9 +106,9 @@ The module supports the following capabilities for classification and tokenizati
 
 Various queries are available to get details about denoms/collections, NFTs, and related metadata including but not limited to ownership. Click here to try them out by interacting with the chain.
 
-The module utilizes the [irismod/nft](https://github.com/irismod/nft) repository and has been modified to meet the requirements of the OmniFlix Network. It can be used through the CLI with various commands and flags to perform the desired actions.
 
-## 1) Create Denom (Collection)
+
+### 1) Create Denom (Collection)
 To create an oNFT denom, you will need to use the "onftd tx onft create" command with the following args and flags:
 
 args:
@@ -42,7 +134,7 @@ Example:
      --from=<key-name>
 ```
   
-## 2) Mint an oNFT
+### 2) Mint an oNFT
 
 To create an oNFT, you will need to use the "onftd tx onft mint" command with the following flags:
 
@@ -61,28 +153,32 @@ royalty-share: the royalty share for the NFT (optional, default is 0.00)
 Example:
 
 ```
-onftd tx onft mint <denom-id>
---name="NFT name"
---description="NFT description"
---media-uri="https://ipfs.io/ipfs/...."
---preview-uri="https://ipfs.io/ipfs/...."
---data=""
---recipient=""
---non-transferable
---inextensible
---nsfw
---chain-id=<chain-id>
---fees=<fee>
---from=<key-name>
+onftd tx onft mint <denom-id> \
+--name="NFT name" \
+--description="NFT description" \
+--media-uri="https://ipfs.io/ipfs/...." \
+--preview-uri="https://ipfs.io/ipfs/...." \
+--data="{}" \
+--recipient="" \
+--chain-id=<chain-id> \
+--fees=<fee> \
+--from=<key-name> 
 ```
 
-For a royalty share of 5%:
+Optional flags:
+```
+--non-transferable 
+--inextensible 
+--nsfw 
+```
+
+For a royalty share:
 
 ```
 --royalty-share="0.05" # 5%
 ```
 
-## 3) Transfer an oNFT
+### 3) Transfer an oNFT
 
 To transfer an oNFT, you will need to use the "onftd tx onft transfer" command with the following flags:
 
@@ -96,13 +192,13 @@ from: the name of the key to sign the transaction with (required)
 Example:
 
 ```
-onftd tx onft transfer <recipient> <denom-id> <onft-id>
---chain-id=<chain-id>
---fees=<fee>
+onftd tx onft transfer <recipient> <denom-id> <onft-id> \
+--chain-id=<chain-id> \
+--fees=<fee> \
 --from=<key-name>
 ```
 
-## 4) Burn an oNFT
+### 4) Burn an oNFT
 
 To burn an oNFT, you will need to use the "onftd tx onft burn" command with the following flags:
 
@@ -115,15 +211,43 @@ from: the name of the key to sign the transaction with (required)
 Example:
 
 ```
-onftd tx onft burn <denom-id> <onft-id>
---chain-id=<chain-id>
---fees=<fee>
+onftd tx onft burn <denom-id> <onft-id> \
+--chain-id=<chain-id> \
+--fees=<fee> \
 --from=<key-name>
 ```
 
-# All CLI Commands
-
 ### Queries
+List of queries available for the module:
+
+```protobuf
+service Query {
+  rpc Collection(QueryCollectionRequest) returns (QueryCollectionResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/collections/{denom_id}";
+  }
+
+  rpc Denom(QueryDenomRequest) returns (QueryDenomResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/denoms/{denom_id}";
+  }
+
+  rpc Denoms(QueryDenomsRequest) returns (QueryDenomsResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/denoms";
+  }
+  rpc ONFT(QueryONFTRequest) returns (QueryONFTResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/denoms/{denom_id}/onfts/{id}";
+  }
+  rpc OwnerONFTs(QueryOwnerONFTsRequest) returns (QueryOwnerONFTsResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/onfts/{denom_id}/{owner}";
+  }
+  rpc Supply(QuerySupplyRequest) returns (QuerySupplyResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/denoms/{denom_id}/supply";
+  }
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/omniflix/onft/v1beta1/params";
+  }
+}
+```
+### CLI Queries
   - #### Get List of denoms (collections)
     ```bash
     onftd query onft denoms
