@@ -2,8 +2,7 @@ package app
 
 import (
 	"encoding/json"
-
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/OmniFlix/onft/app/params"
 )
 
 // The genesis state of the blockchain is represented here as a map of raw json
@@ -16,6 +15,6 @@ import (
 type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
-func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	return ModuleBasics.DefaultGenesis(cdc)
+func NewDefaultGenesisState(params params.EncodingConfig) GenesisState {
+	return ModuleBasics.DefaultGenesis(params.Marshaler)
 }

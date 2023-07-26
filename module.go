@@ -5,17 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/OmniFlix/onft/simulation"
+	abci "github.com/cometbft/cometbft/abci/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/gogo/protobuf/grpc"
-	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	"math/rand"
-
-	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/OmniFlix/onft/client/cli"
-	"github.com/OmniFlix/onft/client/rest"
 	"github.com/OmniFlix/onft/keeper"
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -98,19 +94,7 @@ func (AppModule) Name() string { return types.ModuleName }
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 }
 
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
-}
-
 func (AppModule) QuerierRoute() string { return types.RouterKey }
-
-func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
-	return keeper.NewQuerier(am.keeper, legacyQuerierCdc)
-}
-
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	rest.RegisterHandlers(clientCtx, rtr, types.RouterKey)
-}
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
 	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
@@ -155,11 +139,6 @@ func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 
 // ProposalContents doesn't return any content functions for governance proposals.
 func (AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
-	return nil
-}
-
-// RandomizedParams creates randomized NFT param changes for the simulator.
-func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }
 
