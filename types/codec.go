@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/OmniFlix/onft/exported"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,7 +17,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgMintONFT{}, "OmniFlix/onft/MsgMintONFT", nil)
 	cdc.RegisterConcrete(&MsgBurnONFT{}, "OmniFlix/onft/MsgBurnONFT", nil)
 
-	//	cdc.RegisterInterface((*exported.ONFTI)(nil), nil)
+	cdc.RegisterInterface((*exported.ONFTI)(nil), nil)
 }
 
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
@@ -29,13 +30,13 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		&MsgMintONFT{},
 		&MsgBurnONFT{},
 	)
+
+	registry.RegisterInterface(
+		"OmniFlix.onft.v1beta1.ONFTI",
+		(*exported.ONFTI)(nil),
+		&ONFT{},
+	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
-	/*
-		registry.RegisterInterface(
-			"OmniFlix.onft.v1beta1.ONFTI",
-			(*exported.ONFTI)(nil),
-			&ONFT{},
-		)*/
 }
 
 var (
