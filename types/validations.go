@@ -38,6 +38,7 @@ func ValidateDenomID(denomID string) error {
 	}
 	return nil
 }
+
 func ValidateDenomSymbol(denomSymbol string) error {
 	if len(denomSymbol) < MinDenomLen || len(denomSymbol) > MaxDenomLen {
 		return errorsmod.Wrapf(

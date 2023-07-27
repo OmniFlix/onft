@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"io"
+	"os"
+
 	"github.com/OmniFlix/onft/app/params"
 	dbm "github.com/cometbft/cometbft-db"
 	tmcfg "github.com/cometbft/cometbft/config"
@@ -11,8 +14,6 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"io"
-	"os"
 
 	"github.com/OmniFlix/onft/app"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -93,7 +94,6 @@ func initTendermintConfig() *tmcfg.Config {
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
-
 	cfg := sdk.GetConfig()
 	cfg.Seal()
 
@@ -223,7 +223,6 @@ func (a appCreator) appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-
 	var anApp *app.App
 
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)

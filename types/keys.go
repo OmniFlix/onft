@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"errors"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -63,7 +64,6 @@ func KeyOwner(address sdk.AccAddress, denomID, onftID string) []byte {
 	}
 
 	if address != nil && len(denomID) > 0 && len(onftID) > 0 {
-
 		key = append(key, []byte(onftID)...)
 	}
 	return key
@@ -91,8 +91,8 @@ func KeyDenomID(id string) []byte {
 	key := append(PrefixDenom, delimiter...)
 	return append(key, []byte(id)...)
 }
-func KeyDenomCreator(address sdk.AccAddress, denomId string) []byte {
 
+func KeyDenomCreator(address sdk.AccAddress, denomId string) []byte {
 	key := append(PrefixCreator, delimiter...)
 	if address != nil {
 		key = append(key, []byte(address)...)
@@ -125,6 +125,7 @@ func MustMarshalONFTID(cdc codec.BinaryCodec, onftID string) []byte {
 	onftIDWrap := gogotypes.StringValue{Value: onftID}
 	return cdc.MustMarshal(&onftIDWrap)
 }
+
 func MustUnMarshalONFTID(cdc codec.BinaryCodec, value []byte) string {
 	var onftIDWrap gogotypes.StringValue
 	cdc.MustUnmarshal(value, &onftIDWrap)

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
@@ -59,8 +60,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) CreateDenom(
 	ctx sdk.Context, id, symbol, name, schema string,
-	creator sdk.AccAddress, description, previewUri string, fee sdk.Coin) error {
-
+	creator sdk.AccAddress, description, previewUri string, fee sdk.Coin,
+) error {
 	if k.HasDenomID(ctx, id) {
 		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", id)
 	}
@@ -213,7 +214,8 @@ func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOw
 
 func (k Keeper) BurnONFT(ctx sdk.Context,
 	denomID, onftID string,
-	owner sdk.AccAddress) error {
+	owner sdk.AccAddress,
+) error {
 	if !k.HasDenomID(ctx, denomID) {
 		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}

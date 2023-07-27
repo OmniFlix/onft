@@ -3,8 +3,9 @@ package cli
 import (
 	"context"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

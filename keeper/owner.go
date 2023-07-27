@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/OmniFlix/onft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetOwner gets all the ID collections owned by an address and denom ID
@@ -72,7 +72,8 @@ func (k Keeper) deleteOwner(ctx sdk.Context, denomID, onftId string, owner sdk.A
 
 func (k Keeper) setOwner(ctx sdk.Context,
 	denomId, onftId string,
-	owner sdk.AccAddress) {
+	owner sdk.AccAddress,
+) {
 	store := ctx.KVStore(k.storeKey)
 
 	bz := types.MustMarshalONFTID(k.cdc, onftId)

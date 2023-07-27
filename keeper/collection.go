@@ -82,8 +82,8 @@ func (k Keeper) GetCollections(ctx sdk.Context) (cs []types.Collection) {
 }
 
 func (k Keeper) GetPaginateCollection(ctx sdk.Context,
-	request *types.QueryCollectionRequest, denomId string) (types.Collection, *query.PageResponse, error) {
-
+	request *types.QueryCollectionRequest, denomId string,
+) (types.Collection, *query.PageResponse, error) {
 	denom, err := k.GetDenom(ctx, denomId)
 	if err != nil {
 		return types.Collection{}, nil, errorsmod.Wrapf(types.ErrInvalidDenom, "denomId %s not existed ", denomId)

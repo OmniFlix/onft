@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/onft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +21,6 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
-
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -131,8 +131,8 @@ func (m msgServer) MintONFT(goCtx context.Context, msg *types.MsgMintONFT) (*typ
 }
 
 func (m msgServer) TransferONFT(goCtx context.Context,
-	msg *types.MsgTransferONFT) (*types.MsgTransferONFTResponse, error) {
-
+	msg *types.MsgTransferONFT,
+) (*types.MsgTransferONFTResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -155,8 +155,8 @@ func (m msgServer) TransferONFT(goCtx context.Context,
 }
 
 func (m msgServer) BurnONFT(goCtx context.Context,
-	msg *types.MsgBurnONFT) (*types.MsgBurnONFTResponse, error) {
-
+	msg *types.MsgBurnONFT,
+) (*types.MsgBurnONFTResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err

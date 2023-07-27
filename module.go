@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/OmniFlix/onft/simulation"
 	abci "github.com/cometbft/cometbft/abci/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
@@ -79,7 +80,8 @@ func (am AppModule) RegisterQueryService(server grpc.Server) {
 }
 
 func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper) AppModule {
+	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper,
+) AppModule {
 	return AppModule{
 		AppModuleBasic:     AppModuleBasic{cdc: cdc},
 		keeper:             keeper,
@@ -99,6 +101,7 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
 	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
 }
+
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)

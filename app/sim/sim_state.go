@@ -3,12 +3,13 @@ package sim
 import (
 	"encoding/json"
 	"fmt"
-	tmjson "github.com/cometbft/cometbft/libs/json"
-	tmtypes "github.com/cometbft/cometbft/types"
 	"io"
 	"math/rand"
 	"os"
 	"time"
+
+	tmjson "github.com/cometbft/cometbft/libs/json"
+	tmtypes "github.com/cometbft/cometbft/types"
 
 	"github.com/OmniFlix/onft/app/params"
 

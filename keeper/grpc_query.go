@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -125,6 +126,7 @@ func (k Keeper) ONFT(c context.Context, request *types.QueryONFTRequest) (*types
 		ONFT: &oNFT,
 	}, nil
 }
+
 func (k Keeper) OwnerONFTs(c context.Context, request *types.QueryOwnerONFTsRequest) (*types.QueryOwnerONFTsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 

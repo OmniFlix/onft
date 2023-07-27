@@ -1,11 +1,12 @@
 package types
 
 import (
+	"strings"
+	"unicode/utf8"
+
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strings"
-	"unicode/utf8"
 )
 
 const (
@@ -187,8 +188,8 @@ func (msg MsgTransferDenom) GetSigners() []sdk.AccAddress {
 
 func NewMsgMintONFT(
 	denomId, sender, recipient string, metadata Metadata, data string,
-	transferable, extensible, nsfw bool, royaltyShare sdk.Dec) *MsgMintONFT {
-
+	transferable, extensible, nsfw bool, royaltyShare sdk.Dec,
+) *MsgMintONFT {
 	return &MsgMintONFT{
 		Id:           GenUniqueID(IDPrefix),
 		DenomId:      denomId,
@@ -208,7 +209,6 @@ func (msg MsgMintONFT) Route() string { return RouterKey }
 func (msg MsgMintONFT) Type() string { return TypeMsgMintONFT }
 
 func (msg MsgMintONFT) ValidateBasic() error {
-
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address; %s", err)
 	}
@@ -249,7 +249,6 @@ func (msg MsgMintONFT) GetSigners() []sdk.AccAddress {
 }
 
 func NewMsgTransferONFT(id, denomId, sender, recipient string) *MsgTransferONFT {
-
 	return &MsgTransferONFT{
 		Id:        strings.ToLower(strings.TrimSpace(id)),
 		DenomId:   strings.TrimSpace(denomId),

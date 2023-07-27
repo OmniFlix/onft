@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
 	"github.com/spf13/cobra"

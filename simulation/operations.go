@@ -461,7 +461,7 @@ func getRandomNFTFromOwner(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (addr
 }
 
 func getRandomDenom(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (types.Denom, error) {
-	var denoms = []string{denomId1, denomId2}
+	denoms := []string{denomId1, denomId2}
 	i := r.Intn(len(denoms))
 	denom, _ := k.GetDenom(ctx, denoms[i])
 	if denom.Size() == 0 {

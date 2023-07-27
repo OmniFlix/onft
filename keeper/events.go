@@ -28,6 +28,7 @@ func (k Keeper) emitUpdateONFTDenomEvent(ctx sdk.Context, denomId, symbol, name,
 		),
 	)
 }
+
 func (k Keeper) emitTransferONFTDenomEvent(ctx sdk.Context, denomId, symbol, sender, recipient string) {
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

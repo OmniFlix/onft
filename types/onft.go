@@ -11,7 +11,8 @@ var _ exported.ONFTI = ONFT{}
 
 func NewONFT(
 	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
-	createdTime time.Time, nsfw bool, royaltyShare sdk.Dec) ONFT {
+	createdTime time.Time, nsfw bool, royaltyShare sdk.Dec,
+) ONFT {
 	return ONFT{
 		Id:           id,
 		Metadata:     metadata,
@@ -53,18 +54,23 @@ func (onft ONFT) GetOwner() sdk.AccAddress {
 func (onft ONFT) GetMetadata() string {
 	return onft.Metadata.String()
 }
+
 func (onft ONFT) GetData() string {
 	return onft.Data
 }
+
 func (onft ONFT) IsTransferable() bool {
 	return onft.Transferable
 }
+
 func (onft ONFT) IsExtensible() bool {
 	return onft.Extensible
 }
+
 func (onft ONFT) GetCreatedTime() time.Time {
 	return onft.CreatedAt
 }
+
 func (onft ONFT) IsNSFW() bool {
 	return onft.Nsfw
 }
