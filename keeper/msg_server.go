@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"context"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/onft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -30,18 +30,18 @@ func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom)
 	denomCreationFee := m.Keeper.GetDenomCreationFee(ctx)
 	if !msg.CreationFee.Equal(denomCreationFee) {
 		if msg.CreationFee.Denom != denomCreationFee.Denom {
-			return nil, sdkerrors.Wrapf(types.ErrInvalidFeeDenom, "invalid creation fee denom %s",
+			return nil, errorsmod.Wrapf(types.ErrInvalidFeeDenom, "invalid creation fee denom %s",
 				msg.CreationFee.Denom)
 		}
 		if msg.CreationFee.Amount.LT(denomCreationFee.Amount) {
-			return nil, sdkerrors.Wrapf(
+			return nil, errorsmod.Wrapf(
 				types.ErrNotEnoughFeeAmount,
 				"%s fee is not enough, to create %s fee is required",
 				msg.CreationFee.String(),
 				denomCreationFee.String(),
 			)
 		}
-		return nil, sdkerrors.Wrapf(
+		return nil, errorsmod.Wrapf(
 			types.ErrInvalidDenomCreationFee,
 			"given fee (%s) not matched with  denom creation fee. %s required to create onft denom",
 			msg.CreationFee.String(),

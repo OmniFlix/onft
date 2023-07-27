@@ -1,18 +1,18 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func ValidateONFTID(onftId string) error {
 	if len(onftId) < MinIDLen || len(onftId) > MaxIDLen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidONFTID,
 			"invalid onftId %s, length must be between [%d, %d]", onftId, MinIDLen, MaxIDLen)
 	}
 	if !IsBeginWithAlpha(onftId) || !IsAlphaNumeric(onftId) {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidONFTID,
 			"invalid onftId %s, only accepts alphanumeric characters and begin with an english letter", onftId)
 	}
@@ -21,7 +21,7 @@ func ValidateONFTID(onftId string) error {
 
 func ValidateDenomID(denomID string) error {
 	if len(denomID) < MinIDLen || len(denomID) > MaxIDLen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidDenom,
 			"invalid denom ID %s, length  must be between [%d, %d]",
 			denomID,
@@ -30,7 +30,7 @@ func ValidateDenomID(denomID string) error {
 		)
 	}
 	if !IsBeginWithAlpha(denomID) || !IsAlphaNumeric(denomID) {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidDenom,
 			"invalid denom ID %s, only accepts alphanumeric characters,and begin with an english letter",
 			denomID,
@@ -40,7 +40,7 @@ func ValidateDenomID(denomID string) error {
 }
 func ValidateDenomSymbol(denomSymbol string) error {
 	if len(denomSymbol) < MinDenomLen || len(denomSymbol) > MaxDenomLen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidDenom,
 			"invalid denom symbol %s, only accepts value [%d, %d]",
 			denomSymbol,
@@ -49,7 +49,7 @@ func ValidateDenomSymbol(denomSymbol string) error {
 		)
 	}
 	if !IsBeginWithAlpha(denomSymbol) || !IsAlpha(denomSymbol) {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidDenom,
 			"invalid denom symbol %s, only accepts alphabetic characters",
 			denomSymbol,
@@ -60,7 +60,7 @@ func ValidateDenomSymbol(denomSymbol string) error {
 
 func ValidateName(name string) error {
 	if len(name) > MaxNameLen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidName,
 			"invalid name %s, length must be less than %d",
 			name,
@@ -72,7 +72,7 @@ func ValidateName(name string) error {
 
 func ValidateDescription(description string) error {
 	if len(description) > MaxDescriptionLen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidDescription,
 			"invalid description %s, length must be less than %d",
 			description,
@@ -84,7 +84,7 @@ func ValidateDescription(description string) error {
 
 func ValidateURI(uri string) error {
 	if len(uri) > MaxURILen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidURI,
 			"invalid uri %s, length must be less than %d",
 			uri,
@@ -96,7 +96,7 @@ func ValidateURI(uri string) error {
 
 func ValidateMediaURI(uri string) error {
 	if len(uri) == 0 {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidURI,
 			"invalid uri %s, media uri should not be empty",
 			uri,
@@ -104,7 +104,7 @@ func ValidateMediaURI(uri string) error {
 		)
 	}
 	if len(uri) > MaxURILen {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidURI,
 			"invalid uri %s, length must be less than %d",
 			uri,
@@ -116,7 +116,11 @@ func ValidateMediaURI(uri string) error {
 
 func ValidateCreationFee(fee sdk.Coin) error {
 	if !fee.IsValid() || fee.IsNil() {
-		return sdkerrors.Wrapf(ErrInvalidURI, "invalid creation fee %s, fee must be positive", fee.String())
+		return errorsmod.Wrapf(
+			ErrInvalidURI,
+			"invalid creation fee %s, fee must be positive",
+			fee.String(),
+		)
 	}
 	return nil
 }

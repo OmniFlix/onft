@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ exported.ONFT = ONFT{}
+var _ exported.ONFTI = ONFT{}
 
 func NewONFT(
 	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
@@ -75,9 +75,9 @@ func (onft ONFT) GetRoyaltyShare() sdk.Dec {
 
 // ONFT
 
-type ONFTs []exported.ONFT
+type ONFTs []exported.ONFTI
 
-func NewONFTs(onfts ...exported.ONFT) ONFTs {
+func NewONFTs(onfts ...exported.ONFTI) ONFTs {
 	if len(onfts) == 0 {
 		return ONFTs{}
 	}

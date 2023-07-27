@@ -1,21 +1,15 @@
 package app
 
 import (
-	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
-	"github.com/cosmos/cosmos-sdk/server"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 
 	"github.com/OmniFlix/onft/app/openapiconsole"
 	dbm "github.com/cometbft/cometbft-db"
@@ -24,6 +18,9 @@ import (
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/server"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	"github.com/spf13/cast"
 
 	"github.com/OmniFlix/onft"
@@ -36,6 +33,8 @@ import (
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -49,6 +48,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -134,6 +136,7 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
 		params.AppModuleBasic{},
+		consensus.AppModuleBasic{},
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		ibc.AppModuleBasic{},
@@ -252,11 +255,13 @@ func New(
 		authtypes.StoreKey,
 		banktypes.StoreKey,
 		stakingtypes.StoreKey,
+		crisistypes.StoreKey,
 		minttypes.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 		govtypes.StoreKey,
 		paramstypes.StoreKey,
+		consensusparamtypes.StoreKey,
 		ibcexported.StoreKey,
 		authzkeeper.StoreKey,
 		feegrant.StoreKey,
@@ -484,6 +489,7 @@ func New(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
@@ -509,6 +515,7 @@ func New(
 		banktypes.ModuleName,
 		govtypes.ModuleName,
 		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName,
 		authz.ModuleName,
@@ -530,6 +537,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		minttypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -562,6 +570,7 @@ func New(
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		vestingtypes.ModuleName,
 		upgradetypes.ModuleName,
 		onfttypes.ModuleName,
@@ -740,6 +749,9 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+
+	// Register nodeservice grpc-gateway routes.
+	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// register app's OpenAPI routes.
 	apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))

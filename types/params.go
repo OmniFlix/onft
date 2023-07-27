@@ -1,9 +1,9 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -61,7 +61,7 @@ func validateDenomCreationFee(i interface{}) error {
 	}
 
 	if !fee.IsValid() || fee.IsZero() {
-		return sdkerrors.Wrapf(ErrInvalidDenomCreationFee, "invalid fee amount %s, only accepts positive amounts", fee.String())
+		return errorsmod.Wrapf(ErrInvalidDenomCreationFee, "invalid fee amount %s, only accepts positive amounts", fee.String())
 	}
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/OmniFlix/onft/simulation"
 	abci "github.com/cometbft/cometbft/abci/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/gogo/protobuf/grpc"
+	"github.com/cosmos/gogoproto/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type ONFT interface {
+type ONFTI interface {
 	GetID() string
 	GetOwner() sdk.AccAddress
 	GetName() string

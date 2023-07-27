@@ -4,7 +4,7 @@ import (
 	"github.com/OmniFlix/onft/exported"
 )
 
-func NewCollection(denom Denom, onfts []exported.ONFT) (c Collection) {
+func NewCollection(denom Denom, onfts []exported.ONFTI) (c Collection) {
 	c.Denom = denom
 	for _, onft := range onfts {
 		c = c.AddONFT(onft.(ONFT))

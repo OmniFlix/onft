@@ -7,6 +7,7 @@ import (
 
 	"github.com/cometbft/cometbft/libs/log"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -61,11 +62,11 @@ func (k Keeper) CreateDenom(
 	creator sdk.AccAddress, description, previewUri string, fee sdk.Coin) error {
 
 	if k.HasDenomID(ctx, id) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", id)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", id)
 	}
 
 	if k.HasDenomSymbol(ctx, symbol) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", symbol)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", symbol)
 	}
 
 	err := k.distributionKeeper.FundCommunityPool(
@@ -87,7 +88,7 @@ func (k Keeper) CreateDenom(
 
 func (k Keeper) UpdateDenom(ctx sdk.Context, id, name, description, previewURI string, sender sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, id) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom id %s not exists", id)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denom id %s not exists", id)
 	}
 	denom, err := k.AuthorizeDenomCreator(ctx, id, sender)
 	if err != nil {
@@ -110,13 +111,13 @@ func (k Keeper) UpdateDenom(ctx sdk.Context, id, name, description, previewURI s
 func (k Keeper) TransferDenomOwner(ctx sdk.Context, id string, curOwner, newOwner sdk.AccAddress) error {
 	denom, err := k.GetDenom(ctx, id)
 	if err != nil {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom ID %s not exists", id)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denom ID %s not exists", id)
 	}
 	// bech32 encode is expensive
 	curOwnerAddr := curOwner.String()
 	newOwnerAddr := newOwner.String()
 	if curOwnerAddr != denom.Creator {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "unauthorized address %s", curOwnerAddr)
+		return errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "unauthorized address %s", curOwnerAddr)
 	}
 	denom.Creator = newOwnerAddr
 	// update denom
@@ -138,14 +139,14 @@ func (k Keeper) MintONFT(
 	sender, recipient sdk.AccAddress,
 ) error {
 	if !k.HasPermissionToMint(ctx, denomID, sender) {
-		return sdkerrors.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
+		return errorsmod.Wrapf(types.ErrUnauthorized, "only creator of denom has permission to mint")
 	}
 	if !k.HasDenomID(ctx, denomID) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
 
 	if k.HasONFT(ctx, denomID, onftID) {
-		return sdkerrors.Wrapf(types.ErrONFTAlreadyExists, "ONFT %s already exists in collection %s", onftID, denomID)
+		return errorsmod.Wrapf(types.ErrONFTAlreadyExists, "ONFT %s already exists in collection %s", onftID, denomID)
 	}
 	// create nft
 	k.setONFT(ctx, denomID, types.NewONFT(
@@ -170,7 +171,7 @@ func (k Keeper) MintONFT(
 
 func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, owner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
 	_, err := k.GetDenom(ctx, denomID)
 	if err != nil {
@@ -188,7 +189,7 @@ func (k Keeper) EditONFT(ctx sdk.Context, denomID, onftID string, owner sdk.AccA
 
 func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOwner, dstOwner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
 
 	onft, err := k.Authorize(ctx, denomID, onftID, srcOwner)
@@ -196,7 +197,7 @@ func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOw
 		return err
 	}
 	if !onft.IsTransferable() {
-		return sdkerrors.Wrap(types.ErrNotTransferable, onft.GetID())
+		return errorsmod.Wrap(types.ErrNotTransferable, onft.GetID())
 	}
 	// modify owner
 	dstOwnerAddr := dstOwner.String()
@@ -214,7 +215,7 @@ func (k Keeper) BurnONFT(ctx sdk.Context,
 	denomID, onftID string,
 	owner sdk.AccAddress) error {
 	if !k.HasDenomID(ctx, denomID) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
 	}
 
 	onft, err := k.Authorize(ctx, denomID, onftID, owner)

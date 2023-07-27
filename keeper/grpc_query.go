@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc/status"
 	"strings"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/OmniFlix/onft/types"
 )
@@ -113,12 +113,12 @@ func (k Keeper) ONFT(c context.Context, request *types.QueryONFTRequest) (*types
 
 	nft, err := k.GetONFT(ctx, denom, onftID)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid ONFT %s from collection %s", request.Id, request.DenomId)
+		return nil, errorsmod.Wrapf(types.ErrUnknownONFT, "invalid ONFT %s from collection %s", request.Id, request.DenomId)
 	}
 
 	oNFT, ok := nft.(types.ONFT)
 	if !ok {
-		return nil, sdkerrors.Wrapf(types.ErrUnknownONFT, "invalid type ONFT %s from collection %s", request.Id, request.DenomId)
+		return nil, errorsmod.Wrapf(types.ErrUnknownONFT, "invalid type ONFT %s from collection %s", request.Id, request.DenomId)
 	}
 
 	return &types.QueryONFTResponse{
@@ -180,7 +180,7 @@ func (k Keeper) OwnerONFTs(c context.Context, request *types.QueryOwnerONFTsRequ
 }
 
 // Params queries params of oNFT module
-func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (k Keeper) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	var params types.Params
 	k.paramSpace.GetParamSet(ctx, &params)
