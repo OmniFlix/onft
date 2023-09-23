@@ -4,27 +4,13 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-// Default period for closing bids for an auction
 var (
+	//DefaultDenomCreationFee Default period for closing bids for an auction
 	DefaultDenomCreationFee = sdk.NewInt64Coin("uflix", 100_000_000) // 100FLIX
 )
-
-// Parameter keys
-var (
-	ParamStoreKeyDenomCreationFee = []byte("DenomCreationFee")
-)
-
-var _ paramtypes.ParamSet = (*Params)(nil)
-
-// ParamKeyTable returns the parameter key table.
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
 
 func NewONFTParams(denomCreationFee sdk.Coin) Params {
 	return Params{
@@ -37,13 +23,6 @@ func DefaultParams() Params {
 	return NewONFTParams(
 		DefaultDenomCreationFee,
 	)
-}
-
-// ParamSetPairs returns the parameter set pairs.
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(ParamStoreKeyDenomCreationFee, &p.DenomCreationFee, validateDenomCreationFee),
-	}
 }
 
 // ValidateBasic performs basic validation on onft parameters.
