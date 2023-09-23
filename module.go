@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/OmniFlix/onft/exported"
 
 	"github.com/OmniFlix/onft/simulation"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -27,6 +28,9 @@ var (
 	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.AppModuleSimulation = AppModule{}
 )
+
+// ConsensusVersion defines the current onft module consensus version.
+const ConsensusVersion = 2
 
 type AppModuleBasic struct {
 	cdc codec.Codec
@@ -73,6 +77,7 @@ type AppModule struct {
 	accountKeeper      types.AccountKeeper
 	bankKeeper         types.BankKeeper
 	distributionKeeper types.DistributionKeeper
+	legacySubspace     exported.Subspace
 }
 
 func (am AppModule) RegisterQueryService(server grpc.Server) {
@@ -80,7 +85,7 @@ func (am AppModule) RegisterQueryService(server grpc.Server) {
 }
 
 func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper,
+	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper, ss exported.Subspace,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic:     AppModuleBasic{cdc: cdc},
@@ -88,6 +93,7 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, accountKeeper types.Acc
 		accountKeeper:      accountKeeper,
 		bankKeeper:         bankKeeper,
 		distributionKeeper: distrKeeper,
+		legacySubspace:     ss,
 	}
 }
 
@@ -99,12 +105,20 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 func (AppModule) QuerierRoute() string { return types.RouterKey }
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+		panic(err)
+	}
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	// x/params migration
+	m := keeper.NewMigrator(am.keeper, am.legacySubspace)
+
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate %s from version 1 to 2: %v", types.ModuleName, err))
+	}
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
@@ -120,7 +134,9 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	gs := ExportGenesis(ctx, am.keeper)
 	return cdc.MustMarshalJSON(gs)
 }
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+func (AppModule) ConsensusVersion() uint64 {
+	return ConsensusVersion
+}
 
 func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
