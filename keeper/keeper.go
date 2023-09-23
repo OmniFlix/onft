@@ -3,10 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	"github.com/cometbft/cometbft/libs/log"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -23,7 +21,7 @@ type Keeper struct {
 	accountKeeper      types.AccountKeeper
 	bankKeeper         types.BankKeeper
 	distributionKeeper types.DistributionKeeper
-	paramSpace         paramstypes.Subspace
+	authority          string
 }
 
 func NewKeeper(
@@ -32,16 +30,11 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	distrKeeper types.DistributionKeeper,
-	paramSpace paramstypes.Subspace,
+	authority string,
 ) Keeper {
 	// ensure oNFT module account is set
 	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
-	}
-
-	// set KeyTable if it has not already been set
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
 	}
 
 	return Keeper{
@@ -50,8 +43,13 @@ func NewKeeper(
 		accountKeeper:      accountKeeper,
 		bankKeeper:         bankKeeper,
 		distributionKeeper: distrKeeper,
-		paramSpace:         paramSpace,
+		authority:          authority,
 	}
+}
+
+// GetAuthority returns the onft module's authority.
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {

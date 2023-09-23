@@ -24,6 +24,8 @@ var (
 	PrefixDenomSymbol = []byte{0x05}
 	PrefixCreator     = []byte{0x06}
 
+	ParamsKey = []byte{0x07}
+
 	delimiter = []byte("/")
 )
 
