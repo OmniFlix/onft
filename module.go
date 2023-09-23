@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/OmniFlix/onft/exported"
 
 	"github.com/OmniFlix/onft/simulation"
@@ -134,6 +135,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	gs := ExportGenesis(ctx, am.keeper)
 	return cdc.MustMarshalJSON(gs)
 }
+
 func (AppModule) ConsensusVersion() uint64 {
 	return ConsensusVersion
 }

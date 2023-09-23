@@ -4,9 +4,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-var (
-	ParamStoreKeyDenomCreationFee = []byte("DenomCreationFee")
-)
+var ParamStoreKeyDenomCreationFee = []byte("DenomCreationFee")
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 

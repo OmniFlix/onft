@@ -7,10 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	//DefaultDenomCreationFee Default period for closing bids for an auction
-	DefaultDenomCreationFee = sdk.NewInt64Coin("uflix", 100_000_000) // 100FLIX
-)
+// DefaultDenomCreationFee Default period for closing bids for an auction
+var DefaultDenomCreationFee = sdk.NewInt64Coin("uflix", 100_000_000) // 100FLIX
 
 func NewONFTParams(denomCreationFee sdk.Coin) Params {
 	return Params{
