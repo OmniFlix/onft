@@ -50,6 +50,10 @@ func (k Keeper) Collection(c context.Context, request *types.QueryCollectionRequ
 	}, nil
 }
 
+func (k Keeper) IBCCollection(c context.Context, request *types.QueryIBCCollectionRequest) (*types.QueryCollectionResponse, error) {
+	return nil, nil
+}
+
 func (k Keeper) Denom(c context.Context, request *types.QueryDenomRequest) (*types.QueryDenomResponse, error) {
 	denom := strings.ToLower(strings.TrimSpace(request.DenomId))
 	ctx := sdk.UnwrapSDKContext(c)
@@ -62,6 +66,10 @@ func (k Keeper) Denom(c context.Context, request *types.QueryDenomRequest) (*typ
 	return &types.QueryDenomResponse{
 		Denom: &denomObject,
 	}, nil
+}
+
+func (k Keeper) IBCDenom(c context.Context, request *types.QueryIBCDenomRequest) (*types.QueryDenomResponse, error) {
+	return nil, nil
 }
 
 func (k Keeper) Denoms(c context.Context, request *types.QueryDenomsRequest) (*types.QueryDenomsResponse, error) {

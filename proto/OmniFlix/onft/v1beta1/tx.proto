@@ -49,6 +49,9 @@ message MsgCreateDenom {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
+  string uri = 9;
+  string uri_hash = 10;
+  string data = 11;
 }
 
 message MsgCreateDenomResponse {}
