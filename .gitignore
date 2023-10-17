@@ -2,3 +2,7 @@ vue/node_modules
 vue/dist
 secret.yml
 .idea
+bin
+build
+*_build
+

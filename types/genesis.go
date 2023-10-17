@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "github.com/pkg/errors"
 )
 
 func NewGenesisState(collections []Collection, params Params) *GenesisState {
@@ -19,7 +20,7 @@ func ValidateGenesis(data GenesisState) error {
 			return err
 		}
 		if creator.Empty() {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing denom creator")
+			return errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "missing denom creator")
 		}
 		if err := ValidateDenomID(c.Denom.Id); err != nil {
 			return err
@@ -39,7 +40,7 @@ func ValidateGenesis(data GenesisState) error {
 
 		for _, nft := range c.ONFTs {
 			if nft.GetOwner().Empty() {
-				return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing onft owner")
+				return errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "missing onft owner")
 			}
 
 			if err := ValidateONFTID(nft.GetID()); err != nil {

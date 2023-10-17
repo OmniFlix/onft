@@ -2,16 +2,17 @@ package simulation
 
 import (
 	"fmt"
+	"math/rand"
+	"strings"
+
+	appparams "github.com/OmniFlix/onft/app/params"
 	"github.com/OmniFlix/onft/keeper"
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"math/rand"
-	"strings"
 )
 
 // Simulation operation weights constants
@@ -147,7 +148,7 @@ func SimulateMsgCreateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			TxGen:           appparams.MakeEncodingConfig().TxConfig,
 			Cdc:             nil,
 			Msg:             msg,
 			MsgType:         types.TypeMsgCreateDenom,
@@ -202,7 +203,7 @@ func SimulateMsgMintONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			TxGen:           appparams.MakeEncodingConfig().TxConfig,
 			Cdc:             nil,
 			Msg:             msg,
 			MsgType:         types.TypeMsgMintONFT,
@@ -255,7 +256,7 @@ func SimulateMsgTransferONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.B
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			TxGen:           appparams.MakeEncodingConfig().TxConfig,
 			Cdc:             nil,
 			Msg:             msg,
 			MsgType:         types.TypeMsgTransferONFT,
@@ -308,7 +309,7 @@ func SimulateMsgBurnONFT(k keeper.Keeper, ak types.AccountKeeper, bk types.BankK
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			TxGen:           appparams.MakeEncodingConfig().TxConfig,
 			Cdc:             nil,
 			Msg:             msg,
 			MsgType:         types.TypeMsgBurnONFT,
@@ -358,7 +359,7 @@ func SimulateMsgTransferDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			TxGen:           appparams.MakeEncodingConfig().TxConfig,
 			Cdc:             nil,
 			Msg:             msg,
 			MsgType:         types.TypeMsgTransferDenom,
@@ -408,7 +409,7 @@ func SimulateMsgUpdateDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ba
 		txCtx := simulation.OperationInput{
 			R:               r,
 			App:             app,
-			TxGen:           simappparams.MakeTestEncodingConfig().TxConfig,
+			TxGen:           appparams.MakeEncodingConfig().TxConfig,
 			Cdc:             nil,
 			Msg:             msg,
 			MsgType:         types.TypeMsgUpdateDenom,
@@ -460,7 +461,7 @@ func getRandomNFTFromOwner(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (addr
 }
 
 func getRandomDenom(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (types.Denom, error) {
-	var denoms = []string{denomId1, denomId2}
+	denoms := []string{denomId1, denomId2}
 	i := r.Intn(len(denoms))
 	denom, _ := k.GetDenom(ctx, denoms[i])
 	if denom.Size() == 0 {

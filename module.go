@@ -4,18 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/OmniFlix/onft/exported"
+
 	"github.com/OmniFlix/onft/simulation"
+	abci "github.com/cometbft/cometbft/abci/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/gogo/protobuf/grpc"
-	"github.com/gorilla/mux"
+	"github.com/cosmos/gogoproto/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	"math/rand"
-
-	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/OmniFlix/onft/client/cli"
-	"github.com/OmniFlix/onft/client/rest"
 	"github.com/OmniFlix/onft/keeper"
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -30,6 +29,9 @@ var (
 	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.AppModuleSimulation = AppModule{}
 )
+
+// ConsensusVersion defines the current onft module consensus version.
+const ConsensusVersion = 2
 
 type AppModuleBasic struct {
 	cdc codec.Codec
@@ -76,6 +78,7 @@ type AppModule struct {
 	accountKeeper      types.AccountKeeper
 	bankKeeper         types.BankKeeper
 	distributionKeeper types.DistributionKeeper
+	legacySubspace     exported.Subspace
 }
 
 func (am AppModule) RegisterQueryService(server grpc.Server) {
@@ -83,13 +86,15 @@ func (am AppModule) RegisterQueryService(server grpc.Server) {
 }
 
 func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper) AppModule {
+	bankKeeper types.BankKeeper, distrKeeper types.DistributionKeeper, ss exported.Subspace,
+) AppModule {
 	return AppModule{
 		AppModuleBasic:     AppModuleBasic{cdc: cdc},
 		keeper:             keeper,
 		accountKeeper:      accountKeeper,
 		bankKeeper:         bankKeeper,
 		distributionKeeper: distrKeeper,
+		legacySubspace:     ss,
 	}
 }
 
@@ -98,26 +103,23 @@ func (AppModule) Name() string { return types.ModuleName }
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 }
 
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
-}
-
 func (AppModule) QuerierRoute() string { return types.RouterKey }
 
-func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
-	return keeper.NewQuerier(am.keeper, legacyQuerierCdc)
-}
-
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	rest.RegisterHandlers(clientCtx, rtr, types.RouterKey)
-}
-
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+		panic(err)
+	}
 }
+
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	// x/params migration
+	m := keeper.NewMigrator(am.keeper, am.legacySubspace)
+
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate %s from version 1 to 2: %v", types.ModuleName, err))
+	}
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
@@ -133,7 +135,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	gs := ExportGenesis(ctx, am.keeper)
 	return cdc.MustMarshalJSON(gs)
 }
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+
+func (AppModule) ConsensusVersion() uint64 {
+	return ConsensusVersion
+}
 
 func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
@@ -155,11 +160,6 @@ func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 
 // ProposalContents doesn't return any content functions for governance proposals.
 func (AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
-	return nil
-}
-
-// RandomizedParams creates randomized NFT param changes for the simulator.
-func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }
 

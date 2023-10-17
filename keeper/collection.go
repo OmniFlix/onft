@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/onft/exported"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,11 +19,11 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 		return err
 	}
 	if k.HasDenomID(ctx, denom.Id) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
 	}
 
 	if k.HasDenomSymbol(ctx, denom.Symbol) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
 	}
 	k.SetDenom(ctx, types.NewDenom(
 		denom.Id,
@@ -66,7 +66,7 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 func (k Keeper) GetCollection(ctx sdk.Context, denomID string) (types.Collection, error) {
 	denom, err := k.GetDenom(ctx, denomID)
 	if err != nil {
-		return types.Collection{}, sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not existed ", denomID)
+		return types.Collection{}, errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not existed ", denomID)
 	}
 
 	onfts := k.GetONFTs(ctx, denomID)
@@ -82,13 +82,13 @@ func (k Keeper) GetCollections(ctx sdk.Context) (cs []types.Collection) {
 }
 
 func (k Keeper) GetPaginateCollection(ctx sdk.Context,
-	request *types.QueryCollectionRequest, denomId string) (types.Collection, *query.PageResponse, error) {
-
+	request *types.QueryCollectionRequest, denomId string,
+) (types.Collection, *query.PageResponse, error) {
 	denom, err := k.GetDenom(ctx, denomId)
 	if err != nil {
-		return types.Collection{}, nil, sdkerrors.Wrapf(types.ErrInvalidDenom, "denomId %s not existed ", denomId)
+		return types.Collection{}, nil, errorsmod.Wrapf(types.ErrInvalidDenom, "denomId %s not existed ", denomId)
 	}
-	var onfts []exported.ONFT
+	var onfts []exported.ONFTI
 	store := ctx.KVStore(k.storeKey)
 	onftStore := prefix.NewStore(store, types.KeyONFT(denomId, ""))
 	pagination, err := query.Paginate(onftStore, request.Pagination, func(key []byte, value []byte) error {

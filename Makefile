@@ -1,13 +1,32 @@
-APP_NAME = onft
-DAEMON_NAME = onftd
-LEDGER_ENABLED ?= true
-
-PACKAGES=$(shell go list ./... | grep -v '/simulation')
-VERSION := $(shell echo $(shell git describe --tags --always) | sed 's/^v//')
+#!/usr/bin/make -f
+APP_NAME := onft
+DAEMON_NAME := onftd
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git log -1 --format='%H')
-COSMOS_SDK := $(shell grep -i cosmos-sdk go.mod | awk '{print $$2}')
 
-build_tags = netgo,
+# don't override user values
+ifeq (,$(VERSION))
+  VERSION := $(shell git describe --exact-match 2>/dev/null)
+  # if VERSION is empty, then populate it with branch's name and raw commit hash
+  ifeq (,$(VERSION))
+    VERSION := $(BRANCH)-$(COMMIT)
+  endif
+endif
+
+PACKAGES_SIMTEST=$(shell go list ./... | grep -v '/simulation')
+LEDGER_ENABLED ?= true
+SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
+BFT_VERSION := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::')
+DOCKER := $(shell which docker)
+BUILDDIR ?= $(CURDIR)/build
+
+GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
+REQUIRE_GO_VERSION = 1.20
+
+export GO111MODULE = on
+
+# process build tags
+build_tags = netgo
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -30,44 +49,56 @@ ifeq ($(LEDGER_ENABLED),true)
     endif
   endif
 endif
+
+ifeq (cleveldb,$(findstring cleveldb,$(ONFT_BUILD_OPTIONS)))
+  build_tags += gcc cleveldb
+endif
+build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
+
+whitespace :=
+whitespace := $(whitespace) $(whitespace)
+comma := ,
+build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
+
+# process linker flags
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=${APP_NAME} \
 	-X github.com/cosmos/cosmos-sdk/version.AppName=${DAEMON_NAME} \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-	-X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags),cosmos-sdk $(COSMOS_SDK)"
+	-X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
+	-X github.com/cometbft/cometbft/version.TMCoreSemVer=$(BFT_VERSION)
 
-BUILD_FLAGS := -ldflags '$(ldflags)'
+ifeq (cleveldb,$(findstring cleveldb,$(ONFT_BUILD_OPTIONS)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
+endif
+ifeq (,$(findstring nostrip,$(ONFT_BUILD_OPTIONS)))
+  ldflags += -w -s
+endif
+ldflags += $(LDFLAGS)
+ldflags := $(strip $(ldflags))
 
-all: go.sum install
+BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+
+ifeq (,$(findstring nostrip,$(ONFT_BUILD_OPTIONS)))
+  BUILD_FLAGS += -trimpath
+endif
+
+all: install
+	@echo "--> project root: go mod tidy"
+	@go mod tidy
+	@echo "--> project root: linting --fix"
+	@GOGC=1 golangci-lint run --fix --timeout=8m
 
 install: go.sum
-		go install $(BUILD_FLAGS) ./cmd/onftd/
+		go install -mod=readonly $(BUILD_FLAGS) ./cmd/onftd
 build:
-		go build $(BUILD_FLAGS) -o ${GOPATH}/bin/${DAEMON_NAME} ./cmd/onftd/
+		go build $(BUILD_FLAGS) -o bin/${DAEMON_NAME} ./cmd/onftd
 
 go.sum: go.mod
 		@echo "--> Ensure dependencies have not been modified"
 		GO111MODULE=on go mod verify
-
-lint:
-	@echo "--> Running linter"
-	@golangci-lint run
-	@go mod verify
-
-start-test-chain:
-	rm  ~/.onft/config/genesis.json
-	rm -rf  ~/.onft/config/gentx
-	onftd unsafe-reset-all
-	onftd init onft-node  --chain-id "onft-test-1"
-	onftd keys add validator
-	onftd add-genesis-account `onftd keys show validator -a` 100000000uflix
-	onftd gentx validator 1000000uflix --moniker "validator-1" --chain-id "onft-test-1"
-	sed -i "s/\"stake\"/\"uflix\"/g" ~/.onft//config/genesis.json
-	onftd collect-gentxs
-	onftd validate-genesis
-	onftd start
 
 ########################################
 ### Testing
@@ -96,3 +127,36 @@ test-sim-custom-genesis-fast:
 	@echo "By default, $(shell pwd)/testdata/genesis.json will be used."
 	@go test -mod=readonly $(SIMAPP) -run TestFullAppSimulation -Genesis=$(shell pwd)/testdata/genesis.json \
 		-Enabled=true -NumBlocks=10 -BlockSize=200 -Commit=true -Seed=99 -Period=5 -v -timeout 24h
+
+
+###############################################################################
+###                                Protobuf                                 ###
+###############################################################################
+protoVer=0.13.0
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
+
+proto-all: proto-format proto-lint proto-gen
+
+proto-gen:
+	@echo "Generating Protobuf files"
+	@$(protoImage) sh ./proto/scripts/protocgen.sh
+
+proto-swagger-gen:
+	@echo "Generating Protobuf Swagger"
+	@$(protoImage) sh ./proto/scripts/protoc-swagger-gen.sh
+
+proto-format:
+	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
+
+proto-lint:
+	@$(protoImage) buf lint --error-format=json
+
+proto-check-breaking:
+	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=main
+
+proto-update-deps:
+	@echo "Updating Protobuf dependencies"
+	$(DOCKER) run --rm -v $(CURDIR)/proto:/workspace --workdir /workspace $(protoImageName) buf mod update
+
+.PHONY: proto-all proto-gen proto-gen-any proto-swagger-gen proto-format proto-lint proto-check-breaking proto-update-deps

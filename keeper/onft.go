@@ -1,18 +1,18 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/onft/exported"
 	"github.com/OmniFlix/onft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (k Keeper) GetONFT(ctx sdk.Context, denomID, onftID string) (nft exported.ONFT, err error) {
+func (k Keeper) GetONFT(ctx sdk.Context, denomID, onftID string) (nft exported.ONFTI, err error) {
 	store := ctx.KVStore(k.storeKey)
 
 	bz := store.Get(types.KeyONFT(denomID, onftID))
 	if bz == nil {
-		return nil, sdkerrors.Wrapf(types.ErrUnknownCollection, "not found oNFT: %s", denomID)
+		return nil, errorsmod.Wrapf(types.ErrUnknownCollection, "not found oNFT: %s", denomID)
 	}
 
 	var oNFT types.ONFT
@@ -20,7 +20,7 @@ func (k Keeper) GetONFT(ctx sdk.Context, denomID, onftID string) (nft exported.O
 	return oNFT, nil
 }
 
-func (k Keeper) GetONFTs(ctx sdk.Context, denom string) (onfts []exported.ONFT) {
+func (k Keeper) GetONFTs(ctx sdk.Context, denom string) (onfts []exported.ONFTI) {
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.KeyONFT(denom, ""))
@@ -56,7 +56,7 @@ func (k Keeper) Authorize(ctx sdk.Context, denomID, onftID string, owner sdk.Acc
 	}
 
 	if !owner.Equals(onft.GetOwner()) {
-		return types.ONFT{}, sdkerrors.Wrap(types.ErrUnauthorized, owner.String())
+		return types.ONFT{}, errorsmod.Wrap(types.ErrUnauthorized, owner.String())
 	}
 	return onft.(types.ONFT), nil
 }
@@ -73,7 +73,7 @@ func (k Keeper) setONFT(ctx sdk.Context, denomID string, onft types.ONFT) {
 	store.Set(types.KeyONFT(denomID, onft.GetID()), bz)
 }
 
-func (k Keeper) deleteONFT(ctx sdk.Context, denomID string, onft exported.ONFT) {
+func (k Keeper) deleteONFT(ctx sdk.Context, denomID string, onft exported.ONFTI) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyONFT(denomID, onft.GetID()))
 }

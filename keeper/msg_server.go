@@ -2,9 +2,12 @@ package keeper
 
 import (
 	"context"
+
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
+	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/onft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type msgServer struct {
@@ -19,8 +22,20 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
+func (m msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	if m.authority != req.Authority {
+		return nil, errorsmod.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", m.authority, req.Authority)
+	}
 
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := m.SetParams(ctx, req.Params); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -30,18 +45,18 @@ func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom)
 	denomCreationFee := m.Keeper.GetDenomCreationFee(ctx)
 	if !msg.CreationFee.Equal(denomCreationFee) {
 		if msg.CreationFee.Denom != denomCreationFee.Denom {
-			return nil, sdkerrors.Wrapf(types.ErrInvalidFeeDenom, "invalid creation fee denom %s",
+			return nil, errorsmod.Wrapf(types.ErrInvalidFeeDenom, "invalid creation fee denom %s",
 				msg.CreationFee.Denom)
 		}
 		if msg.CreationFee.Amount.LT(denomCreationFee.Amount) {
-			return nil, sdkerrors.Wrapf(
+			return nil, errorsmod.Wrapf(
 				types.ErrNotEnoughFeeAmount,
 				"%s fee is not enough, to create %s fee is required",
 				msg.CreationFee.String(),
 				denomCreationFee.String(),
 			)
 		}
-		return nil, sdkerrors.Wrapf(
+		return nil, errorsmod.Wrapf(
 			types.ErrInvalidDenomCreationFee,
 			"given fee (%s) not matched with  denom creation fee. %s required to create onft denom",
 			msg.CreationFee.String(),
@@ -131,8 +146,8 @@ func (m msgServer) MintONFT(goCtx context.Context, msg *types.MsgMintONFT) (*typ
 }
 
 func (m msgServer) TransferONFT(goCtx context.Context,
-	msg *types.MsgTransferONFT) (*types.MsgTransferONFTResponse, error) {
-
+	msg *types.MsgTransferONFT,
+) (*types.MsgTransferONFTResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -155,8 +170,8 @@ func (m msgServer) TransferONFT(goCtx context.Context,
 }
 
 func (m msgServer) BurnONFT(goCtx context.Context,
-	msg *types.MsgBurnONFT) (*types.MsgBurnONFTResponse, error) {
-
+	msg *types.MsgBurnONFT,
+) (*types.MsgBurnONFTResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
