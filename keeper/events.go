@@ -17,13 +17,14 @@ func (k Keeper) emitCreateONFTDenomEvent(ctx sdk.Context, denomId, symbol, name,
 	)
 }
 
-func (k Keeper) emitUpdateONFTDenomEvent(ctx sdk.Context, denomId, symbol, name, creator string) {
+func (k Keeper) emitUpdateONFTDenomEvent(ctx sdk.Context, denomId, name, description, previewURI, creator string) {
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			onfttypes.EventTypeUpdateONFTDenom,
 			sdk.NewAttribute(onfttypes.AttributeKeyDenomID, denomId),
-			sdk.NewAttribute(onfttypes.AttributeKeySymbol, symbol),
 			sdk.NewAttribute(onfttypes.AttributeKeyName, name),
+			sdk.NewAttribute(onfttypes.AttributeKeyDescription, description),
+			sdk.NewAttribute(onfttypes.AttributeKeyPreviewURI, previewURI),
 			sdk.NewAttribute(onfttypes.AttributeKeyCreator, creator),
 		),
 	)

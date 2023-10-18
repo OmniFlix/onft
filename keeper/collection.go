@@ -18,14 +18,7 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 	if err != nil {
 		return err
 	}
-	if k.HasDenomID(ctx, denom.Id) {
-		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s has already exists", denom.Id)
-	}
-
-	if k.HasDenomSymbol(ctx, denom.Symbol) {
-		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomSymbol %s has already exists", denom.Symbol)
-	}
-	k.SetDenom(ctx, types.NewDenom(
+	if err := k.SaveDenom(ctx,
 		denom.Id,
 		denom.Symbol,
 		denom.Name,
@@ -33,28 +26,28 @@ func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) erro
 		creator,
 		denom.Description,
 		denom.PreviewURI,
-	))
-
-	k.setDenomOwner(ctx, denom.Id, creator)
+		denom.Uri,
+		denom.UriHash,
+		denom.Data,
+	); err != nil {
+		return err
+	}
 
 	for _, onft := range collection.ONFTs {
-		metadata := types.Metadata{
-			Name:        onft.GetName(),
-			Description: onft.GetDescription(),
-			MediaURI:    onft.GetMediaURI(),
-			PreviewURI:  onft.GetPreviewURI(),
-		}
-
-		if err := k.MintONFT(ctx,
-			collection.Denom.Id,
+		if err := k.SaveNFT(ctx,
+			denom.Id,
 			onft.GetID(),
-			metadata,
+			onft.GetName(),
+			onft.GetDescription(),
+			onft.GetMediaURI(),
+			onft.GetURIHash(),
+			onft.GetPreviewURI(),
 			onft.GetData(),
+			onft.GetCreatedTime(),
 			onft.IsTransferable(),
 			onft.IsExtensible(),
 			onft.IsNSFW(),
-			onft.RoyaltyShare,
-			creator,
+			onft.GetRoyaltyShare(),
 			onft.GetOwner(),
 		); err != nil {
 			return err
@@ -69,78 +62,57 @@ func (k Keeper) GetCollection(ctx sdk.Context, denomID string) (types.Collection
 		return types.Collection{}, errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not existed ", denomID)
 	}
 
-	onfts := k.GetONFTs(ctx, denomID)
+	onfts, err := k.GetONFTs(ctx, denomID)
+	if err != nil {
+		return types.Collection{}, err
+	}
 	return types.NewCollection(denom, onfts), nil
 }
 
-func (k Keeper) GetCollections(ctx sdk.Context) (cs []types.Collection) {
-	for _, denom := range k.GetDenoms(ctx) {
-		onfts := k.GetONFTs(ctx, denom.Id)
-		cs = append(cs, types.NewCollection(denom, onfts))
+func (k Keeper) GetCollections(ctx sdk.Context) (collections []types.Collection, err error) {
+	for _, class := range k.nk.GetClasses(ctx) {
+		onfts, err := k.GetONFTs(ctx, class.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		denom, err := k.GetDenomInfo(ctx, class.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		collections = append(collections, types.NewCollection(*denom, onfts))
 	}
-	return cs
+	return collections, nil
 }
 
 func (k Keeper) GetPaginateCollection(ctx sdk.Context,
 	request *types.QueryCollectionRequest, denomId string,
 ) (types.Collection, *query.PageResponse, error) {
-	denom, err := k.GetDenom(ctx, denomId)
+	denom, err := k.GetDenomInfo(ctx, denomId)
 	if err != nil {
 		return types.Collection{}, nil, errorsmod.Wrapf(types.ErrInvalidDenom, "denomId %s not existed ", denomId)
 	}
-	var onfts []exported.ONFTI
+	var oNFTs []exported.ONFTI
 	store := ctx.KVStore(k.storeKey)
 	onftStore := prefix.NewStore(store, types.KeyONFT(denomId, ""))
 	pagination, err := query.Paginate(onftStore, request.Pagination, func(key []byte, value []byte) error {
 		var oNFT types.ONFT
 		k.cdc.MustUnmarshal(value, &oNFT)
-		onfts = append(onfts, oNFT)
+		oNFTs = append(oNFTs, oNFT)
 		return nil
 	})
 	if err != nil {
 		return types.Collection{}, nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
 	}
-	return types.NewCollection(denom, onfts), pagination, nil
+	return types.NewCollection(*denom, oNFTs), pagination, nil
 }
 
 func (k Keeper) GetTotalSupply(ctx sdk.Context, denomID string) uint64 {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.KeyCollection(denomID))
-	if len(bz) == 0 {
-		return 0
-	}
-	return types.MustUnMarshalSupply(k.cdc, bz)
+	return k.nk.GetTotalSupply(ctx, denomID)
 }
 
-func (k Keeper) GetTotalSupplyOfOwner(ctx sdk.Context, id string, owner sdk.AccAddress) (supply uint64) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyOwner(owner, id, ""))
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		supply++
-	}
-	return supply
-}
-
-func (k Keeper) increaseSupply(ctx sdk.Context, denomID string) {
-	supply := k.GetTotalSupply(ctx, denomID)
-	supply++
-
-	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalSupply(k.cdc, supply)
-	store.Set(types.KeyCollection(denomID), bz)
-}
-
-func (k Keeper) decreaseSupply(ctx sdk.Context, denomID string) {
-	supply := k.GetTotalSupply(ctx, denomID)
-	supply--
-
-	store := ctx.KVStore(k.storeKey)
-	if supply == 0 {
-		store.Delete(types.KeyCollection(denomID))
-		return
-	}
-
-	bz := types.MustMarshalSupply(k.cdc, supply)
-	store.Set(types.KeyCollection(denomID), bz)
+// GetBalance returns the amount of NFTs owned in a class by an account
+func (k Keeper) GetBalance(ctx sdk.Context, id string, owner sdk.AccAddress) (supply uint64) {
+	return k.nk.GetBalance(ctx, id, owner)
 }

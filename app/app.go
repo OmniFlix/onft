@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cosmos/cosmos-sdk/x/nft"
+
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
@@ -160,6 +162,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		onfttypes.ModuleName:           nil,
+		nft.ModuleName:                 nil,
 	}
 )
 

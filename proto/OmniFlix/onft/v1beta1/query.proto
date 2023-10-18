@@ -98,9 +98,8 @@ message QueryOwnerONFTsRequest {
 }
 
 message QueryOwnerONFTsResponse {
-  string                                 owner       = 1;
-  repeated OwnerONFTCollection           collections = 2 [(gogoproto.nullable) = false];
-  cosmos.base.query.v1beta1.PageResponse pagination  = 3;
+  Owner   owner = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination  = 2;
 }
 
 message QuerySupplyRequest {

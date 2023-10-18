@@ -16,3 +16,7 @@ var (
 func GenUniqueID(prefix string) string {
 	return prefix + strings.ReplaceAll(uuid.New().String(), "-", "")
 }
+
+func IsIBCDenom(denomID string) bool {
+	return strings.HasPrefix(denomID, "ibc/")
+}

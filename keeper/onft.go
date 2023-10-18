@@ -1,79 +1,212 @@
 package keeper
 
 import (
+	"time"
+
 	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/onft/exported"
 	"github.com/OmniFlix/onft/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/nft"
 )
 
-func (k Keeper) GetONFT(ctx sdk.Context, denomID, onftID string) (nft exported.ONFTI, err error) {
-	store := ctx.KVStore(k.storeKey)
-
-	bz := store.Get(types.KeyONFT(denomID, onftID))
-	if bz == nil {
-		return nil, errorsmod.Wrapf(types.ErrUnknownCollection, "not found oNFT: %s", denomID)
+func (k Keeper) SaveNFT(
+	ctx sdk.Context,
+	denomID,
+	nftID,
+	name,
+	description,
+	mediaURI,
+	uriHash,
+	previewURI,
+	nftData string,
+	createdAt time.Time,
+	transferable,
+	extensible,
+	nsfw bool,
+	royaltyShare sdk.Dec,
+	receiver sdk.AccAddress,
+) error {
+	nftMetadata := &types.ONFTMetadata{
+		Name:         name,
+		Description:  description,
+		PreviewURI:   previewURI,
+		Data:         nftData,
+		Transferable: transferable,
+		Extensible:   extensible,
+		Nsfw:         nsfw,
+		CreatedAt:    createdAt,
+		RoyaltyShare: royaltyShare,
 	}
-
-	var oNFT types.ONFT
-	k.cdc.MustUnmarshal(bz, &oNFT)
-	return oNFT, nil
-}
-
-func (k Keeper) GetONFTs(ctx sdk.Context, denom string) (onfts []exported.ONFTI) {
-	store := ctx.KVStore(k.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyONFT(denom, ""))
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var oNFT types.ONFT
-		k.cdc.MustUnmarshal(iterator.Value(), &oNFT)
-		onfts = append(onfts, oNFT)
-	}
-	return onfts
-}
-
-func (k Keeper) GetOwnerONFTs(ctx sdk.Context, denom string, owner string) (onfts []*types.ONFT) {
-	store := ctx.KVStore(k.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyONFT(denom, ""))
-	defer iterator.Close()
-	var onftList []*types.ONFT
-	for ; iterator.Valid(); iterator.Next() {
-		var oNFT types.ONFT
-		k.cdc.MustUnmarshal(iterator.Value(), &oNFT)
-		if oNFT.Owner == owner {
-			onftList = append(onftList, &oNFT)
-		}
-	}
-	return onftList
-}
-
-func (k Keeper) Authorize(ctx sdk.Context, denomID, onftID string, owner sdk.AccAddress) (types.ONFT, error) {
-	onft, err := k.GetONFT(ctx, denomID, onftID)
+	data, err := codectypes.NewAnyWithValue(nftMetadata)
 	if err != nil {
-		return types.ONFT{}, err
+		return err
+	}
+	return k.nk.Mint(ctx, nft.NFT{
+		ClassId: denomID,
+		Id:      nftID,
+		Uri:     mediaURI,
+		UriHash: uriHash,
+		Data:    data,
+	}, receiver)
+}
+
+func (k Keeper) TransferOwnership(ctx sdk.Context, denomID, onftID string, srcOwner, dstOwner sdk.AccAddress) error {
+	if !k.nk.HasClass(ctx, denomID) {
+		return errorsmod.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+	}
+	onft, exist := k.nk.GetNFT(ctx, denomID, onftID)
+	if !exist {
+		return errorsmod.Wrapf(types.ErrInvalidONFT, "nft ID %s not exists", onftID)
 	}
 
-	if !owner.Equals(onft.GetOwner()) {
-		return types.ONFT{}, errorsmod.Wrap(types.ErrUnauthorized, owner.String())
+	err := k.Authorize(ctx, denomID, onftID, srcOwner)
+	if err != nil {
+		return err
 	}
-	return onft.(types.ONFT), nil
+	onftMetadata, err := types.UnmarshalNFTMetadata(k.cdc, onft.Data.GetValue())
+	if err != nil {
+		return errorsmod.Wrapf(types.ErrInvalidONFTMetadata, "unable to parse nft metadata")
+	}
+
+	if !onftMetadata.Transferable {
+		return errorsmod.Wrap(types.ErrNotTransferable, onft.GetId())
+	}
+	return k.nk.Transfer(ctx, denomID, onftID, dstOwner)
+}
+
+func (k Keeper) BurnONFT(
+	ctx sdk.Context,
+	denomID,
+	onftID string,
+	owner sdk.AccAddress,
+) error {
+	if !k.nk.HasClass(ctx, denomID) {
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+	}
+	_, exist := k.nk.GetNFT(ctx, denomID, onftID)
+	if !exist {
+		return sdkerrors.Wrapf(types.ErrInvalidONFT, "nft ID %s not exists", onftID)
+	}
+
+	err := k.Authorize(ctx, denomID, onftID, owner)
+	if err != nil {
+		return err
+	}
+
+	return k.nk.Burn(ctx, denomID, onftID)
+}
+
+func (k Keeper) GetONFT(ctx sdk.Context, denomID, onftID string) (nft exported.ONFTI, err error) {
+	if !k.nk.HasClass(ctx, denomID) {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not exists", denomID)
+	}
+	onft, exist := k.nk.GetNFT(ctx, denomID, onftID)
+	if !exist {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidONFT, "not found NFT: %s", onftID)
+	}
+
+	nftMetadata, err := types.UnmarshalNFTMetadata(k.cdc, onft.Data.GetValue())
+	if err != nil {
+		return nil, err
+	}
+
+	owner := k.nk.GetOwner(ctx, denomID, onftID)
+	metadata := types.Metadata{
+		Name:        nftMetadata.Name,
+		Description: nftMetadata.Description,
+		MediaURI:    onft.Uri,
+		PreviewURI:  nftMetadata.PreviewURI,
+	}
+	return types.ONFT{
+		Id:           onft.Id,
+		Metadata:     metadata,
+		Data:         nftMetadata.Data,
+		Owner:        owner.String(),
+		Transferable: nftMetadata.Transferable,
+		Extensible:   nftMetadata.Extensible,
+		Nsfw:         nftMetadata.Extensible,
+		CreatedAt:    nftMetadata.CreatedAt,
+		RoyaltyShare: nftMetadata.RoyaltyShare,
+	}, nil
+}
+
+func (k Keeper) GetONFTs(ctx sdk.Context, denomID string) (onfts []exported.ONFTI, err error) {
+	nfts := k.nk.GetNFTsOfClass(ctx, denomID)
+	for _, nft := range nfts {
+
+		nftMetadata, err := types.UnmarshalNFTMetadata(k.cdc, nft.Data.GetValue())
+		if err != nil {
+			return nil, err
+		}
+
+		owner := k.nk.GetOwner(ctx, denomID, nft.GetId())
+		metadata := types.Metadata{
+			Name:        nftMetadata.Name,
+			Description: nftMetadata.Description,
+			MediaURI:    nft.Uri,
+			PreviewURI:  nftMetadata.PreviewURI,
+		}
+		onfts = append(onfts, types.ONFT{
+			Id:           nft.GetId(),
+			Metadata:     metadata,
+			Data:         nftMetadata.Data,
+			Owner:        owner.String(),
+			Transferable: nftMetadata.Transferable,
+			Extensible:   nftMetadata.Extensible,
+			Nsfw:         nftMetadata.Extensible,
+			CreatedAt:    nftMetadata.CreatedAt,
+			RoyaltyShare: nftMetadata.RoyaltyShare,
+		})
+	}
+	return onfts, nil
+}
+
+func (k Keeper) GetOwnerONFTs(ctx sdk.Context, denomID string, owner sdk.AccAddress) (onfts []exported.ONFTI, err error) {
+	nfts := k.nk.GetNFTsOfClassByOwner(ctx, denomID, owner)
+	for _, nft := range nfts {
+
+		nftMetadata, err := types.UnmarshalNFTMetadata(k.cdc, nft.Data.GetValue())
+		if err != nil {
+			return nil, err
+		}
+
+		owner := k.nk.GetOwner(ctx, denomID, nft.GetId())
+		metadata := types.Metadata{
+			Name:        nftMetadata.Name,
+			Description: nftMetadata.Description,
+			MediaURI:    nft.Uri,
+			PreviewURI:  nftMetadata.PreviewURI,
+		}
+		onfts = append(onfts, types.ONFT{
+			Id:           nft.GetId(),
+			Metadata:     metadata,
+			Data:         nftMetadata.Data,
+			Owner:        owner.String(),
+			Transferable: nftMetadata.Transferable,
+			Extensible:   nftMetadata.Extensible,
+			Nsfw:         nftMetadata.Extensible,
+			CreatedAt:    nftMetadata.CreatedAt,
+			RoyaltyShare: nftMetadata.RoyaltyShare,
+		})
+	}
+	return onfts, nil
+}
+
+func (k Keeper) Authorize(
+	ctx sdk.Context,
+	denomID,
+	onftID string,
+	owner sdk.AccAddress,
+) error {
+	if !owner.Equals(k.nk.GetOwner(ctx, denomID, onftID)) {
+		return sdkerrors.Wrap(types.ErrUnauthorized, owner.String())
+	}
+	return nil
 }
 
 func (k Keeper) HasONFT(ctx sdk.Context, denomID, onftID string) bool {
-	store := ctx.KVStore(k.storeKey)
-	return store.Has(types.KeyONFT(denomID, onftID))
-}
-
-func (k Keeper) setONFT(ctx sdk.Context, denomID string, onft types.ONFT) {
-	store := ctx.KVStore(k.storeKey)
-
-	bz := k.cdc.MustMarshal(&onft)
-	store.Set(types.KeyONFT(denomID, onft.GetID()), bz)
-}
-
-func (k Keeper) deleteONFT(ctx sdk.Context, denomID string, onft exported.ONFTI) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyONFT(denomID, onft.GetID()))
+	return k.nk.HasNFT(ctx, denomID, onftID)
 }

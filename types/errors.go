@@ -29,4 +29,6 @@ var (
 	ErrInvalidDenomCreationFee = errorsmod.Register(ModuleName, 22, "invalid denom creation fee")
 	ErrInvalidFeeDenom         = errorsmod.Register(ModuleName, 23, "invalid creation fee denom")
 	ErrNotEnoughFeeAmount      = errorsmod.Register(ModuleName, 24, "invalid creation fee amount")
+	ErrInvalidONFTMetadata     = errorsmod.Register(ModuleName, 25, "invalid nft data")
+	ErrDenomIdExists           = errorsmod.Register(ModuleName, 26, "denom exists")
 )

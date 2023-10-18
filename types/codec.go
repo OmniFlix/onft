@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	authzcodec "github.com/cosmos/cosmos-sdk/x/authz/codec"
+	"github.com/cosmos/gogoproto/proto"
 )
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
@@ -39,6 +40,11 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		"OmniFlix.onft.v1beta1.ONFTI",
 		(*exported.ONFTI)(nil),
 		&ONFT{},
+	)
+	registry.RegisterImplementations(
+		(*proto.Message)(nil),
+		&DenomMetadata{},
+		&ONFTMetadata{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

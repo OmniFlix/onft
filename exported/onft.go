@@ -14,6 +14,7 @@ type ONFTI interface {
 	GetName() string
 	GetDescription() string
 	GetMediaURI() string
+	GetURIHash() string
 	GetPreviewURI() string
 	GetData() string
 	IsTransferable() bool

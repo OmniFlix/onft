@@ -4,10 +4,23 @@ import (
 	"time"
 
 	"github.com/OmniFlix/onft/exported"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ exported.ONFTI = ONFT{}
+
+func UnmarshalNFTMetadata(cdc codec.BinaryCodec, bz []byte) (ONFTMetadata, error) {
+	var nftMetadata ONFTMetadata
+	if len(bz) == 0 {
+		return nftMetadata, nil
+	}
+
+	if err := cdc.Unmarshal(bz, &nftMetadata); err != nil {
+		return nftMetadata, err
+	}
+	return nftMetadata, nil
+}
 
 func NewONFT(
 	id string, metadata Metadata, data string, transferable, extensible bool, owner sdk.AccAddress,
@@ -40,6 +53,10 @@ func (onft ONFT) GetDescription() string {
 
 func (onft ONFT) GetMediaURI() string {
 	return onft.Metadata.MediaURI
+}
+
+func (onft ONFT) GetURIHash() string {
+	return onft.Metadata.UriHash
 }
 
 func (onft ONFT) GetPreviewURI() string {

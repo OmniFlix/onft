@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -36,12 +38,14 @@ func (m msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 }
 
 func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	if m.Keeper.HasDenom(ctx, msg.Id) {
+		return nil, errorsmod.Wrapf(types.ErrDenomIdExists, "denom id already exists %s", msg.Id)
+	}
 	denomCreationFee := m.Keeper.GetDenomCreationFee(ctx)
 	if !msg.CreationFee.Equal(denomCreationFee) {
 		if msg.CreationFee.Denom != denomCreationFee.Denom {
@@ -63,7 +67,7 @@ func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom)
 			denomCreationFee.String(),
 		)
 	}
-	if err := m.Keeper.CreateDenom(ctx,
+	if err := m.Keeper.SaveDenom(ctx,
 		msg.Id,
 		msg.Symbol,
 		msg.Name,
@@ -71,27 +75,30 @@ func (m msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom)
 		sender,
 		msg.Description,
 		msg.PreviewURI,
-		msg.CreationFee,
+		msg.Uri,
+		msg.UriHash,
+		msg.Data,
 	); err != nil {
 		return nil, err
 	}
+
+	// emit events
+	m.Keeper.emitCreateONFTDenomEvent(ctx, msg.Id, msg.Symbol, msg.Name, msg.Sender)
 
 	return &types.MsgCreateDenomResponse{}, nil
 }
 
 func (m msgServer) UpdateDenom(goCtx context.Context, msg *types.MsgUpdateDenom) (*types.MsgUpdateDenomResponse, error) {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	err = m.Keeper.UpdateDenom(ctx, msg)
 	if err != nil {
 		return nil, err
 	}
-
-	err = m.Keeper.UpdateDenom(ctx, msg.Id, msg.Name, msg.Description, msg.PreviewURI, sender)
-	if err != nil {
-		return nil, err
-	}
-
 	return &types.MsgUpdateDenomResponse{}, nil
 }
 
@@ -116,32 +123,50 @@ func (m msgServer) TransferDenom(goCtx context.Context, msg *types.MsgTransferDe
 }
 
 func (m msgServer) MintONFT(goCtx context.Context, msg *types.MsgMintONFT) (*types.MsgMintONFTResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-
 	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
 		return nil, err
 	}
+	if !m.Keeper.HasPermissionToMint(ctx, msg.DenomId, sender) {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"%s is not allowed to mint nft under denom %s",
+			sender.String(),
+			msg.DenomId,
+		)
+	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := m.Keeper.MintONFT(ctx,
+	if m.Keeper.HasONFT(ctx, msg.DenomId, msg.Id) {
+		return nil, errorsmod.Wrapf(
+			types.ErrONFTAlreadyExists,
+			"ONFT with id %s already exists in collection %s", msg.Id, msg.DenomId)
+	}
+	if err := m.Keeper.SaveNFT(ctx,
 		msg.DenomId,
 		msg.Id,
-		msg.Metadata,
+		msg.Metadata.Name,
+		msg.Metadata.Description,
+		msg.Metadata.MediaURI,
+		msg.Metadata.UriHash,
+		msg.Metadata.PreviewURI,
 		msg.Data,
+		ctx.BlockTime(),
 		msg.Transferable,
 		msg.Extensible,
 		msg.Nsfw,
 		msg.RoyaltyShare,
-		sender,
 		recipient,
 	); err != nil {
 		return nil, err
 	}
 
+	m.Keeper.emitMintONFTEvent(ctx, msg.Id, msg.DenomId, msg.Metadata.MediaURI, msg.Recipient)
 	return &types.MsgMintONFTResponse{}, nil
 }
 
@@ -166,6 +191,8 @@ func (m msgServer) TransferONFT(goCtx context.Context,
 		return nil, err
 	}
 
+	m.Keeper.emitTransferONFTEvent(ctx, msg.Id, msg.DenomId, msg.Sender, msg.Recipient)
+
 	return &types.MsgTransferONFTResponse{}, nil
 }
 
@@ -181,6 +208,8 @@ func (m msgServer) BurnONFT(goCtx context.Context,
 	if err := m.Keeper.BurnONFT(ctx, msg.DenomId, msg.Id, sender); err != nil {
 		return nil, err
 	}
+
+	m.Keeper.emitBurnONFTEvent(ctx, msg.Id, msg.DenomId, msg.Sender)
 
 	return &types.MsgBurnONFTResponse{}, nil
 }

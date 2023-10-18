@@ -2,31 +2,47 @@ package keeper
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/nft"
 
 	"github.com/OmniFlix/onft/types"
 )
 
-func (k Keeper) HasDenomID(ctx sdk.Context, id string) bool {
-	store := ctx.KVStore(k.storeKey)
-	return store.Has(types.KeyDenomID(id))
-}
-
-func (k Keeper) HasDenomSymbol(ctx sdk.Context, symbol string) bool {
-	if len(symbol) == 0 {
-		return false
+// SaveDenom saves a denom
+func (k Keeper) SaveDenom(
+	ctx sdk.Context,
+	id,
+	symbol,
+	name,
+	schema string,
+	creator sdk.AccAddress,
+	description,
+	previewUri string,
+	uri,
+	uriHash,
+	data string,
+) error {
+	denomMetadata := &types.DenomMetadata{
+		Creator:    creator.String(),
+		Schema:     schema,
+		PreviewUri: previewUri,
+		Data:       data,
 	}
-	store := ctx.KVStore(k.storeKey)
-	return store.Has(types.KeyDenomSymbol(symbol))
-}
-
-func (k Keeper) SetDenom(ctx sdk.Context, denom types.Denom) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&denom)
-	store.Set(types.KeyDenomID(denom.Id), bz)
-	if len(denom.Symbol) > 0 {
-		store.Set(types.KeyDenomSymbol(denom.Symbol), []byte(denom.Id))
+	metadata, err := codectypes.NewAnyWithValue(denomMetadata)
+	if err != nil {
+		return err
 	}
+	return k.nk.SaveClass(ctx, nft.Class{
+		Id:          id,
+		Name:        name,
+		Symbol:      symbol,
+		Description: description,
+		Uri:         uri,
+		UriHash:     uriHash,
+		Data:        metadata,
+	})
 }
 
 func (k Keeper) GetDenom(ctx sdk.Context, id string) (denom types.Denom, err error) {
@@ -41,46 +57,140 @@ func (k Keeper) GetDenom(ctx sdk.Context, id string) (denom types.Denom, err err
 	return denom, nil
 }
 
-func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []types.Denom) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyDenomID(""))
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var denom types.Denom
-		k.cdc.MustUnmarshal(iterator.Value(), &denom)
-		denoms = append(denoms, denom)
-	}
-	return denoms
-}
-
-func (k Keeper) GetDenomsByOwner(ctx sdk.Context, owner sdk.AccAddress) (denoms []types.Denom) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyDenomCreator(owner, ""))
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		denomId := types.MustUnMarshalDenomID(k.cdc, iterator.Value())
-		denom, _ := k.GetDenom(ctx, denomId)
-		denoms = append(denoms, denom)
-	}
-	return denoms
-}
-
-func (k Keeper) AuthorizeDenomCreator(ctx sdk.Context, id string, creator sdk.AccAddress) (types.Denom, error) {
-	denom, err := k.GetDenom(ctx, id)
+// TransferDenomOwner transfers the ownership to new address
+func (k Keeper) TransferDenomOwner(
+	ctx sdk.Context,
+	denomID string,
+	srcOwner,
+	dstOwner sdk.AccAddress,
+) error {
+	denom, err := k.GetDenomInfo(ctx, denomID)
 	if err != nil {
-		return types.Denom{}, err
+		return err
+	}
+	sender := srcOwner.String()
+	recipient := dstOwner.String()
+
+	// authorize
+	if sender != denom.Creator {
+		return errorsmod.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"%s is not allowed to transfer denom %s", sender,
+			denomID,
+		)
+	}
+
+	denomMetadata := &types.DenomMetadata{
+		Creator:    recipient,
+		Schema:     denom.Schema,
+		PreviewUri: denom.PreviewURI,
+		Data:       denom.Data,
+	}
+	data, err := codectypes.NewAnyWithValue(denomMetadata)
+	if err != nil {
+		return err
+	}
+	class := nft.Class{
+		Id:          denom.Id,
+		Name:        denom.Name,
+		Symbol:      denom.Symbol,
+		Description: denom.Description,
+		Uri:         denom.Uri,
+		UriHash:     denom.UriHash,
+		Data:        data,
+	}
+	k.emitTransferONFTDenomEvent(ctx, denomID, denom.Symbol, sender, recipient)
+
+	return k.nk.UpdateClass(ctx, class)
+}
+
+func (k Keeper) HasDenom(ctx sdk.Context, id string) bool {
+	return k.nk.HasClass(ctx, id)
+}
+
+func (k Keeper) UpdateDenom(ctx sdk.Context, msg *types.MsgUpdateDenom) error {
+	denom, err := k.GetDenomInfo(ctx, msg.Id)
+	if err != nil {
+		return err
+	}
+
+	// authorize
+	if msg.Sender != denom.Creator {
+		return errorsmod.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			"%s is not allowed to transfer denom %s", msg.Sender,
+			denom.Id,
+		)
+	}
+
+	denomMetadata := &types.DenomMetadata{
+		Creator:    denom.Creator,
+		Schema:     denom.Schema,
+		PreviewUri: denom.PreviewURI,
+		Data:       denom.Data,
+	}
+	if msg.PreviewURI != types.DoNotModify {
+		denomMetadata.PreviewUri = msg.PreviewURI
+	}
+	data, err := codectypes.NewAnyWithValue(denomMetadata)
+	if err != nil {
+		return err
+	}
+	class := nft.Class{
+		Id:          denom.Id,
+		Name:        denom.Name,
+		Symbol:      denom.Symbol,
+		Description: denom.Description,
+		Uri:         denom.Uri,
+		UriHash:     denom.UriHash,
+		Data:        data,
+	}
+	if msg.Name != types.DoNotModify {
+		class.Name = msg.Name
+	}
+	if msg.Description != types.DoNotModify {
+		class.Description = msg.Description
+	}
+	k.emitUpdateONFTDenomEvent(ctx, class.Id, class.Name, class.Description, denomMetadata.PreviewUri, msg.Sender)
+	return k.nk.UpdateClass(ctx, class)
+}
+
+func (k Keeper) GetDenoms(ctx sdk.Context) (denoms []types.Denom, err error) {
+	classes := k.nk.GetClasses(ctx)
+	for _, class := range classes {
+		var denomMetadata types.DenomMetadata
+		if err := k.cdc.Unmarshal(class.Data.GetValue(), &denomMetadata); err != nil {
+			return nil, err
+		}
+		denoms = append(denoms, types.Denom{
+			Id:          class.Id,
+			Name:        class.Name,
+			Schema:      denomMetadata.Schema,
+			Creator:     denomMetadata.Creator,
+			Symbol:      class.Symbol,
+			Description: class.Description,
+			PreviewURI:  denomMetadata.PreviewUri,
+			Uri:         class.Uri,
+			UriHash:     class.UriHash,
+		})
+	}
+	return denoms, nil
+}
+
+func (k Keeper) AuthorizeDenomCreator(ctx sdk.Context, id string, creator sdk.AccAddress) error {
+	denom, err := k.GetDenomInfo(ctx, id)
+	if err != nil {
+		return err
 	}
 
 	if creator.String() != denom.Creator {
-		return types.Denom{}, errorsmod.Wrap(types.ErrUnauthorized, creator.String())
+		return errorsmod.Wrap(types.ErrUnauthorized, creator.String())
 	}
-	return denom, nil
+	return nil
 }
 
 func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, sender sdk.AccAddress) bool {
-	denom, err := k.GetDenom(ctx, denomID)
+	denom, err := k.GetDenomInfo(ctx, denomID)
 	if err != nil {
 		return false
 	}
@@ -91,19 +201,23 @@ func (k Keeper) HasPermissionToMint(ctx sdk.Context, denomID string, sender sdk.
 	return false
 }
 
-func (k Keeper) deleteDenomOwner(ctx sdk.Context, denomID string, owner sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyDenomCreator(owner, denomID))
-}
+func (k Keeper) GetDenomInfo(ctx sdk.Context, denomID string) (*types.Denom, error) {
+	class, ok := k.nk.GetClass(ctx, denomID)
+	if !ok {
+		return nil, errorsmod.Wrapf(types.ErrInvalidDenom, "denom ID %s not exists", denomID)
+	}
 
-func (k Keeper) setDenomOwner(ctx sdk.Context, denomId string, owner sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-
-	bz := types.MustMarshalDenomID(k.cdc, denomId)
-	store.Set(types.KeyDenomCreator(owner, denomId), bz)
-}
-
-func (k Keeper) swapDenomOwner(ctx sdk.Context, denomID string, srcOwner, dstOwner sdk.AccAddress) {
-	k.deleteDenomOwner(ctx, denomID, srcOwner)
-	k.setDenomOwner(ctx, denomID, dstOwner)
+	var denomMetadata types.DenomMetadata
+	if err := k.cdc.Unmarshal(class.Data.GetValue(), &denomMetadata); err != nil {
+		return nil, err
+	}
+	return &types.Denom{
+		Id:          class.Id,
+		Name:        class.Name,
+		Schema:      denomMetadata.Schema,
+		Creator:     denomMetadata.Creator,
+		Symbol:      class.Symbol,
+		Description: class.Description,
+		PreviewURI:  class.Uri,
+	}, nil
 }
