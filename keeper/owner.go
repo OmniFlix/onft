@@ -80,7 +80,7 @@ func (k Keeper) setOwner(ctx sdk.Context,
 	store.Set(types.KeyOwner(owner, denomId, onftId), bz)
 }
 
-func (k Keeper) swapOwner(ctx sdk.Context, denomID, tokenID string, srcOwner, dstOwner sdk.AccAddress) {
-	k.deleteOwner(ctx, denomID, tokenID, srcOwner)
-	k.setOwner(ctx, denomID, tokenID, dstOwner)
+func (k Keeper) swapOwner(ctx sdk.Context, denomID, nftID string, srcOwner, dstOwner sdk.AccAddress) {
+	k.deleteOwner(ctx, denomID, nftID, srcOwner)
+	k.setOwner(ctx, denomID, nftID, dstOwner)
 }

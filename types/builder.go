@@ -20,27 +20,27 @@ const (
 )
 
 var (
-	ClassKeyName         = fmt.Sprintf("%s%s", Namespace, "name")
-	ClassKeySymbol       = fmt.Sprintf("%s%s", Namespace, "symbol")
-	ClassKeyDescription  = fmt.Sprintf("%s%s", Namespace, "description")
-	ClassKeyURIHash      = fmt.Sprintf("%s%s", Namespace, "uri_hash")
-	ClassKeyCreator      = fmt.Sprintf("%s%s", Namespace, "creator")
-	ClassKeySchema       = fmt.Sprintf("%s%s", Namespace, "schema")
-	ClassKeyPreviewURI   = fmt.Sprintf("%s%s", Namespace, "preview_uri")
-	TokenKeyName         = fmt.Sprintf("%s%s", Namespace, "name")
-	TokenKeyURIHash      = fmt.Sprintf("%s%s", Namespace, "uri_hash")
-	TokenKeyPreviewURI   = fmt.Sprintf("%s%s", Namespace, "preview_uri")
-	TokenKeyTransferable = fmt.Sprintf("%s%s", Namespace, "transferable")
-	TokenKeyExtensible   = fmt.Sprintf("%s%s", Namespace, "extensible")
-	TokenKeyNSFW         = fmt.Sprintf("%s%s", Namespace, "nsfw")
-	TokenKeyRoyaltyShare = fmt.Sprintf("%s%s", Namespace, "royalty_share")
+	ClassKeyName        = fmt.Sprintf("%s%s", Namespace, "name")
+	ClassKeySymbol      = fmt.Sprintf("%s%s", Namespace, "symbol")
+	ClassKeyDescription = fmt.Sprintf("%s%s", Namespace, "description")
+	ClassKeyURIHash     = fmt.Sprintf("%s%s", Namespace, "uri_hash")
+	ClassKeyCreator     = fmt.Sprintf("%s%s", Namespace, "creator")
+	ClassKeySchema      = fmt.Sprintf("%s%s", Namespace, "schema")
+	ClassKeyPreviewURI  = fmt.Sprintf("%s%s", Namespace, "preview_uri")
+	nftKeyName          = fmt.Sprintf("%s%s", Namespace, "name")
+	nftKeyURIHash       = fmt.Sprintf("%s%s", Namespace, "uri_hash")
+	nftKeyPreviewURI    = fmt.Sprintf("%s%s", Namespace, "preview_uri")
+	nftKeyTransferable  = fmt.Sprintf("%s%s", Namespace, "transferable")
+	nftKeyExtensible    = fmt.Sprintf("%s%s", Namespace, "extensible")
+	nftKeyNSFW          = fmt.Sprintf("%s%s", Namespace, "nsfw")
+	nftKeyRoyaltyShare  = fmt.Sprintf("%s%s", Namespace, "royalty_share")
 )
 
 type ClassBuilder struct {
 	cdc              codec.Codec
 	getModuleAddress func(string) sdk.AccAddress
 }
-type TokenBuilder struct {
+type NFTBuilder struct {
 	cdc codec.Codec
 }
 type MediaField struct {
@@ -237,16 +237,16 @@ func (cb ClassBuilder) Build(classID, classURI, classData string) (nft.Class, er
 	}, nil
 }
 
-func NewTokenBuilder(cdc codec.Codec) TokenBuilder {
-	return TokenBuilder{
+func NewNFTBuilder(cdc codec.Codec) NFTBuilder {
+	return NFTBuilder{
 		cdc: cdc,
 	}
 }
 
 // BuildMetadata encode nft into the metadata format defined by ics721
-func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
+func (nb NFTBuilder) BuildMetadata(token nft.NFT) (string, error) {
 	var message proto.Message
-	if err := tb.cdc.UnpackAny(token.Data, &message); err != nil {
+	if err := nb.cdc.UnpackAny(token.Data, &message); err != nil {
 		return "", err
 	}
 
@@ -266,8 +266,8 @@ func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
 			kvals = make(map[string]interface{})
 		}
 	}
-	kvals[TokenKeyName] = MediaField{Value: nftMetadata.Name}
-	kvals[TokenKeyURIHash] = MediaField{Value: token.UriHash}
+	kvals[nftKeyName] = MediaField{Value: nftMetadata.Name}
+	kvals[nftKeyURIHash] = MediaField{Value: token.UriHash}
 	data, err := json.Marshal(kvals)
 	if err != nil {
 		return "", err
@@ -276,16 +276,16 @@ func (tb TokenBuilder) BuildMetadata(token nft.NFT) (string, error) {
 }
 
 // Build create a nft from ics721 packet data
-func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.NFT, error) {
-	tokenDataBz, err := base64.RawStdEncoding.DecodeString(tokenData)
+func (nb NFTBuilder) Build(classId, nftID, tokenURI, nftData string) (nft.NFT, error) {
+	nftDataBz, err := base64.RawStdEncoding.DecodeString(nftData)
 	if err != nil {
 		return nft.NFT{}, err
 	}
 
 	dataMap := make(map[string]interface{})
-	if err := json.Unmarshal(tokenDataBz, &dataMap); err != nil {
+	if err := json.Unmarshal(nftDataBz, &dataMap); err != nil {
 		metadata, err := codectypes.NewAnyWithValue(&ONFTMetadata{
-			Data: string(tokenDataBz),
+			Data: string(nftDataBz),
 		})
 		if err != nil {
 			return nft.NFT{}, err
@@ -293,7 +293,7 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 
 		return nft.NFT{
 			ClassId: classId,
-			Id:      tokenId,
+			Id:      nftID,
 			Uri:     tokenURI,
 			Data:    metadata,
 		}, nil
@@ -303,20 +303,20 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 		name    string
 		uriHash string
 	)
-	if v, ok := dataMap[TokenKeyName]; ok {
+	if v, ok := dataMap[nftKeyName]; ok {
 		if vMap, ok := v.(map[string]interface{}); ok {
 			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
 				name = vStr
-				delete(dataMap, TokenKeyName)
+				delete(dataMap, nftKeyName)
 			}
 		}
 	}
 
-	if v, ok := dataMap[TokenKeyURIHash]; ok {
+	if v, ok := dataMap[nftKeyURIHash]; ok {
 		if vMap, ok := v.(map[string]interface{}); ok {
 			if vStr, ok := vMap[KeyMediaFieldValue].(string); ok {
 				uriHash = vStr
-				delete(dataMap, TokenKeyURIHash)
+				delete(dataMap, nftKeyURIHash)
 			}
 		}
 	}
@@ -340,7 +340,7 @@ func (tb TokenBuilder) Build(classId, tokenId, tokenURI, tokenData string) (nft.
 
 	return nft.NFT{
 		ClassId: classId,
-		Id:      tokenId,
+		Id:      nftID,
 		Uri:     tokenURI,
 		UriHash: uriHash,
 		Data:    metadata,

@@ -19,7 +19,7 @@ func (idc IDCollection) Supply() int {
 	return len(idc.OnftIds)
 }
 
-// AddID adds an tokenID to the idCollection
+// AddID adds an nftID to the idCollection
 func (idc IDCollection) AddId(onftId string) IDCollection {
 	idc.OnftIds = append(idc.OnftIds, onftId)
 	return idc

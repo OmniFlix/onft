@@ -4,6 +4,7 @@ import (
 	"github.com/OmniFlix/onft/exported"
 	"github.com/OmniFlix/onft/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -19,19 +20,27 @@ var ParamsKey = []byte{0x07}
 // module state.
 func Migrate(
 	ctx sdk.Context,
-	store sdk.KVStore,
+	storeKey storetypes.StoreKey,
 	legacySubspace exported.Subspace,
 	cdc codec.BinaryCodec,
+	nftKeeper NFTKeeper,
 ) error {
 	var currParams types.Params
 	legacySubspace.GetParamSet(ctx, &currParams)
 
+	k := keeper{
+		storeKey:  storeKey,
+		cdc:       cdc,
+		nftKeeper: nftKeeper,
+	}
+
 	if err := currParams.ValidateBasic(); err != nil {
 		return err
 	}
+	store := ctx.KVStore(k.storeKey)
 
 	bz := cdc.MustMarshal(&currParams)
 	store.Set(ParamsKey, bz)
 
-	return nil
+	return MigrateCollections(ctx, storeKey, cdc, ctx.Logger(), k)
 }

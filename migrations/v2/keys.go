@@ -1,19 +1,10 @@
-package types
+package v2
 
 import (
 	"bytes"
 	"errors"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	gogotypes "github.com/cosmos/gogoproto/types"
-)
-
-const (
-	ModuleName = "onft"
-	StoreKey   = ModuleName
-	RouterKey  = ModuleName
 )
 
 var (
@@ -23,8 +14,6 @@ var (
 	PrefixDenom       = []byte{0x04}
 	PrefixDenomSymbol = []byte{0x05}
 	PrefixCreator     = []byte{0x06}
-
-	ParamsKey = []byte{0x07}
 
 	delimiter = []byte("/")
 )
@@ -110,37 +99,4 @@ func KeyDenomCreator(address sdk.AccAddress, denomId string) []byte {
 func KeyDenomSymbol(symbol string) []byte {
 	key := append(PrefixDenomSymbol, delimiter...)
 	return append(key, []byte(symbol)...)
-}
-
-func MustMarshalSupply(cdc codec.BinaryCodec, supply uint64) []byte {
-	supplyWrap := gogotypes.UInt64Value{Value: supply}
-	return cdc.MustMarshal(&supplyWrap)
-}
-
-func MustUnMarshalSupply(cdc codec.BinaryCodec, value []byte) uint64 {
-	var supplyWrap gogotypes.UInt64Value
-	cdc.MustUnmarshal(value, &supplyWrap)
-	return supplyWrap.Value
-}
-
-func MustMarshalONFTID(cdc codec.BinaryCodec, onftID string) []byte {
-	onftIDWrap := gogotypes.StringValue{Value: onftID}
-	return cdc.MustMarshal(&onftIDWrap)
-}
-
-func MustUnMarshalONFTID(cdc codec.BinaryCodec, value []byte) string {
-	var onftIDWrap gogotypes.StringValue
-	cdc.MustUnmarshal(value, &onftIDWrap)
-	return onftIDWrap.Value
-}
-
-func MustMarshalDenomID(cdc codec.BinaryCodec, denomID string) []byte {
-	denomIDWrap := gogotypes.StringValue{Value: denomID}
-	return cdc.MustMarshal(&denomIDWrap)
-}
-
-func MustUnMarshalDenomID(cdc codec.BinaryCodec, value []byte) string {
-	var denomIDWrap gogotypes.StringValue
-	cdc.MustUnmarshal(value, &denomIDWrap)
-	return denomIDWrap.Value
 }
