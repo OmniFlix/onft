@@ -2,14 +2,8 @@ package keeper
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	"github.com/OmniFlix/onft/exported"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/OmniFlix/onft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) SetCollection(ctx sdk.Context, collection types.Collection) error {
@@ -84,28 +78,6 @@ func (k Keeper) GetCollections(ctx sdk.Context) (collections []types.Collection,
 		collections = append(collections, types.NewCollection(*denom, onfts))
 	}
 	return collections, nil
-}
-
-func (k Keeper) GetPaginateCollection(ctx sdk.Context,
-	request *types.QueryCollectionRequest, denomId string,
-) (types.Collection, *query.PageResponse, error) {
-	denom, err := k.GetDenomInfo(ctx, denomId)
-	if err != nil {
-		return types.Collection{}, nil, errorsmod.Wrapf(types.ErrInvalidDenom, "denomId %s not existed ", denomId)
-	}
-	var oNFTs []exported.ONFTI
-	store := ctx.KVStore(k.storeKey)
-	onftStore := prefix.NewStore(store, types.KeyONFT(denomId, ""))
-	pagination, err := query.Paginate(onftStore, request.Pagination, func(key []byte, value []byte) error {
-		var oNFT types.ONFT
-		k.cdc.MustUnmarshal(value, &oNFT)
-		oNFTs = append(oNFTs, oNFT)
-		return nil
-	})
-	if err != nil {
-		return types.Collection{}, nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
-	}
-	return types.NewCollection(*denom, oNFTs), pagination, nil
 }
 
 func (k Keeper) GetTotalSupply(ctx sdk.Context, denomID string) uint64 {
